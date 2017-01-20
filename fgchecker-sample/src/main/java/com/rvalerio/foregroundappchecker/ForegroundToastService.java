@@ -12,6 +12,10 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.widget.Toast;
+import android.os.Vibrator;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 import com.rvalerio.fgchecker.AppChecker;
 
@@ -23,6 +27,16 @@ public class ForegroundToastService extends Service {
 
     private BroadcastReceiver stopServiceReceiver;
     private AppChecker appChecker;
+    private Integer gmailTimeSpent = 0;
+    private Integer gmailNumOfOpens = 1;
+    private Boolean gmailVisitedAnotherApp = false;
+
+    private Integer fbTimeSpent = 0;
+    private Integer fbNumOfOpens = 1;
+    private Boolean fbVisitedAnotherApp = false;
+
+    private String msg;
+    private String lastRecordedDate="";
 
     public static void start(Context context) {
         context.startService(new Intent(context, ForegroundToastService.class));
@@ -56,18 +70,84 @@ public class ForegroundToastService extends Service {
     }
 
     private void startChecker() {
+
+        // reset stat every day
+        String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        if (!lastRecordedDate.equals(today)) {
+            lastRecordedDate = today;
+
+            gmailTimeSpent = 0;
+            gmailNumOfOpens = 1;
+
+            fbTimeSpent = 0;
+            fbNumOfOpens = 1;
+            Toast.makeText(getBaseContext(), "Stats reset for new day " + today, Toast.LENGTH_LONG).show();
+        }
+
+
         appChecker = new AppChecker();
         appChecker
                 .when(getPackageName(), new AppChecker.Listener() {
                     @Override
                     public void onForeground(String packageName) {
-                        Toast.makeText(getBaseContext(), "Our app is in the foreground.", Toast.LENGTH_SHORT).show();
+                        gmailVisitedAnotherApp = true;
+                        fbVisitedAnotherApp = true;
+
+//                        Toast.makeText(getBaseContext(), "Beehive app already in foreground.", Toast.LENGTH_SHORT).show();
                     }
+                })
+                .when("com.google.android.gm", new AppChecker.Listener() {
+                    @Override
+                    public void onForeground(String packageName) {
+                        gmailTimeSpent += 5;
+                        if (gmailVisitedAnotherApp) {
+                            gmailNumOfOpens += 1;
+                            gmailVisitedAnotherApp = false;
+                        }
+                        msg = "Gmail (limit: 3 mins / 5x)\nTime spent: " + gmailTimeSpent.toString() + " secs (opened: " + gmailNumOfOpens.toString() + "x)";
+                        Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
+
+                        if (gmailTimeSpent > 180 || gmailNumOfOpens > 5) {
+                            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                            // Start without a delay
+                            // Each element then alternates (in ms) between vibrate, sleep, vibrate, sleep...
+                            long[] pattern = {0, 100, 100, 100, 100};
+
+                            // The '-1' here means to vibrate once, as '-1' is out of bounds in the pattern array
+                            v.vibrate(pattern, -1);
+                        }
+                    }
+
+                })
+                .when("com.facebook.katana", new AppChecker.Listener() {
+                    @Override
+                    public void onForeground(String packageName) {
+                        fbTimeSpent += 5;
+                        if (fbVisitedAnotherApp) {
+                            fbNumOfOpens += 1;
+                            fbVisitedAnotherApp = false;
+                        }
+                        msg = "Facebook (limit: 5 mins / 10x)\nTime spent: " + fbTimeSpent.toString() + " secs (opened: " + fbNumOfOpens.toString() + "x)";
+                        Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
+
+                        if (fbTimeSpent > 300 || fbNumOfOpens > 10) {
+                            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                            // Start without a delay
+                            // Each element then alternates (in ms) between vibrate, sleep, vibrate, sleep...
+                            long[] pattern = {0, 100, 100, 100, 100, 100, 100};
+
+                            // The '-1' here means to vibrate once, as '-1' is out of bounds in the pattern array
+                            v.vibrate(pattern, -1);
+                        }
+                    }
+
                 })
                 .other(new AppChecker.Listener() {
                     @Override
                     public void onForeground(String packageName) {
-                        Toast.makeText(getBaseContext(), "Foreground: " + packageName, Toast.LENGTH_SHORT).show();
+                        gmailVisitedAnotherApp = true;
+                        fbVisitedAnotherApp = true;
+//                        Toast.makeText(getBaseContext(), "Foreground: " + packageName, Toast.LENGTH_SHORT).show();
                     }
                 })
                 .timeout(5000)
@@ -96,6 +176,7 @@ public class ForegroundToastService extends Service {
         NotificationManager manager = ((NotificationManager) getSystemService(NOTIFICATION_SERVICE));
         Notification notification = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(false)
