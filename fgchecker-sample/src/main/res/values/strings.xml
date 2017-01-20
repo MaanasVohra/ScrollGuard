@@ -2,7 +2,7 @@
     <string name="app_name">mBeehive</string>
     <string name="button_usage_permission">Request permission</string>
     <string name="button_service_start">Start Beehive Service</string>
-    <string name="usage_permission_granted">Application has usage stats permission.</string>
+    <string name="usage_permission_granted">Application has been granted usage stats permission.</string>
     <string name="usage_permission_explanation">Press to request usage stats permission.
         This permission is needed to begin background service. You only need to do this once.</string>
     <string name="stop_service">Tap to exit from experiment.</string>
