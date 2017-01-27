@@ -1,10 +1,18 @@
 <resources>
-    <string name="app_name">mBeehive</string>
-    <string name="button_usage_permission">Request permission</string>
-    <string name="button_service_start">Start Beehive Service</string>
+    <string name="app_name">Beehive Monitor</string>
+    <string name="btn_usage_permission">Request permission</string>
+    <string name="btn_service_start">Start Beehive Service</string>
     <string name="usage_permission_granted">Application has been granted usage stats permission.</string>
-    <string name="usage_permission_explanation">Press to request usage stats permission.
+    <string name="usage_permission_explanation">Click to request usage stats permission.
         This permission is needed to begin background service. You only need to do this once.</string>
     <string name="stop_service">Tap to exit from experiment.</string>
     <string name="service_started">Beehive Service Started</string>
+    <string name="label_set_limit">Set Daily Limit</string>
+    <string name="tv_limit_fb">Facebook</string>
+    <string name="tv_limit_gmail">Gmail</string>
+    <string name="form_submit">Lock Until Midnight</string>
+    <string name="tv_init_setup">Start Monitor Service</string>
+    <string name="submission_done">You cannot change values until midnight.</string>
+    <string name="max_minutes">max minutes</string>
+    <string name="max_opens">max opens</string>
 </resources>
