@@ -17,14 +17,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText etFacebookLimitTime;
-    private EditText etFacebookLimitOpened;
-
-    private EditText etGmailLimitTime;
-    private EditText etGmailLimitOpened;
-
     private TextView tvPermission;
-    private Button btSubmit;
     private Button btUsagePermission;
     private Button btStartService;
 
@@ -33,15 +26,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        etFacebookLimitTime = (EditText) findViewById(R.id.et_limit_time_fb);
-        etFacebookLimitOpened = (EditText) findViewById(R.id.et_limit_opened_fb);
-
-        etGmailLimitTime = (EditText) findViewById(R.id.et_limit_time_gm);
-        etGmailLimitOpened = (EditText) findViewById(R.id.et_limit_opened_gm);
-
         tvPermission = (TextView) findViewById(R.id.tv_permission_text);
-
-        btSubmit = (Button) findViewById(R.id.btn_submit);
         btUsagePermission = (Button) findViewById(R.id.btn_usage_permission);
         btStartService = (Button) findViewById(R.id.btn_service_start);
 
@@ -66,44 +51,6 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         });
-
-        btSubmit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(getBaseContext(), getString(R.string.submission_done), Toast.LENGTH_SHORT).show();
-                Helper.setStoreInt(getBaseContext(), "fbMaxOpen", Integer.parseInt(etFacebookLimitOpened.getText().toString()));
-                Helper.setStoreInt(getBaseContext(), "fbMaxTime", Integer.parseInt(etFacebookLimitTime.getText().toString()));
-                Helper.setStoreInt(getBaseContext(), "gmMaxOpen", Integer.parseInt(etGmailLimitOpened.getText().toString()));
-                Helper.setStoreInt(getBaseContext(), "gmMaxTime", Integer.parseInt(etGmailLimitTime.getText().toString()));
-                Helper.setStoreBoolean(getBaseContext(), "canSubmitInput", false);
-                Log.d("Submit clicked: ", Helper.getStoreBoolean(getBaseContext(), "canSubmitInput").toString());
-                updateInputStatus(Helper.getStoreBoolean(getBaseContext(), "canSubmitInput"));
-            }
-        });
-
-        updateInputStatus(Helper.getStoreBoolean(getBaseContext(), "canSubmitInput"));
-    }
-
-    private void updateInputStatus(Boolean shd_enable) {
-
-        Context ctx = getBaseContext();
-        Integer gmMaxTime = Helper.getStoreInt(ctx, "gmMaxTime");
-        Integer gmMaxOpen = Helper.getStoreInt(ctx, "gmMaxOpen");
-        Integer fbMaxTime = Helper.getStoreInt(ctx, "fbMaxTime");
-        Integer fbMaxOpen = Helper.getStoreInt(ctx, "fbMaxOpen");
-
-        if (!shd_enable) {
-            etGmailLimitTime.setText(gmMaxTime.toString() + " mins");
-            etGmailLimitOpened.setText(gmMaxOpen.toString() + "x");
-            etFacebookLimitTime.setText(fbMaxTime.toString() + " mins");
-            etFacebookLimitOpened.setText(fbMaxOpen.toString() + " x");
-        }
-
-        etFacebookLimitTime.setEnabled(shd_enable);
-        etFacebookLimitOpened.setEnabled(shd_enable);
-        etGmailLimitOpened.setEnabled(shd_enable);
-        etGmailLimitTime.setEnabled(shd_enable);
-        btSubmit.setEnabled(shd_enable);
     }
 
     private boolean needsUsageStatsPermission() {

@@ -32,126 +32,20 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
 
-
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_set_limit"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.25"
-            android:text="@string/label_set_limit"
-            android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
-
-        <View style="@style/Divider" />
-
-    </LinearLayout>
-
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.3"
-            android:text="@string/tv_limit_fb"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
-
-        <EditText
-            android:id="@+id/et_limit_time_fb"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.35"
-            android:ems="10"
-            android:hint="@string/max_minutes"
-            android:inputType="number"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium.Inverse" />
-
-        <EditText
-            android:id="@+id/et_limit_opened_fb"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.35"
-            android:ems="10"
-            android:hint="@string/max_opens"
-            android:inputType="number"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium.Inverse" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.3"
-            android:text="@string/tv_limit_gmail"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
-
-        <EditText
-            android:id="@+id/et_limit_time_gm"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.35"
-            android:ems="10"
-            android:hint="@string/max_minutes"
-            android:inputType="number"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium.Inverse" />
-
-        <EditText
-            android:id="@+id/et_limit_opened_gm"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.35"
-            android:hint="@string/max_opens"
-            android:ems="10"
-            android:inputType="number"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium.Inverse" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btn_submit"
-                style="@android:style/Widget.Holo.Button"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:ems="5"
-                android:text="@string/form_submit" />
-
-        </LinearLayout>
-
-
     </LinearLayout>
 
     <TextView
-        android:id="@+id/tv_check_status"
+        android:id="@+id/tv_fb_limit_prompt"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="25dp"
-        android:layout_weight="0.25"
-        android:text="@string/tv_init_setup"
-        android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
-
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:text="@string/fb_limit_prompt"
+        android:padding="10dp" />
     <Button
         android:id="@+id/btn_service_start"
         android:layout_width="match_parent"
