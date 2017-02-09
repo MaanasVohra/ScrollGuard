@@ -9,6 +9,7 @@ buildscript {
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'deploygate'
 
 android {
     compileSdkVersion 24
@@ -36,5 +37,8 @@ dependencies {
     })
     compile project(path: ':fgchecker')
     compile 'com.android.support:appcompat-v7:24.1.1'
+    compile 'com.deploygate:sdk:3.1'
+    compile 'com.android.volley:volley:1.0.0'
+
     testCompile 'junit:junit:4.12'
 }

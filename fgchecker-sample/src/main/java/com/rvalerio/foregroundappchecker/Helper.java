@@ -2,6 +2,17 @@ package com.rvalerio.foregroundappchecker;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
+import static android.content.Context.TELEPHONY_SERVICE;
 
 /**
  * Created by fnokeke on 1/26/17.
@@ -14,6 +25,26 @@ public class Helper {
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
+
+    public static String getDeviceID(Context cxt) {
+//        TelephonyManager TelephonyMgr = (TelephonyManager) cxt.getSystemService(TELEPHONY_SERVICE);
+//        String m_deviceId = TelephonyMgr.getDeviceId();
+//        return m_deviceId;
+        return Settings.Secure.getString(cxt.getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    public static void setJSONValue(JSONObject jsonObject, String key, Object value) {
+        try {
+            jsonObject.put(key, value);
+        } catch (JSONException je) {
+            je.printStackTrace();
+        }
+    }
+
+    public static String getTodayDateStr() {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().getTime());
+    }
+
 
     public static String getStoreString(Context context, String key) {
         return getPrefs(context).getString(key, "");
