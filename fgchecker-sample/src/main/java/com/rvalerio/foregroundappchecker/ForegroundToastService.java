@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
@@ -54,12 +55,14 @@ public class ForegroundToastService extends Service {
 
     private Integer fbTimeSpent;
     private Integer fbNumOfOpens;
-    private final static double UPDATE_INTERVAL_HOURS = 4;
-    private final static double WITHIN_REMAINDER_SECONDS = 10;
+
+    private final static long UPDATE_SERVER_INTERVAL_MS = 2*3600*1000;
 
     private NotificationCompat.Builder mBuilder;
     private NotificationManager mNotificationManager;
     private boolean firstTime = true;
+    private Handler serverHandler = new Handler();
+
 
 
     public static void start(Context context) {
@@ -84,15 +87,18 @@ public class ForegroundToastService extends Service {
         registerReceivers();
         startChecker();
 
-        Log.d("AndroidID", String.format("%s", Helper.getDeviceID(mContext)));
-
-//        Log.d("DeployAuthorized", String.format("%s", DeployGate.isAuthorized()));
-//        Log.d("DeployAvail", String.format("%s", DeployGate.isDeployGateAvaliable()));
-//        Log.d("DeployInit", String.format("%s", DeployGate.isInitialized()));
         mBuilder = new NotificationCompat.Builder(this);
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         updateNotification("Daily stats will update throughout day.");
+       serverHandler.postDelayed(serverUpdateTask, 0);
     }
+
+    private Runnable serverUpdateTask = new Runnable() {
+        public void run() {
+            updateServerRecords(getStoreInt(mContext, "fbTimeSpent"), getStoreInt(mContext, "fbNumOfOpens"));
+            serverHandler.postDelayed(this, UPDATE_SERVER_INTERVAL_MS);
+        }
+    };
 
     @Override
     public void onDestroy() {
@@ -140,7 +146,6 @@ public class ForegroundToastService extends Service {
 
     private void startChecker() {
 
-
         appChecker = new AppChecker();
         appChecker.when("com.facebook.katana", new AppChecker.Listener() {
             @Override
@@ -170,11 +175,6 @@ public class ForegroundToastService extends Service {
                     v.vibrate(pattern, -1);
                 }
 
-
-                if (getStoreInt(mContext, "totalSeconds") % (UPDATE_INTERVAL_HOURS * 3600) <= WITHIN_REMAINDER_SECONDS) {
-                    updateServerRecords(getStoreInt(mContext, "fbTimeSpent"), getStoreInt(mContext, "fbNumOfOpens"));
-                }
-
             }
 
         }).other(new AppChecker.Listener() {
@@ -187,10 +187,6 @@ public class ForegroundToastService extends Service {
 
                 updateNotification(getCurrentStats());
                 updateLastDate();
-
-                if (getStoreInt(mContext, "totalSeconds") % (UPDATE_INTERVAL_HOURS * 3600) <= WITHIN_REMAINDER_SECONDS) {
-                    updateServerRecords(getStoreInt(mContext, "fbTimeSpent"), getStoreInt(mContext, "fbNumOfOpens"));
-                }
 
             }
 
