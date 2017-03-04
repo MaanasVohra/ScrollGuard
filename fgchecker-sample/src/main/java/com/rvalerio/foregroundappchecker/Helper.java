@@ -2,6 +2,8 @@ package com.rvalerio.foregroundappchecker;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 
@@ -26,11 +28,12 @@ public class Helper {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    public static String getDeviceID(Context cxt) {
-//        TelephonyManager TelephonyMgr = (TelephonyManager) cxt.getSystemService(TELEPHONY_SERVICE);
-//        String m_deviceId = TelephonyMgr.getDeviceId();
-//        return m_deviceId;
-        return Settings.Secure.getString(cxt.getContentResolver(), Settings.Secure.ANDROID_ID);
+    public static void copy(JSONObject from, JSONObject to) {
+        for (int i = 0; i < from.names().length(); i++) {
+            String key = from.names().optString(i);
+            Object value = from.opt(key);
+            setJSONValue(to, key, value);
+        }
     }
 
     public static void setJSONValue(JSONObject jsonObject, String key, Object value) {
@@ -80,4 +83,12 @@ public class Helper {
         editor.putBoolean(key, input);
         editor.apply();
     }
+
+    public static boolean isNetworkAvailable(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+
 }

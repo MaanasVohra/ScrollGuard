@@ -7,6 +7,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
@@ -15,7 +18,6 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.android.volley.VolleyError;
-import com.deploygate.sdk.DeployGate;
 import com.rvalerio.fgchecker.AppChecker;
 
 import org.json.JSONObject;
@@ -38,32 +40,36 @@ import static com.rvalerio.foregroundappchecker.Helper.setStoreString;
 
 public class ForegroundToastService extends Service {
 
-    private final static int BASELINE_ENDS = 1;
-    private final static int FOLLOWUP_BEGINS = 4;
-
     private final static int NOTIFICATION_ID = 1234;
     private final static String STOP_SERVICE = ForegroundToastService.class.getPackage() + ".stop";
 
     private final Locale locale = Locale.getDefault();
     private Context mContext;
 
-    private BroadcastReceiver stopServiceReceiver;
+    private BroadcastReceiver appCheckerReceiver;
+    private BroadcastReceiver networkConnReceiver;
+    private BroadcastReceiver screenUnlockReceiver;
+
     private AppChecker appChecker;
 
-    final private Integer fbMaxDailyMinutes = 15;
-    final private Integer fbMaxDailyOpen = 5;
+    final private Integer FB_MAX_DAILY_MINUTES = 10;
+    final private Integer FB_MAX_DAILY_OPENS = 2;
 
     private Integer fbTimeSpent;
     private Integer fbNumOfOpens;
 
-    private final static long UPDATE_SERVER_INTERVAL_MS = 2*3600*1000;
+    private final static long UPDATE_SERVER_INTERVAL_MS = 2 * 3600 * 1000;
 
     private NotificationCompat.Builder mBuilder;
     private NotificationManager mNotificationManager;
     private boolean firstTime = true;
     private Handler serverHandler = new Handler();
 
+    private final static int BASELINE_ENDS = 7;
+    private final static int FOLLOWUP_BEGINS = 15;
+    private final static int EXPERIMENT_ENDS = 21;
 
+    private static String TAG = "ForegroundToastService";
 
     public static void start(Context context) {
         context.startService(new Intent(context, ForegroundToastService.class));
@@ -84,13 +90,16 @@ public class ForegroundToastService extends Service {
         super.onCreate();
         mContext = this;
 
-        registerReceivers();
+        registerStopCheckerReceiver();
+        registerScreenUnlockReceiver();
+        registerNetworkMonitorReceiver();
+
         startChecker();
 
         mBuilder = new NotificationCompat.Builder(this);
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         updateNotification("Daily stats will update throughout day.");
-       serverHandler.postDelayed(serverUpdateTask, 0);
+        serverHandler.postDelayed(serverUpdateTask, 0);
     }
 
     private Runnable serverUpdateTask = new Runnable() {
@@ -105,7 +114,7 @@ public class ForegroundToastService extends Service {
         super.onDestroy();
         stopChecker();
         removeNotification();
-        unregisterReceivers();
+        unregisterAllReceivers();
         stopSelf();
     }
 
@@ -121,14 +130,13 @@ public class ForegroundToastService extends Service {
             Integer todayNumOpens = getStoreInt(mContext, "fbNumOfOpens");
             updateServerRecords(todayTimeSpent, todayNumOpens);
 
-            String info = String.format(locale, "Facebook: %d secs (%dx)", todayTimeSpent, todayNumOpens);
-            DeployGate.logInfo(info);
-
             setStoreString(mContext, "lastRecordedDate", Helper.getTodayDateStr());
             increaseStoreInt(mContext, "studyDayCount", 1);
             setStoreInt(mContext, "fbTimeSpent", 0);
             setStoreInt(mContext, "fbNumOfOpens", 0);
             setStoreInt(mContext, "totalSeconds", 0);
+            setStoreInt(mContext, "totalOpens", 0);
+            setStoreBoolean(mContext, "serverUpdatedToday", false);
         }
     }
 
@@ -165,11 +173,13 @@ public class ForegroundToastService extends Service {
                 updateNotification(getCurrentStats());
                 updateLastDate();
 
-                if (fbTimeSpent > fbMaxDailyMinutes * 60 || fbNumOfOpens > fbMaxDailyOpen) {
+                if (fbTimeSpent > FB_MAX_DAILY_MINUTES * 60 || fbNumOfOpens > FB_MAX_DAILY_OPENS) {
                     String info = String.format(locale, "Facebook: %d secs (%dx)", fbTimeSpent, fbNumOfOpens);
-                    DeployGate.logInfo(info);
 
+                    // vibration should only happen during treatment/intervention period
+                    // and only participants in group 2 should experience vibration as group 1 is control group
                     if (!isTreatmentPeriod()) return;
+                    if (!shouldAllowVibration()) return;
                     Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                     long[] pattern = {0, 100, 100, 100, 100};
                     v.vibrate(pattern, -1);
@@ -198,63 +208,107 @@ public class ForegroundToastService extends Service {
         return studyDayCount > BASELINE_ENDS && studyDayCount < FOLLOWUP_BEGINS;
     }
 
+    private boolean shouldAllowVibration() {
+        return getStoreInt(mContext, "experimentGroup") == 2;
+    }
+
+    private boolean studyIsOver() {
+        Integer studyDayCount = getStoreInt(mContext, "studyDayCount");
+        return studyDayCount > EXPERIMENT_ENDS;
+    }
+
+
+    // only update server records when study is still ongoing
     private void updateServerRecords(Integer timeSpent, Integer timeOpen) {
+        if (studyIsOver()) return;
         JSONObject params = new JSONObject();
-        Helper.setJSONValue(params, "deviceID", Helper.getDeviceID(mContext));
-        Helper.setJSONValue(params, "workerID", getStoreString(mContext, "workerID"));
-        Helper.setJSONValue(params, "totalSeconds", getStoreInt(mContext, "totalSeconds"));
-        Helper.setJSONValue(params, "timeSpent", timeSpent);
-        Helper.setJSONValue(params, "timeOpen", timeOpen);
+        Helper.setJSONValue(params, "device_id", DeviceInfo.getDeviceID(mContext));
+        Helper.setJSONValue(params, "worker_id", getStoreString(mContext, "workerID"));
+        Helper.setJSONValue(params, "total_seconds", getStoreInt(mContext, "totalSeconds"));
+        Helper.setJSONValue(params, "total_opens", getStoreInt(mContext, "totalOpens"));
+        Helper.setJSONValue(params, "time_spent", timeSpent);
+        Helper.setJSONValue(params, "time_open", timeOpen);
+        Helper.setJSONValue(params, "ringer_mode", DeviceInfo.getRingerMode(mContext));
         Log.d("updateServerParams", params.toString() + timeSpent.toString() + timeOpen.toString());
         CallAPI.submitFBStats(mContext, params, submitStatsResponseHandler);
     }
 
-
     VolleyJsonCallback submitStatsResponseHandler = new VolleyJsonCallback() {
         @Override
         public void onConnectSuccess(JSONObject result) {
-            Log.e("Submit Stats: ", result.toString());
+            Log.i(TAG, "Submit Stats: " + result.toString());
+            setStoreBoolean(mContext, "serverUpdatedToday", true);
         }
 
         @Override
         public void onConnectFailure(VolleyError error) {
             String msg = "Stats submit error: " + error.toString();
-            Log.d("StatsError", msg);
+            Log.e(TAG, "StatsError: " + msg);
         }
 
     };
 
     private String getCurrentStats() {
-//        Integer totalSpent = getStoreInt(mContext, "totalSeconds");
         Integer fbTimeSpent = getStoreInt(mContext, "fbTimeSpent");
         Integer fbNumOfOpens = getStoreInt(mContext, "fbNumOfOpens");
 
         return String.format("Facebook: %s secs (%sx)",
                 fbTimeSpent.toString(),
                 fbNumOfOpens.toString());
-
-//        return String.format("Total Tme: %s secs / Facebook: %s secs (%sx)",
-//                totalSpent.toString(),
-//                fbTimeSpent.toString(),
-//                fbNumOfOpens.toString());
     }
 
     private void stopChecker() {
         appChecker.stop();
     }
 
-    private void registerReceivers() {
-        stopServiceReceiver = new BroadcastReceiver() {
+    private void registerStopCheckerReceiver() {
+        appCheckerReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 stopSelf();
             }
         };
-        registerReceiver(stopServiceReceiver, new IntentFilter(STOP_SERVICE));
+        registerReceiver(appCheckerReceiver, new IntentFilter(STOP_SERVICE));
     }
 
-    private void unregisterReceivers() {
-        unregisterReceiver(stopServiceReceiver);
+    private void registerNetworkMonitorReceiver() {
+        networkConnReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle extras = intent.getExtras();
+                NetworkInfo info = extras.getParcelable("networkInfo");
+                NetworkInfo.State state = null;
+                if (info != null) {
+                    state = info.getState();
+                }
+
+                Boolean serverIsNotYetUpdated = !getStoreBoolean(mContext, "serverUpdatedToday");
+                if (state == NetworkInfo.State.CONNECTED && serverIsNotYetUpdated) {
+                    updateServerRecords(getStoreInt(mContext, "fbTimeSpent"), getStoreInt(mContext, "fbNumOfOpens"));
+                }
+            }
+        };
+
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(networkConnReceiver, intentFilter);
+    }
+
+    private void registerScreenUnlockReceiver() {
+        screenUnlockReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                increaseStoreInt(mContext, "totalOpens", 1);
+            }
+        };
+        registerReceiver(screenUnlockReceiver, new IntentFilter("android.intent.action.USER_PRESENT"));
+    }
+
+    private void unregisterAllReceivers() {
+        unregisterReceiver(networkConnReceiver);
+        unregisterReceiver(screenUnlockReceiver);
+        unregisterReceiver(appCheckerReceiver);
     }
 
     private void updateNotification(String message) {
@@ -262,7 +316,7 @@ public class ForegroundToastService extends Service {
 
         if (firstTime) {
             mBuilder
-                    .setSmallIcon(android.R.drawable.ic_notification_overlay)
+                    .setSmallIcon(R.drawable.ic_chart_pink)
                     .setPriority(NotificationCompat.PRIORITY_MIN)
                     .setOngoing(true);
             firstTime = false;
@@ -294,4 +348,8 @@ public class ForegroundToastService extends Service {
 //        return notification;
 //    }
 
+
 }
+
+// TODO: 3/4/17 add totalOpens
+// TODO: 3/4/17 add deviceInfo to server through Helper class

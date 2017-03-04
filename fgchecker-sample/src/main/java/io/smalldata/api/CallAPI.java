@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 /**
  * Created by fnokeke on 1/22/17.
+ * Handle All Rest API Calls
  */
 
 public class CallAPI {
