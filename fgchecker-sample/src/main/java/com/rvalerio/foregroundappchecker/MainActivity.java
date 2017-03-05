@@ -23,6 +23,8 @@ import org.json.JSONObject;
 import io.smalldata.api.CallAPI;
 import io.smalldata.api.VolleyJsonCallback;
 
+import static com.rvalerio.foregroundappchecker.Helper.getStoreBoolean;
+import static com.rvalerio.foregroundappchecker.Helper.setStoreBoolean;
 import static com.rvalerio.foregroundappchecker.Helper.setStoreInt;
 
 
@@ -64,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
         btStartService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (getStoreBoolean(mContext, "cannotContinue")) {
+                    Toast.makeText(mContext, "Service not started because you're not enrolled.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 ForegroundToastService.start(mContext);
                 Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_SHORT).show();
                 finish();
@@ -105,9 +111,11 @@ public class MainActivity extends AppCompatActivity {
             String response = result.optString("response");
             if (result.optInt("status") == 200) {
                 setStoreInt(mContext, "experimentGroup", result.optInt("experiment_group"));
+                setStoreBoolean(mContext, "cannotContinue", false);
                 showSuccess(tvSubmitFeedback, response);
             } else {
                 showError(tvSubmitFeedback, response);
+                setStoreBoolean(mContext, "cannotContinue", true);
             }
         }
 
