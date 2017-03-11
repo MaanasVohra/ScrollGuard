@@ -10,23 +10,21 @@ import android.telephony.TelephonyManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 import static android.content.Context.TELEPHONY_SERVICE;
 
 /**
+ * Helper for all classes
  * Created by fnokeke on 1/26/17.
  */
 
 public class Helper {
-
-    private static final String PREF_NAME = "prefs";
-
-    private static SharedPreferences getPrefs(Context context) {
-        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-    }
+    public static Locale LOCALE = Locale.getDefault();
 
     public static void copy(JSONObject from, JSONObject to) {
         for (int i = 0; i < from.names().length(); i++) {
@@ -49,41 +47,6 @@ public class Helper {
     }
 
 
-    public static String getStoreString(Context context, String key) {
-        return getPrefs(context).getString(key, "");
-    }
-
-    public static Integer getStoreInt(Context context, String key) {
-        return getPrefs(context).getInt(key, 0);
-    }
-
-    public static Boolean getStoreBoolean(Context context, String key) {
-        return getPrefs(context).getBoolean(key, true); // use true as default value
-    }
-
-    public static void setStoreString(Context context, String key, String input) {
-        SharedPreferences.Editor editor = getPrefs(context).edit();
-        editor.putString(key, input);
-        editor.apply();
-    }
-
-    public static void setStoreInt(Context context, String key, Integer input) {
-        SharedPreferences.Editor editor = getPrefs(context).edit();
-        editor.putInt(key, input);
-        editor.apply();
-    }
-
-    public static void increaseStoreInt(Context context, String key, Integer increment) {
-        Integer currentValue = getStoreInt(context, key);
-        setStoreInt(context, key, currentValue + increment);
-    }
-
-    public static void setStoreBoolean(Context context, String key, Boolean input) {
-        SharedPreferences.Editor editor = getPrefs(context).edit();
-        editor.putBoolean(key, input);
-        editor.apply();
-    }
-
     public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
@@ -91,4 +54,33 @@ public class Helper {
     }
 
 
+    public static String dateToStr(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", LOCALE);
+        return sdf.format(date);
+    }
+
+    public static Date strToDate(String dateStr) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", LOCALE);
+        Date formattedDate = new Date();
+        try {
+            formattedDate = sdf.parse(dateStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return formattedDate;
+    }
+
+    public static Date addDays(Date date, int days)
+    {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.DATE, days); //minus number would decrement the days
+        return cal.getTime();
+    }
+
+    public boolean isEqualOrGreater(String mainDateStr, String compareDateStr) {
+        Date mainDate = strToDate(mainDateStr);
+        Date compareDate = strToDate(compareDateStr);
+        return mainDate.getTime() >= compareDate.getTime();
+    }
 }

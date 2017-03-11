@@ -3,18 +3,18 @@ apply plugin: 'com.android.library'
 ext {
     PUBLISH_GROUP_ID = 'com.rvalerio'
     PUBLISH_ARTIFACT_ID = 'fgchecker'
-    PUBLISH_VERSION = '1.5'
+    PUBLISH_VERSION = '1.6'
 }
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "23.0.3"
+    buildToolsVersion '25.0.0'
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 24
         versionCode 1
-        versionName "1.5"
+        versionName "1.6"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 

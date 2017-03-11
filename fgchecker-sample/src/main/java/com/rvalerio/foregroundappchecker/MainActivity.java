@@ -23,22 +23,18 @@ import org.json.JSONObject;
 import io.smalldata.api.CallAPI;
 import io.smalldata.api.VolleyJsonCallback;
 
-import static com.rvalerio.foregroundappchecker.Helper.getStoreBoolean;
-import static com.rvalerio.foregroundappchecker.Helper.setStoreBoolean;
-import static com.rvalerio.foregroundappchecker.Helper.setStoreInt;
+import static com.rvalerio.foregroundappchecker.Store.getStoreBoolean;
+import static com.rvalerio.foregroundappchecker.Store.getStoreString;
+import static com.rvalerio.foregroundappchecker.Store.setStoreBoolean;
+import static com.rvalerio.foregroundappchecker.Store.setStoreString;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private Context mContext;
 
-    private TextView tvPermission;
-    private Button btUsagePermission;
-    private Button btStartService;
-
     private EditText etWorkerID;
     private TextView tvSubmitFeedback;
-    private Button btSubmitMturkID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +42,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mContext = this;
 
-        tvPermission = (TextView) findViewById(R.id.tv_permission_text);
-        btUsagePermission = (Button) findViewById(R.id.btn_usage_permission);
+        TextView tvPermission = (TextView) findViewById(R.id.tv_permission_text);
+        Button btUsagePermission = (Button) findViewById(R.id.btn_usage_permission);
 
         if (!needsUsageStatsPermission()) {
             btUsagePermission.setVisibility(View.GONE);
@@ -62,11 +58,11 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        btStartService = (Button) findViewById(R.id.btn_service_start);
+        Button btStartService = (Button) findViewById(R.id.btn_service_start);
         btStartService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (getStoreBoolean(mContext, "cannotContinue")) {
+                if (getStoreBoolean(mContext, Store.CANNOT_CONTINUE)) {
                     Toast.makeText(mContext, "Service not started because you're not enrolled.", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -77,26 +73,26 @@ public class MainActivity extends AppCompatActivity {
         });
 
         etWorkerID = (EditText) findViewById(R.id.et_mturk_id);
-        etWorkerID.setText(Helper.getStoreString(mContext, "workerID"));
+        etWorkerID.setText(getStoreString(mContext, "workerID"));
         tvSubmitFeedback = (TextView) findViewById(R.id.tv_submit_id_feedback);
 
-        btSubmitMturkID = (Button) findViewById(R.id.btn_submit_mturk_id);
+        Button btSubmitMturkID = (Button) findViewById(R.id.btn_submit_mturk_id);
         btSubmitMturkID.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Helper.setStoreString(mContext, "workerID", etWorkerID.getText().toString());
-
-                JSONObject params = new JSONObject();
-                Helper.setJSONValue(params, "worker_id", etWorkerID.getText().toString());
-
-                JSONObject deviceInfo = DeviceInfo.getPhoneDetails(mContext);
-                Helper.copy(deviceInfo, params);
 
                 if (!Helper.isNetworkAvailable(mContext)) {
                     String msg = "You do not have any network connection.";
                     showError(tvSubmitFeedback, msg);
                     return;
                 }
+
+                setStoreString(mContext, "workerID", etWorkerID.getText().toString());
+
+                JSONObject params = new JSONObject();
+                Helper.setJSONValue(params, "worker_id", etWorkerID.getText().toString());
+                JSONObject deviceInfo = DeviceInfo.getPhoneDetails(mContext);
+                Helper.copy(deviceInfo, params);
 
                 CallAPI.submitMturkID(mContext, params, submitIDResponseHandler);
             }
@@ -107,15 +103,15 @@ public class MainActivity extends AppCompatActivity {
     VolleyJsonCallback submitIDResponseHandler = new VolleyJsonCallback() {
         @Override
         public void onConnectSuccess(JSONObject result) {
-            Log.e("submitIDSuccess: ", result.toString());
+            Log.i("submitIDSuccess: ", result.toString());
             String response = result.optString("response");
             if (result.optInt("status") == 200) {
-                setStoreInt(mContext, "experimentGroup", result.optInt("experiment_group"));
-                setStoreBoolean(mContext, "cannotContinue", false);
+                StudyInfo.setParams(mContext, result);
+                setStoreBoolean(mContext, Store.CANNOT_CONTINUE, false);
                 showSuccess(tvSubmitFeedback, response);
             } else {
+                setStoreBoolean(mContext, Store.CANNOT_CONTINUE, true);
                 showError(tvSubmitFeedback, response);
-                setStoreBoolean(mContext, "cannotContinue", true);
             }
         }
 
@@ -161,8 +157,7 @@ public class MainActivity extends AppCompatActivity {
         AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
         int mode = appOps.checkOpNoThrow("android:get_usage_stats",
                 android.os.Process.myUid(), context.getPackageName());
-        boolean granted = mode == AppOpsManager.MODE_ALLOWED;
-        return granted;
+        return mode == AppOpsManager.MODE_ALLOWED;
     }
 
 }

@@ -4,22 +4,21 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.3'
+        classpath 'com.android.tools.build:gradle:2.3.0'
     }
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'deploygate'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "23.0.3"
+    buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId "rvalerio.com.foregroundappchecker"
         minSdkVersion 14
         targetSdkVersion 24
         versionCode 1
-        versionName "1.5"
+        versionName "1.6"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -37,7 +36,6 @@ dependencies {
     })
     compile project(path: ':fgchecker')
     compile 'com.android.support:appcompat-v7:24.1.1'
-    compile 'com.deploygate:sdk:3.1'
     compile 'com.android.volley:volley:1.0.0'
 
     testCompile 'junit:junit:4.12'

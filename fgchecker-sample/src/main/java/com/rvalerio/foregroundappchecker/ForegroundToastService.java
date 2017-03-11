@@ -24,18 +24,20 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 import io.smalldata.api.CallAPI;
 import io.smalldata.api.VolleyJsonCallback;
 
-import static com.rvalerio.foregroundappchecker.Helper.getStoreBoolean;
-import static com.rvalerio.foregroundappchecker.Helper.getStoreInt;
-import static com.rvalerio.foregroundappchecker.Helper.getStoreString;
-import static com.rvalerio.foregroundappchecker.Helper.increaseStoreInt;
-import static com.rvalerio.foregroundappchecker.Helper.setStoreBoolean;
-import static com.rvalerio.foregroundappchecker.Helper.setStoreInt;
-import static com.rvalerio.foregroundappchecker.Helper.setStoreString;
+import static com.rvalerio.foregroundappchecker.Helper.strToDate;
+import static com.rvalerio.foregroundappchecker.Store.getStoreBoolean;
+import static com.rvalerio.foregroundappchecker.Store.getStoreInt;
+import static com.rvalerio.foregroundappchecker.Store.getStoreString;
+import static com.rvalerio.foregroundappchecker.Store.increaseStoreInt;
+import static com.rvalerio.foregroundappchecker.Store.setStoreBoolean;
+import static com.rvalerio.foregroundappchecker.Store.setStoreInt;
+import static com.rvalerio.foregroundappchecker.Store.setStoreString;
 
 
 public class ForegroundToastService extends Service {
@@ -52,9 +54,6 @@ public class ForegroundToastService extends Service {
 
     private AppChecker appChecker;
 
-    final private Integer FB_MAX_DAILY_MINUTES = 10;
-    final private Integer FB_MAX_DAILY_OPENS = 2;
-
     private Integer fbTimeSpent;
     private Integer fbNumOfOpens;
 
@@ -64,10 +63,6 @@ public class ForegroundToastService extends Service {
     private NotificationManager mNotificationManager;
     private boolean firstTime = true;
     private Handler serverHandler = new Handler();
-
-    private final static int BASELINE_ENDS = 7;
-    private final static int FOLLOWUP_BEGINS = 15;
-    private final static int EXPERIMENT_ENDS = 21;
 
     private static String TAG = "ForegroundToastService";
 
@@ -131,7 +126,6 @@ public class ForegroundToastService extends Service {
             updateServerRecords(todayTimeSpent, todayNumOpens);
 
             setStoreString(mContext, "lastRecordedDate", Helper.getTodayDateStr());
-            increaseStoreInt(mContext, "studyDayCount", 1);
             setStoreInt(mContext, "fbTimeSpent", 0);
             setStoreInt(mContext, "fbNumOfOpens", 0);
             setStoreInt(mContext, "totalSeconds", 0);
@@ -173,8 +167,7 @@ public class ForegroundToastService extends Service {
                 updateNotification(getCurrentStats());
                 updateLastDate();
 
-                if (fbTimeSpent > FB_MAX_DAILY_MINUTES * 60 || fbNumOfOpens > FB_MAX_DAILY_OPENS) {
-                    String info = String.format(locale, "Facebook: %d secs (%dx)", fbTimeSpent, fbNumOfOpens);
+                if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
 
                     // vibration should only happen during treatment/intervention period
                     // and only participants in group 2 should experience vibration as group 1 is control group
@@ -204,23 +197,27 @@ public class ForegroundToastService extends Service {
     }
 
     private boolean isTreatmentPeriod() {
-        Integer studyDayCount = getStoreInt(mContext, "studyDayCount");
-        return studyDayCount > BASELINE_ENDS && studyDayCount < FOLLOWUP_BEGINS;
+        long rightNow = Calendar.getInstance().getTimeInMillis();
+        Date treatmentStart = strToDate(StudyInfo.getTreatmentStartDateStr(mContext));
+        Date followupStart = strToDate(StudyInfo.getFollowupStartDateStr(mContext));
+        return rightNow > treatmentStart.getTime() && rightNow < followupStart.getTime();
     }
 
     private boolean shouldAllowVibration() {
-        return getStoreInt(mContext, "experimentGroup") == 2;
+        return getStoreInt(mContext, Store.EXPERIMENT_GROUP) == 2;
     }
 
-    private boolean studyIsOver() {
-        Integer studyDayCount = getStoreInt(mContext, "studyDayCount");
-        return studyDayCount > EXPERIMENT_ENDS;
+    private boolean shouldStopServerLogging() {
+        long rightNow = Calendar.getInstance().getTimeInMillis();
+        Date loggingStop = strToDate(StudyInfo.getLoggingStopDateStr(mContext));
+        return rightNow > loggingStop.getTime();
     }
 
 
     // only update server records when study is still ongoing
     private void updateServerRecords(Integer timeSpent, Integer timeOpen) {
-        if (studyIsOver()) return;
+        if (shouldStopServerLogging()) return;
+
         JSONObject params = new JSONObject();
         Helper.setJSONValue(params, "device_id", DeviceInfo.getDeviceID(mContext));
         Helper.setJSONValue(params, "worker_id", getStoreString(mContext, "workerID"));
@@ -229,6 +226,13 @@ public class ForegroundToastService extends Service {
         Helper.setJSONValue(params, "time_spent", timeSpent);
         Helper.setJSONValue(params, "time_open", timeOpen);
         Helper.setJSONValue(params, "ringer_mode", DeviceInfo.getRingerMode(mContext));
+        int fb_max = StudyInfo.getFBMaxDailyMinutes(mContext);
+        Helper.setJSONValue(params, "current_fb_max_time", fb_max);
+        Helper.setJSONValue(params, "current_fb_max_opens", StudyInfo.getFBMaxDailyOpens(mContext));
+        Helper.setJSONValue(params, "current_treatment_start_date", StudyInfo.getTreatmentStartDateStr(mContext));
+        Helper.setJSONValue(params, "current_followup_start_date", StudyInfo.getFollowupStartDateStr(mContext));
+        Helper.setJSONValue(params, "current_logging_stop_date", StudyInfo.getLoggingStopDateStr(mContext));
+
         Log.d("updateServerParams", params.toString() + timeSpent.toString() + timeOpen.toString());
         CallAPI.submitFBStats(mContext, params, submitStatsResponseHandler);
     }
@@ -238,6 +242,7 @@ public class ForegroundToastService extends Service {
         public void onConnectSuccess(JSONObject result) {
             Log.i(TAG, "Submit Stats: " + result.toString());
             setStoreBoolean(mContext, "serverUpdatedToday", true);
+            StudyInfo.setParams(mContext, result);
         }
 
         @Override
