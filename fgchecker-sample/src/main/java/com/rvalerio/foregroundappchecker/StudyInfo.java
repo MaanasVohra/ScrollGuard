@@ -4,6 +4,7 @@ import android.content.Context;
 
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -86,5 +87,9 @@ class StudyInfo {
             group = 1;
         }
         return group;
+    }
+
+    public static String getWorkerID(Context context) {
+        return Store.getStoreString(context, Store.WORKER_ID);
     }
 }

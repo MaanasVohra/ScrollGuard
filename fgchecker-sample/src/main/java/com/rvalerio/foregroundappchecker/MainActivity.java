@@ -46,6 +46,14 @@ public class MainActivity extends AppCompatActivity {
         mContext = this;
 
         setResources();
+//        promptIfNoFBInstalled();
+//        requestPermissionAndStartService();
+//        prepareToReceiveWorkerID();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         promptIfNoFBInstalled();
         requestPermissionAndStartService();
         prepareToReceiveWorkerID();
@@ -64,12 +72,14 @@ public class MainActivity extends AppCompatActivity {
         if (!isInstalled) {
             String msg = "Error: cannot continue because your phone is not compatible with experiment.";
             showError(tvSubmitFeedback, msg);
-            setStoreBoolean(mContext, Store.CAN_CONTINUE, false);
+            setStoreBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, false);
+        } else {
+            setStoreBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
         }
     }
 
     private void requestPermissionAndStartService() {
-        if (!getStoreBoolean(mContext, Store.CAN_CONTINUE)) return;
+        if (!getStoreBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN)) return;
 
         TextView tvPermission = (TextView) findViewById(R.id.tv_permission_text);
         tvPermission.setVisibility(View.VISIBLE);
@@ -102,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void prepareToReceiveWorkerID() {
-        if (!getStoreBoolean(mContext, Store.CAN_CONTINUE)) return;
+        if (!getStoreBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN)) return;
 
         showPlain(etWorkerID, getStoreString(mContext, Store.WORKER_ID));
         btnSubmitMturkID.setVisibility(View.VISIBLE);
@@ -154,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startTrackingService() {
         ForegroundToastService.start(mContext);
-        Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
 //        finish();
     }
 

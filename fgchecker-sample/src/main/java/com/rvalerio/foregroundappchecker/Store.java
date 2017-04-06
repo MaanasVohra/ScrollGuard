@@ -25,6 +25,9 @@ class Store {
     final static String ENROLLED = "userIsEnrolled";
 
     private static final String PREF_NAME = "prefs";
+    static final String CAN_SHOW_PERMISSION_BTN = "canShowPermissionBtn";
+    static final String CAN_SHOW_SUBMIT_BTN = "canShowServiceBtn";
+
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }

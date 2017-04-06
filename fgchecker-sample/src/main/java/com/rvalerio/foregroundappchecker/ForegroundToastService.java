@@ -30,7 +30,6 @@ import java.util.Locale;
 import io.smalldata.api.CallAPI;
 import io.smalldata.api.VolleyJsonCallback;
 
-import static android.R.attr.prompt;
 import static com.rvalerio.foregroundappchecker.Helper.strToDate;
 import static com.rvalerio.foregroundappchecker.Store.getStoreBoolean;
 import static com.rvalerio.foregroundappchecker.Store.getStoreInt;
@@ -55,8 +54,8 @@ public class ForegroundToastService extends Service {
 
     private AppChecker appChecker;
 
-    private Integer fbTimeSpent;
-    private Integer fbNumOfOpens;
+    private int fbTimeSpent = 0;
+    private int fbNumOfOpens = 0;
 
     private final static long UPDATE_SERVER_INTERVAL_MS = 2 * 3600 * 1000 / 8;
 
@@ -174,7 +173,7 @@ public class ForegroundToastService extends Service {
                 updateNotification(getCurrentStats());
                 updateLastDate();
 
-                checkIfShouldSubmitID();
+                checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
                 if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
 
                     // vibration should only happen during treatment/intervention period
@@ -199,18 +198,18 @@ public class ForegroundToastService extends Service {
                 updateNotification(getCurrentStats());
                 updateLastDate();
                 updateServerRecords(getStoreInt(mContext, "fbTimeSpent"), getStoreInt(mContext, "fbNumOfOpens"));
-                checkIfShouldSubmitID();
+                checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
 
             }
 
         }).timeout(5000).start(this);
     }
 
-    private void checkIfShouldSubmitID() {
+    private void checkIfShouldSubmitID(int fbTimeSpent, int fbNumOfOpens) {
         if (!getStoreBoolean(mContext, Store.ENROLLED)) {
             if (fbTimeSpent >= 15 && fbNumOfOpens >= 3) {
-                updateNotification("Successful! Open Beevibe app for code.");
-                setStoreBoolean(mContext, Store.CAN_CONTINUE, true);
+                updateNotification("Successful! Submit workerId in app to get code.");
+                setStoreBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
             }
         }
     }
@@ -233,8 +232,9 @@ public class ForegroundToastService extends Service {
     }
 
 
-    // only update server records when study is still ongoing
+    // only update server records when user has submitted ID and study is still ongoing
     private void updateServerRecords(Integer timeSpent, Integer timeOpen) {
+        if (StudyInfo.getWorkerID(mContext).equals("")) return;
         if (shouldStopServerLogging()) {
             updateNotification("Experiment has ended. Uninstall app.");
             return;
