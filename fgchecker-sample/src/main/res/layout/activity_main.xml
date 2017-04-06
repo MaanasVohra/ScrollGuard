@@ -15,6 +15,7 @@
             android:id="@+id/tv_permission_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:text="@string/usage_permission_explanation"
             android:padding="10dp" />
@@ -23,6 +24,7 @@
             android:id="@+id/btn_usage_permission"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:layout_gravity="center"
             android:text="@string/btn_usage_permission" />
 
@@ -43,6 +45,7 @@
         android:id="@+id/tv_fb_limit_prompt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
         android:text="@string/fb_limit_prompt"
         android:padding="10dp" />
@@ -52,19 +55,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="@string/btn_service_start" />
-
-    <Button
-        android:id="@+id/btn_service_stop"
         android:visibility="gone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/btn_stop_service" />
+        android:text="@string/btn_service_start" />
 
     <EditText
         android:id="@+id/et_mturk_id"
         android:hint="@string/et_mturk_id_prompt"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
@@ -72,6 +69,7 @@
 
     <Button
         android:id="@+id/btn_submit_mturk_id"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

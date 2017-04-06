@@ -30,6 +30,7 @@ import java.util.Locale;
 import io.smalldata.api.CallAPI;
 import io.smalldata.api.VolleyJsonCallback;
 
+import static android.R.attr.prompt;
 import static com.rvalerio.foregroundappchecker.Helper.strToDate;
 import static com.rvalerio.foregroundappchecker.Store.getStoreBoolean;
 import static com.rvalerio.foregroundappchecker.Store.getStoreInt;
@@ -107,6 +108,7 @@ public class ForegroundToastService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        start(mContext);
         updateNotification("Service destroyed. Should restart.");
     }
 
@@ -172,6 +174,7 @@ public class ForegroundToastService extends Service {
                 updateNotification(getCurrentStats());
                 updateLastDate();
 
+                checkIfShouldSubmitID();
                 if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
 
                     // vibration should only happen during treatment/intervention period
@@ -196,10 +199,20 @@ public class ForegroundToastService extends Service {
                 updateNotification(getCurrentStats());
                 updateLastDate();
                 updateServerRecords(getStoreInt(mContext, "fbTimeSpent"), getStoreInt(mContext, "fbNumOfOpens"));
+                checkIfShouldSubmitID();
 
             }
 
         }).timeout(5000).start(this);
+    }
+
+    private void checkIfShouldSubmitID() {
+        if (!getStoreBoolean(mContext, Store.ENROLLED)) {
+            if (fbTimeSpent >= 15 && fbNumOfOpens >= 3) {
+                updateNotification("Successful! Open Beevibe app for code.");
+                setStoreBoolean(mContext, Store.CAN_CONTINUE, true);
+            }
+        }
     }
 
     private boolean isTreatmentPeriod() {

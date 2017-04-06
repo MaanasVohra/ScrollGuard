@@ -15,7 +15,8 @@
     <string name="submission_done">You cannot change values until midnight.</string>
     <string name="max_minutes">max minutes</string>
     <string name="max_opens">max opens</string>
-    <string name="fb_limit_prompt">Tap <b>Start Service</b> and perform instructions from website. If successfully set up, your code will appear below.</string>
+    <string name="fb_limit_prompt">Tap <b>Start Service</b> then follow instructions on website.
+        If successfully set up, you will be to join experiment and your code will appear below.</string>
     <string name="btn_mturk_label">Submit Worker ID</string>
     <string name="et_mturk_id_prompt">Enter your worker ID</string>
     <string name="mturk_submit_feedback">Worker ID Successfully Submitted.</string>

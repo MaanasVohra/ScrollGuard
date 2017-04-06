@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -38,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText etWorkerID;
     private TextView tvSubmitFeedback;
     private TextView tvSurveyLink;
+    private Button btnSubmitMturkID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,26 +46,40 @@ public class MainActivity extends AppCompatActivity {
         mContext = this;
 
         setResources();
+        promptIfNoFBInstalled();
         requestPermissionAndStartService();
         prepareToReceiveWorkerID();
     }
 
     private void setResources() {
         etWorkerID = (EditText) findViewById(R.id.et_mturk_id);
-        etWorkerID.setText(getStoreString(mContext, Store.WORKER_ID));
         tvSubmitFeedback = (TextView) findViewById(R.id.tv_submit_id_feedback);
         tvSurveyLink = (TextView) findViewById(R.id.tv_survey_link);
+        btnSubmitMturkID = (Button) findViewById(R.id.btn_submit_mturk_id);
+    }
+
+    private void promptIfNoFBInstalled() {
+        PackageManager pm = mContext.getPackageManager();
+        boolean isInstalled = Helper.isPackageInstalled(StudyInfo.FACEBOOK_PACKAGE_NAME, pm);
+        if (!isInstalled) {
+            String msg = "Error: cannot continue because your phone is not compatible with experiment.";
+            showError(tvSubmitFeedback, msg);
+            setStoreBoolean(mContext, Store.CAN_CONTINUE, false);
+        }
     }
 
     private void requestPermissionAndStartService() {
-        TextView tvPermission = (TextView) findViewById(R.id.tv_permission_text);
-        Button btUsagePermission = (Button) findViewById(R.id.btn_usage_permission);
+        if (!getStoreBoolean(mContext, Store.CAN_CONTINUE)) return;
 
+        TextView tvPermission = (TextView) findViewById(R.id.tv_permission_text);
+        tvPermission.setVisibility(View.VISIBLE);
+
+        Button btUsagePermission = (Button) findViewById(R.id.btn_usage_permission);
         if (!needsUsageStatsPermission()) {
-            btUsagePermission.setVisibility(GONE);
             tvPermission.setText(R.string.usage_permission_granted);
             btUsagePermission.setVisibility(GONE);
         } else {
+            btUsagePermission.setVisibility(View.VISIBLE);
             btUsagePermission.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -74,43 +88,31 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        TextView tvServicePrompt = (TextView) findViewById(R.id.tv_fb_limit_prompt);
+        tvServicePrompt.setVisibility(View.VISIBLE);
+
         Button btStartService = (Button) findViewById(R.id.btn_service_start);
+        btStartService.setVisibility(View.VISIBLE);
         btStartService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startTrackingService();
             }
         });
-
-
-        Button btStopService = (Button) findViewById(R.id.btn_service_stop);
-        btStopService.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ForegroundToastService.stop(mContext);
-                Toast.makeText(mContext, "Service stopped.", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void prepareToReceiveWorkerID() {
-        Button btSubmitMturkID = (Button) findViewById(R.id.btn_submit_mturk_id);
-        btSubmitMturkID.setOnClickListener(new View.OnClickListener() {
+        if (!getStoreBoolean(mContext, Store.CAN_CONTINUE)) return;
+
+        showPlain(etWorkerID, getStoreString(mContext, Store.WORKER_ID));
+        btnSubmitMturkID.setVisibility(View.VISIBLE);
+        btnSubmitMturkID.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 if (!Helper.isNetworkAvailable(mContext)) {
                     String msg = "You do not have any network connection.";
                     showError(tvSubmitFeedback, msg);
-                    return;
-                }
-
-                PackageManager pm = mContext.getPackageManager();
-                boolean isInstalled = Helper.isPackageInstalled(StudyInfo.FACEBOOK_PACKAGE_NAME, pm);
-                if (!isInstalled) {
-                    String msg = "Sorry, you cannot partake in this experiment";
-                    showError(tvSubmitFeedback, msg);
-                    setStoreBoolean(mContext, Store.CANNOT_CONTINUE, true);
                     return;
                 }
 
@@ -131,13 +133,13 @@ public class MainActivity extends AppCompatActivity {
             Log.i("submitIDSuccess: ", result.toString());
             String response = result.optString("response");
             if (result.optInt("status") == 200) {
-                setStoreBoolean(mContext, Store.CANNOT_CONTINUE, false);
+                setStoreBoolean(mContext, Store.ENROLLED, true);
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 showSuccess(tvSubmitFeedback, response);
                 showSuccess(tvSurveyLink, result.optString("survey_link"));
             } else {
                 tvSurveyLink.setVisibility(View.GONE);
-                setStoreBoolean(mContext, Store.CANNOT_CONTINUE, true);
+                setStoreBoolean(mContext, Store.ENROLLED, false);
                 showError(tvSubmitFeedback, response);
             }
         }
@@ -151,10 +153,6 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void startTrackingService() {
-        if (getStoreBoolean(mContext, Store.CANNOT_CONTINUE)) {
-            Toast.makeText(mContext, "Service not started because phone is incompatible.", Toast.LENGTH_SHORT).show();
-            return;
-        }
         ForegroundToastService.start(mContext);
         Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_SHORT).show();
 //        finish();
