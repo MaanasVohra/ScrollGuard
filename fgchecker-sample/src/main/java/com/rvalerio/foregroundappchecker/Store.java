@@ -3,25 +3,25 @@ package com.rvalerio.foregroundappchecker;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import java.util.Locale;
-
 /**
  * Created by fnokeke on 3/10/17.
  *
  */
 
 class Store {
-    public final static String STUDY_START = "studyStart";
-    public final static String TREATMENT_START = "treatmentStart";
-    public final static String FOLLOWUP_START = "followupStart";
-    public final static String LOGGING_STOP = "loggingStop";
-    public final static String EXPERIMENT_GROUP = "experimentGroup";
-    public final static String CANNOT_CONTINUE = "cannotContinue";
+    final static String TREATMENT_START = "treatmentStart";
+    final static String FOLLOWUP_START = "followupStart";
+    final static String LOGGING_STOP = "loggingStop";
+    final static String EXPERIMENT_GROUP = "experimentGroup";
 
-    public final static String FB_MAX_TIME = "serverFBMaxTime";
-    public final static String FB_MAX_OPENS = "serverFBMaxOpens";
+    final static String FB_MAX_TIME = "adminFBMaxMins";
+    final static String FB_MAX_OPENS = "adminFBMaxOpens";
+    static final String DAILY_RESET_HOUR = "dailyResetHour";
 
+    final static String CANNOT_CONTINUE = "cannotContinue";
     private static final String PREF_NAME = "prefs";
+    final static String WORKER_ID = "workerID";
+    static final String EXPERIMENT_JOIN_DATE = "experimentJoinDate";
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);

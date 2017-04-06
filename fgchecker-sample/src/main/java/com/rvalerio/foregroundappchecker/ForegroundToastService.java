@@ -120,7 +120,7 @@ public class ForegroundToastService extends Service {
 
     private void updateLastDate() {
 
-        if (isNewDay() && isPast3am()) {
+        if (isNewDay() && isPastDailyResetHour()) {
             Integer todayTimeSpent = getStoreInt(mContext, "fbTimeSpent");
             Integer todayNumOpens = getStoreInt(mContext, "fbNumOfOpens");
             updateServerRecords(todayTimeSpent, todayNumOpens);
@@ -140,16 +140,16 @@ public class ForegroundToastService extends Service {
         return !lastRecordeddDate.equals(today);
     }
 
-    private boolean isPast3am() {
+    private boolean isPastDailyResetHour() {
         Calendar rightNow = Calendar.getInstance();
         Integer hour24 = rightNow.get(Calendar.HOUR_OF_DAY);
-        return hour24 >= 3;
+        return hour24 >= StudyInfo.getDailyResetHour(mContext);
     }
 
     private void startChecker() {
 
         appChecker = new AppChecker();
-        appChecker.when("com.facebook.katana", new AppChecker.Listener() {
+        appChecker.when(StudyInfo.FACEBOOK_PACKAGE_NAME, new AppChecker.Listener() {
             @Override
             public void onForeground(String packageName) {
                 if (isLockedScreen()) return;
@@ -216,22 +216,26 @@ public class ForegroundToastService extends Service {
 
     // only update server records when study is still ongoing
     private void updateServerRecords(Integer timeSpent, Integer timeOpen) {
-        if (shouldStopServerLogging()) return;
+        if (shouldStopServerLogging()) {
+            updateNotification("Experiment has ended. Uninstall app.");
+            return;
+        }
 
         JSONObject params = new JSONObject();
-        Helper.setJSONValue(params, "device_id", DeviceInfo.getDeviceID(mContext));
-        Helper.setJSONValue(params, "worker_id", getStoreString(mContext, "workerID"));
+        Helper.setJSONValue(params, "worker_id", getStoreString(mContext, Store.WORKER_ID));
         Helper.setJSONValue(params, "total_seconds", getStoreInt(mContext, "totalSeconds"));
         Helper.setJSONValue(params, "total_opens", getStoreInt(mContext, "totalOpens"));
         Helper.setJSONValue(params, "time_spent", timeSpent);
         Helper.setJSONValue(params, "time_open", timeOpen);
         Helper.setJSONValue(params, "ringer_mode", DeviceInfo.getRingerMode(mContext));
-        int fb_max = StudyInfo.getFBMaxDailyMinutes(mContext);
-        Helper.setJSONValue(params, "current_fb_max_time", fb_max);
+        Helper.setJSONValue(params, "daily_reset_hour", StudyInfo.getDailyResetHour(mContext));
+
+        Helper.setJSONValue(params, "current_experiment_group", StudyInfo.getCurrentExperimentGroup(mContext));
+        Helper.setJSONValue(params, "current_fb_max_mins", StudyInfo.getFBMaxDailyMinutes(mContext));
         Helper.setJSONValue(params, "current_fb_max_opens", StudyInfo.getFBMaxDailyOpens(mContext));
-        Helper.setJSONValue(params, "current_treatment_start_date", StudyInfo.getTreatmentStartDateStr(mContext));
-        Helper.setJSONValue(params, "current_followup_start_date", StudyInfo.getFollowupStartDateStr(mContext));
-        Helper.setJSONValue(params, "current_logging_stop_date", StudyInfo.getLoggingStopDateStr(mContext));
+        Helper.setJSONValue(params, "current_treatment_start", StudyInfo.getTreatmentStartDateStr(mContext));
+        Helper.setJSONValue(params, "current_followup_start", StudyInfo.getFollowupStartDateStr(mContext));
+        Helper.setJSONValue(params, "current_logging_stop", StudyInfo.getLoggingStopDateStr(mContext));
 
         Log.d("updateServerParams", params.toString() + timeSpent.toString() + timeOpen.toString());
         CallAPI.submitFBStats(mContext, params, submitStatsResponseHandler);
@@ -242,7 +246,7 @@ public class ForegroundToastService extends Service {
         public void onConnectSuccess(JSONObject result) {
             Log.i(TAG, "Submit Stats: " + result.toString());
             setStoreBoolean(mContext, "serverUpdatedToday", true);
-            StudyInfo.setParams(mContext, result);
+            StudyInfo.updateStoredAdminParams(mContext, result);
         }
 
         @Override
@@ -358,3 +362,4 @@ public class ForegroundToastService extends Service {
 
 // TODO: 3/4/17 add totalOpens
 // TODO: 3/4/17 add deviceInfo to server through Helper class
+// TODO: 4/5/17 add a way to indicate user data should stop logging

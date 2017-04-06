@@ -16,13 +16,12 @@ import org.json.JSONObject;
 
 public class CallAPI {
 
-    final static private String BASE_URL = "https://slm.smalldata.io";
-//    final static private String BASE_URL = "http://10.0.0.166:5000";
+//    final static private String BASE_URL = "https://slm.smalldata.io";
+    final static private String BASE_URL = "http://10.0.0.166:5000";
 //    final static private String BASE_URL = "http://10.128.19.232:5000";
     final static private String CONNECT_URL = BASE_URL + "/mobile/connect/study";
-    final static private String MTURK_REGISTER_URL = BASE_URL + "/mobile/mturk";
-    final static private String MTURK_STATS_URL = BASE_URL + "/mobile/mturk/stats/fb";
-    final static private String ALL_INTV_URL = BASE_URL + "/mobile/ordered/interventions";
+    final static private String TURKPRIME_REGISTER_URL = BASE_URL + "/mobile/turkprime/enroll";
+    final static private String TURKPRIME_ADD_FB_STATS = BASE_URL + "/mobile/turkprime/fb-stats";
     final static private String CAL_CHECK_CONN_URL = BASE_URL + "/mobile/check/calendar";
     final static private String RT_CHECK_CONN_URL = BASE_URL + "/mobile/check/rescuetime";
     final static private String RT_SUMMARY_URL = BASE_URL + "/rescuetime/summary";
@@ -56,14 +55,14 @@ public class CallAPI {
         SingletonRequest.getInstance(cxt).addToRequestQueue(request);
     }
 
-    public static void submitMturkID(final Context cxt, final JSONObject params, final VolleyJsonCallback callback) {
+    public static void submitTurkPrimeID(final Context cxt, final JSONObject params, final VolleyJsonCallback callback) {
         Log.w("Submit worker details: ", params.toString());
-        JsonObjectRequest request = createRequest(MTURK_REGISTER_URL, params, callback);
+        JsonObjectRequest request = createRequest(TURKPRIME_REGISTER_URL, params, callback);
         SingletonRequest.getInstance(cxt).addToRequestQueue(request);
     }
 
     public static void submitFBStats(Context mContext, JSONObject params, VolleyJsonCallback callback) {
-        JsonObjectRequest request = createRequest(MTURK_STATS_URL, params, callback);
+        JsonObjectRequest request = createRequest(TURKPRIME_ADD_FB_STATS, params, callback);
         SingletonRequest.getInstance(mContext).addToRequestQueue(request);
     }
 

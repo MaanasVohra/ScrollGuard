@@ -2,6 +2,7 @@ package com.rvalerio.foregroundappchecker;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.provider.Settings;
@@ -34,7 +35,7 @@ public class Helper {
         }
     }
 
-    public static void setJSONValue(JSONObject jsonObject, String key, Object value) {
+    static void setJSONValue(JSONObject jsonObject, String key, Object value) {
         try {
             jsonObject.put(key, value);
         } catch (JSONException je) {
@@ -42,12 +43,11 @@ public class Helper {
         }
     }
 
-    public static String getTodayDateStr() {
+    static String getTodayDateStr() {
         return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().getTime());
     }
 
-
-    public static boolean isNetworkAvailable(Context context) {
+    static boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
@@ -59,7 +59,7 @@ public class Helper {
         return sdf.format(date);
     }
 
-    public static Date strToDate(String dateStr) {
+    static Date strToDate(String dateStr) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", LOCALE);
         Date formattedDate = new Date();
         try {
@@ -83,4 +83,14 @@ public class Helper {
         Date compareDate = strToDate(compareDateStr);
         return mainDate.getTime() >= compareDate.getTime();
     }
+
+    public static boolean isPackageInstalled(String packagename, PackageManager packageManager) {
+        try {
+            packageManager.getPackageInfo(packagename, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
 }

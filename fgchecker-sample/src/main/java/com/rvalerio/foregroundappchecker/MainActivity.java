@@ -4,11 +4,13 @@ import android.annotation.TargetApi;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +25,7 @@ import org.json.JSONObject;
 import io.smalldata.api.CallAPI;
 import io.smalldata.api.VolleyJsonCallback;
 
+import static android.view.View.GONE;
 import static com.rvalerio.foregroundappchecker.Store.getStoreBoolean;
 import static com.rvalerio.foregroundappchecker.Store.getStoreString;
 import static com.rvalerio.foregroundappchecker.Store.setStoreBoolean;
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText etWorkerID;
     private TextView tvSubmitFeedback;
+    private TextView tvSurveyLink;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,13 +46,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mContext = this;
 
+
         TextView tvPermission = (TextView) findViewById(R.id.tv_permission_text);
         Button btUsagePermission = (Button) findViewById(R.id.btn_usage_permission);
 
         if (!needsUsageStatsPermission()) {
-            btUsagePermission.setVisibility(View.GONE);
+            btUsagePermission.setVisibility(GONE);
             tvPermission.setText(R.string.usage_permission_granted);
-            btUsagePermission.setVisibility(View.GONE);
+            btUsagePermission.setVisibility(GONE);
         } else {
             btUsagePermission.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -63,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (getStoreBoolean(mContext, Store.CANNOT_CONTINUE)) {
-                    Toast.makeText(mContext, "Service not started because you're not enrolled.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, "Service not started because phone is incompatible.", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 ForegroundToastService.start(mContext);
@@ -73,8 +78,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         etWorkerID = (EditText) findViewById(R.id.et_mturk_id);
-        etWorkerID.setText(getStoreString(mContext, "workerID"));
+        etWorkerID.setText(getStoreString(mContext, Store.WORKER_ID));
         tvSubmitFeedback = (TextView) findViewById(R.id.tv_submit_id_feedback);
+        tvSurveyLink = (TextView) findViewById(R.id.tv_survey_link);
 
         Button btSubmitMturkID = (Button) findViewById(R.id.btn_submit_mturk_id);
         btSubmitMturkID.setOnClickListener(new View.OnClickListener() {
@@ -87,14 +93,24 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                setStoreString(mContext, "workerID", etWorkerID.getText().toString());
+                PackageManager pm = mContext.getPackageManager();
+                boolean isInstalled = Helper.isPackageInstalled(StudyInfo.FACEBOOK_PACKAGE_NAME, pm);
+                if (!isInstalled) {
+                    String msg = "Sorry, you cannot partake in this experiment";
+                    showError(tvSubmitFeedback, msg);
+                    setStoreBoolean(mContext, Store.CANNOT_CONTINUE, true);
+                    return;
+                }
+
+                setStoreString(mContext, Store.WORKER_ID, etWorkerID.getText().toString());
 
                 JSONObject params = new JSONObject();
                 Helper.setJSONValue(params, "worker_id", etWorkerID.getText().toString());
+
                 JSONObject deviceInfo = DeviceInfo.getPhoneDetails(mContext);
                 Helper.copy(deviceInfo, params);
 
-                CallAPI.submitMturkID(mContext, params, submitIDResponseHandler);
+                CallAPI.submitTurkPrimeID(mContext, params, submitIDResponseHandler);
             }
         });
 
@@ -106,10 +122,12 @@ public class MainActivity extends AppCompatActivity {
             Log.i("submitIDSuccess: ", result.toString());
             String response = result.optString("response");
             if (result.optInt("status") == 200) {
-                StudyInfo.setParams(mContext, result);
                 setStoreBoolean(mContext, Store.CANNOT_CONTINUE, false);
+                StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 showSuccess(tvSubmitFeedback, response);
+                showSuccess(tvSurveyLink, result.optString("survey_link"));
             } else {
+                tvSurveyLink.setVisibility(View.GONE);
                 setStoreBoolean(mContext, Store.CANNOT_CONTINUE, true);
                 showError(tvSubmitFeedback, response);
             }
@@ -118,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onConnectFailure(VolleyError error) {
             String msg = "Error submitting your worker id. Please contact researcher. \n\nError details:\n" + error.toString();
+            tvSurveyLink.setVisibility(View.GONE);
             showError(tvSubmitFeedback, msg);
         }
     };
