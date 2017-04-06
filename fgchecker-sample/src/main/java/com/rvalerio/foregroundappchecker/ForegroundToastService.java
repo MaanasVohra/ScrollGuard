@@ -57,7 +57,7 @@ public class ForegroundToastService extends Service {
     private Integer fbTimeSpent;
     private Integer fbNumOfOpens;
 
-    private final static long UPDATE_SERVER_INTERVAL_MS = 2 * 3600 * 1000;
+    private final static long UPDATE_SERVER_INTERVAL_MS = 2 * 3600 * 1000 / 8;
 
     private NotificationCompat.Builder mBuilder;
     private NotificationManager mNotificationManager;
@@ -84,16 +84,16 @@ public class ForegroundToastService extends Service {
     public void onCreate() {
         super.onCreate();
         mContext = this;
+        mBuilder = new NotificationCompat.Builder(this);
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         registerStopCheckerReceiver();
         registerScreenUnlockReceiver();
         registerNetworkMonitorReceiver();
 
         startChecker();
-
-        mBuilder = new NotificationCompat.Builder(this);
-        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        updateNotification("Daily stats will update throughout day.");
+//        updateNotification(getCurrentStats());
+        updateNotification("Your stats updates during usage.");
         serverHandler.postDelayed(serverUpdateTask, 0);
     }
 
@@ -107,11 +107,17 @@ public class ForegroundToastService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        stopChecker();
-        removeNotification();
-        unregisterAllReceivers();
-        stopSelf();
+        updateNotification("Service destroyed. Should restart.");
     }
+
+    //    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        stopChecker();
+//        removeNotification();
+//        unregisterAllReceivers();
+//        stopSelf();
+//    }
 
     public Boolean isLockedScreen() {
         KeyguardManager myKM = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
@@ -135,9 +141,9 @@ public class ForegroundToastService extends Service {
     }
 
     private boolean isNewDay() {
-        String lastRecordeddDate = getStoreString(mContext, "lastRecordedDate");
+        String lastRecordedDate = getStoreString(mContext, "lastRecordedDate");
         String today = new SimpleDateFormat("yyyy-MM-dd", locale).format(Calendar.getInstance().getTime());
-        return !lastRecordeddDate.equals(today);
+        return !lastRecordedDate.equals(today);
     }
 
     private boolean isPastDailyResetHour() {
@@ -147,7 +153,6 @@ public class ForegroundToastService extends Service {
     }
 
     private void startChecker() {
-
         appChecker = new AppChecker();
         appChecker.when(StudyInfo.FACEBOOK_PACKAGE_NAME, new AppChecker.Listener() {
             @Override
@@ -190,6 +195,7 @@ public class ForegroundToastService extends Service {
 
                 updateNotification(getCurrentStats());
                 updateLastDate();
+                updateServerRecords(getStoreInt(mContext, "fbTimeSpent"), getStoreInt(mContext, "fbNumOfOpens"));
 
             }
 
@@ -363,3 +369,4 @@ public class ForegroundToastService extends Service {
 // TODO: 3/4/17 add totalOpens
 // TODO: 3/4/17 add deviceInfo to server through Helper class
 // TODO: 4/5/17 add a way to indicate user data should stop logging
+// TODO: 4/6/17 remove manual service start 

@@ -8,9 +8,9 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -35,7 +35,6 @@ import static com.rvalerio.foregroundappchecker.Store.setStoreString;
 public class MainActivity extends AppCompatActivity {
 
     private Context mContext;
-
     private EditText etWorkerID;
     private TextView tvSubmitFeedback;
     private TextView tvSurveyLink;
@@ -46,7 +45,19 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mContext = this;
 
+        setResources();
+        requestPermissionAndStartService();
+        prepareToReceiveWorkerID();
+    }
 
+    private void setResources() {
+        etWorkerID = (EditText) findViewById(R.id.et_mturk_id);
+        etWorkerID.setText(getStoreString(mContext, Store.WORKER_ID));
+        tvSubmitFeedback = (TextView) findViewById(R.id.tv_submit_id_feedback);
+        tvSurveyLink = (TextView) findViewById(R.id.tv_survey_link);
+    }
+
+    private void requestPermissionAndStartService() {
         TextView tvPermission = (TextView) findViewById(R.id.tv_permission_text);
         Button btUsagePermission = (Button) findViewById(R.id.btn_usage_permission);
 
@@ -67,21 +78,22 @@ public class MainActivity extends AppCompatActivity {
         btStartService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (getStoreBoolean(mContext, Store.CANNOT_CONTINUE)) {
-                    Toast.makeText(mContext, "Service not started because phone is incompatible.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                ForegroundToastService.start(mContext);
-                Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_SHORT).show();
-                finish();
+                startTrackingService();
             }
         });
 
-        etWorkerID = (EditText) findViewById(R.id.et_mturk_id);
-        etWorkerID.setText(getStoreString(mContext, Store.WORKER_ID));
-        tvSubmitFeedback = (TextView) findViewById(R.id.tv_submit_id_feedback);
-        tvSurveyLink = (TextView) findViewById(R.id.tv_survey_link);
 
+        Button btStopService = (Button) findViewById(R.id.btn_service_stop);
+        btStopService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ForegroundToastService.stop(mContext);
+                Toast.makeText(mContext, "Service stopped.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void prepareToReceiveWorkerID() {
         Button btSubmitMturkID = (Button) findViewById(R.id.btn_submit_mturk_id);
         btSubmitMturkID.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,17 +115,14 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 setStoreString(mContext, Store.WORKER_ID, etWorkerID.getText().toString());
-
                 JSONObject params = new JSONObject();
                 Helper.setJSONValue(params, "worker_id", etWorkerID.getText().toString());
 
                 JSONObject deviceInfo = DeviceInfo.getPhoneDetails(mContext);
                 Helper.copy(deviceInfo, params);
-
                 CallAPI.submitTurkPrimeID(mContext, params, submitIDResponseHandler);
             }
         });
-
     }
 
     VolleyJsonCallback submitIDResponseHandler = new VolleyJsonCallback() {
@@ -140,6 +149,16 @@ public class MainActivity extends AppCompatActivity {
             showError(tvSubmitFeedback, msg);
         }
     };
+
+    private void startTrackingService() {
+        if (getStoreBoolean(mContext, Store.CANNOT_CONTINUE)) {
+            Toast.makeText(mContext, "Service not started because phone is incompatible.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        ForegroundToastService.start(mContext);
+        Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_SHORT).show();
+//        finish();
+    }
 
     private void showError(TextView tv, String msg) {
         showPlain(tv, msg);
