@@ -10,7 +10,6 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
@@ -43,9 +42,9 @@ import static com.rvalerio.foregroundappchecker.Store.setStoreString;
 
 
 public class ForegroundToastService extends Service {
-
-    private final static int NOTIFICATION_ID = 1234;
+    private static String TAG = "ForegroundToastService";
     private final static String STOP_SERVICE = ForegroundToastService.class.getPackage() + ".stop";
+    private final static int NOTIFICATION_ID = 1234;
 
     private final Locale locale = Locale.getDefault();
     private Context mContext;
@@ -53,28 +52,17 @@ public class ForegroundToastService extends Service {
     private BroadcastReceiver appCheckerReceiver;
     private BroadcastReceiver networkConnReceiver;
     private BroadcastReceiver screenUnlockReceiver;
-
     private AppChecker appChecker;
-
-    private int fbTimeSpent = 0;
-    private int fbNumOfOpens = 0;
-
-    private final static long UPDATE_SERVER_INTERVAL_MS = 2 * 3600 * 1000 / 6;
 
     private NotificationCompat.Builder mBuilder;
     private NotificationManager mNotificationManager;
+
     private boolean firstTime = true;
-    private Handler serverHandler = new Handler();
+    private int fbTimeSpent = 0;
+    private int fbNumOfOpens = 0;
 
-    private static String TAG = "ForegroundToastService";
-
-    public static void start(Context context) {
-        context.startService(new Intent(context, ForegroundToastService.class));
-    }
-
-    public static void stop(Context context) {
-        context.stopService(new Intent(context, ForegroundToastService.class));
-    }
+//    private final static long UPDATE_SERVER_INTERVAL_MS = 2 * 3600 * 1000 / 6; // FIXME: 4/6/17
+//    private Handler serverHandler = new Handler();
 
     @Nullable
     @Override
@@ -94,17 +82,27 @@ public class ForegroundToastService extends Service {
         registerNetworkMonitorReceiver();
 
         startChecker();
-//        updateNotification(getCurrentStats());
         updateNotification("Your stats updates during usage.");
-        serverHandler.postDelayed(serverUpdateTask, 0);
+//        serverHandler.postDelayed(serverUpdateTask, 0);
     }
 
-    private Runnable serverUpdateTask = new Runnable() {
-        public void run() {
-            updateServerRecords();
-            serverHandler.postDelayed(this, UPDATE_SERVER_INTERVAL_MS);
-        }
-    };
+//    public static void start(Context context) {
+//        context.startService(new Intent(context, RefreshService.class));
+//    }
+
+    public static void start(Context context) {
+        context.startService(new Intent(context, ForegroundToastService.class));
+    }
+
+    public static void stop(Context context) {
+        context.stopService(new Intent(context, ForegroundToastService.class));
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        updateServerRecords();
+        return super.onStartCommand(intent, flags, startId);
+    }
 
     @Override
     public void onDestroy() {
@@ -198,7 +196,6 @@ public class ForegroundToastService extends Service {
 
                 updateNotification(getCurrentStats());
                 updateLastDate();
-                updateServerRecords(); // FIXME: 4/6/17
                 checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
 
             }
@@ -232,15 +229,18 @@ public class ForegroundToastService extends Service {
         return rightNow > loggingStop.getTime();
     }
 
-
     // only update server records when user has submitted ID and study is still ongoing
-    private void updateServerRecords() {
+    public void updateServerRecords() {
         if (StudyInfo.getWorkerID(mContext).equals("")) return;
         if (shouldStopServerLogging()) {
             updateNotification("Experiment has ended. Uninstall app.");
             return;
         }
+        JSONObject params = generateParamsForServer();
+        CallAPI.submitFBStats(mContext, params, submitStatsResponseHandler);
+    }
 
+    private JSONObject generateParamsForServer() {
         JSONObject params = new JSONObject();
         Helper.setJSONValue(params, "worker_id", getStoreString(mContext, Store.WORKER_ID));
         Helper.setJSONValue(params, "total_seconds", getStoreInt(mContext, "totalSeconds"));
@@ -257,8 +257,7 @@ public class ForegroundToastService extends Service {
         Helper.setJSONValue(params, "current_treatment_start", StudyInfo.getTreatmentStartDateStr(mContext));
         Helper.setJSONValue(params, "current_followup_start", StudyInfo.getFollowupStartDateStr(mContext));
         Helper.setJSONValue(params, "current_logging_stop", StudyInfo.getLoggingStopDateStr(mContext));
-
-        CallAPI.submitFBStats(mContext, params, submitStatsResponseHandler);
+        return params;
     }
 
     VolleyJsonCallback submitStatsResponseHandler = new VolleyJsonCallback() {

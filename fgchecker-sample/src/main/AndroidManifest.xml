@@ -46,6 +46,12 @@
             android:enabled="true"
             android:exported="false" />
 
+
+        <service
+            android:name=".RefreshService"
+            android:enabled="true"
+            android:exported="false" />
+
     </application>
 
 

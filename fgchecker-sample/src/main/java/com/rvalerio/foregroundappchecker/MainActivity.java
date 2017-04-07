@@ -107,6 +107,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void startTrackingService() {
+        Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
+        RefreshService.startRefreshInIntervals(mContext);
+//        ForegroundToastService.start(mContext);
+//        finish();
+    }
+
+
     private void prepareToReceiveWorkerID() {
         if (!getStoreBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN)) return;
 
@@ -157,12 +165,6 @@ public class MainActivity extends AppCompatActivity {
             showError(tvSubmitFeedback, msg);
         }
     };
-
-    private void startTrackingService() {
-        ForegroundToastService.start(mContext);
-        Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
-//        finish();
-    }
 
     private void showError(TextView tv, String msg) {
         showPlain(tv, msg);

@@ -16,8 +16,8 @@ import org.json.JSONObject;
 
 public class CallAPI {
 
-//    final static private String BASE_URL = "https://slm.smalldata.io";
-    final static private String BASE_URL = "http://10.0.0.166:5000";
+    final static private String BASE_URL = "https://slm.smalldata.io";
+//    final static private String BASE_URL = "http://10.0.0.166:5000";
 //    final static private String BASE_URL = "http://10.128.19.232:5000";
     final static private String CONNECT_URL = BASE_URL + "/mobile/connect/study";
     final static private String TURKPRIME_REGISTER_URL = BASE_URL + "/mobile/turkprime/enroll";
