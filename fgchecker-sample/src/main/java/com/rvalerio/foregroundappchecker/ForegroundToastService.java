@@ -20,6 +20,8 @@ import android.util.Log;
 import com.android.volley.VolleyError;
 import com.rvalerio.fgchecker.AppChecker;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
@@ -57,7 +59,7 @@ public class ForegroundToastService extends Service {
     private int fbTimeSpent = 0;
     private int fbNumOfOpens = 0;
 
-    private final static long UPDATE_SERVER_INTERVAL_MS = 2 * 3600 * 1000 / 8;
+    private final static long UPDATE_SERVER_INTERVAL_MS = 2 * 3600 * 1000 / 6;
 
     private NotificationCompat.Builder mBuilder;
     private NotificationManager mNotificationManager;
@@ -99,7 +101,7 @@ public class ForegroundToastService extends Service {
 
     private Runnable serverUpdateTask = new Runnable() {
         public void run() {
-            updateServerRecords(getStoreInt(mContext, "fbTimeSpent"), getStoreInt(mContext, "fbNumOfOpens"));
+            updateServerRecords();
             serverHandler.postDelayed(this, UPDATE_SERVER_INTERVAL_MS);
         }
     };
@@ -128,15 +130,14 @@ public class ForegroundToastService extends Service {
     private void updateLastDate() {
 
         if (isNewDay() && isPastDailyResetHour()) {
-            Integer todayTimeSpent = getStoreInt(mContext, "fbTimeSpent");
-            Integer todayNumOpens = getStoreInt(mContext, "fbNumOfOpens");
-            updateServerRecords(todayTimeSpent, todayNumOpens);
+            updateServerRecords();
 
             setStoreString(mContext, "lastRecordedDate", Helper.getTodayDateStr());
             setStoreInt(mContext, "fbTimeSpent", 0);
             setStoreInt(mContext, "fbNumOfOpens", 0);
             setStoreInt(mContext, "totalSeconds", 0);
             setStoreInt(mContext, "totalOpens", 0);
+            setStoreString(mContext, Store.SCREEN_LOGS, "");
             setStoreBoolean(mContext, "serverUpdatedToday", false);
         }
     }
@@ -197,7 +198,7 @@ public class ForegroundToastService extends Service {
 
                 updateNotification(getCurrentStats());
                 updateLastDate();
-                updateServerRecords(getStoreInt(mContext, "fbTimeSpent"), getStoreInt(mContext, "fbNumOfOpens"));
+                updateServerRecords(); // FIXME: 4/6/17
                 checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
 
             }
@@ -233,7 +234,7 @@ public class ForegroundToastService extends Service {
 
 
     // only update server records when user has submitted ID and study is still ongoing
-    private void updateServerRecords(Integer timeSpent, Integer timeOpen) {
+    private void updateServerRecords() {
         if (StudyInfo.getWorkerID(mContext).equals("")) return;
         if (shouldStopServerLogging()) {
             updateNotification("Experiment has ended. Uninstall app.");
@@ -244,10 +245,11 @@ public class ForegroundToastService extends Service {
         Helper.setJSONValue(params, "worker_id", getStoreString(mContext, Store.WORKER_ID));
         Helper.setJSONValue(params, "total_seconds", getStoreInt(mContext, "totalSeconds"));
         Helper.setJSONValue(params, "total_opens", getStoreInt(mContext, "totalOpens"));
-        Helper.setJSONValue(params, "time_spent", timeSpent);
-        Helper.setJSONValue(params, "time_open", timeOpen);
+        Helper.setJSONValue(params, "time_spent", getStoreInt(mContext, "fbTimeSpent"));
+        Helper.setJSONValue(params, "time_open", getStoreInt(mContext, "fbNumOfOpens"));
         Helper.setJSONValue(params, "ringer_mode", DeviceInfo.getRingerMode(mContext));
         Helper.setJSONValue(params, "daily_reset_hour", StudyInfo.getDailyResetHour(mContext));
+        Helper.setJSONValue(params, "screen_logs", getStoreString(mContext, Store.SCREEN_LOGS));
 
         Helper.setJSONValue(params, "current_experiment_group", StudyInfo.getCurrentExperimentGroup(mContext));
         Helper.setJSONValue(params, "current_fb_max_mins", StudyInfo.getFBMaxDailyMinutes(mContext));
@@ -256,7 +258,6 @@ public class ForegroundToastService extends Service {
         Helper.setJSONValue(params, "current_followup_start", StudyInfo.getFollowupStartDateStr(mContext));
         Helper.setJSONValue(params, "current_logging_stop", StudyInfo.getLoggingStopDateStr(mContext));
 
-        Log.d("updateServerParams", params.toString() + timeSpent.toString() + timeOpen.toString());
         CallAPI.submitFBStats(mContext, params, submitStatsResponseHandler);
     }
 
@@ -285,10 +286,6 @@ public class ForegroundToastService extends Service {
                 fbNumOfOpens.toString());
     }
 
-    private void stopChecker() {
-        appChecker.stop();
-    }
-
     private void registerStopCheckerReceiver() {
         appCheckerReceiver = new BroadcastReceiver() {
             @Override
@@ -313,7 +310,7 @@ public class ForegroundToastService extends Service {
 
                 Boolean serverIsNotYetUpdated = !getStoreBoolean(mContext, "serverUpdatedToday");
                 if (state == NetworkInfo.State.CONNECTED && serverIsNotYetUpdated) {
-                    updateServerRecords(getStoreInt(mContext, "fbTimeSpent"), getStoreInt(mContext, "fbNumOfOpens"));
+                    updateServerRecords();
                 }
             }
         };
@@ -327,16 +324,55 @@ public class ForegroundToastService extends Service {
         screenUnlockReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                increaseStoreInt(mContext, "totalOpens", 1);
+                updateScreenLog(context, intent);
+                if (intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
+                    increaseStoreInt(mContext, "totalOpens", 1);
+                    Log.d(TAG, "Phone unlocked");
+                } else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+                    Log.d(TAG, "Phone locked");
+                }
             }
         };
-        registerReceiver(screenUnlockReceiver, new IntentFilter("android.intent.action.USER_PRESENT"));
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_USER_PRESENT);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(screenUnlockReceiver, filter);
     }
 
-    private void unregisterAllReceivers() {
-        unregisterReceiver(networkConnReceiver);
-        unregisterReceiver(screenUnlockReceiver);
-        unregisterReceiver(appCheckerReceiver);
+    private void updateScreenLog(Context context, Intent intent) {
+        String strLogs = Store.getStoreString(context, Store.SCREEN_LOGS);
+
+        JSONArray logs = new JSONArray();
+        if (!strLogs.equals("")) {
+            try {
+                logs = new JSONArray(strLogs);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        String screenAction = intent.getAction();
+        if (intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
+            screenAction = "0"; //unlocked
+        } else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+            screenAction = "1"; // locked
+        } else {
+            screenAction = getLastNChars(screenAction, 10); // unknown
+        }
+
+        long nowInMillis = Calendar.getInstance().getTimeInMillis();
+        String entry = String.format("%s, %s", nowInMillis, screenAction);
+        logs.put(entry);
+        Store.setStoreString(mContext, Store.SCREEN_LOGS, logs.toString());
+    }
+
+    private String getLastNChars(String myString, int n) {
+        if(myString.length() > n) {
+            return myString.substring(myString.length()-n);
+        } else {
+            return myString;
+        }
     }
 
     private void updateNotification(String message) {
@@ -353,6 +389,16 @@ public class ForegroundToastService extends Service {
         mBuilder.setContentTitle(title);
         mBuilder.setContentText(message);
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+    }
+
+    private void stopChecker() {
+        appChecker.stop();
+    }
+
+    private void unregisterAllReceivers() {
+        unregisterReceiver(networkConnReceiver);
+        unregisterReceiver(screenUnlockReceiver);
+        unregisterReceiver(appCheckerReceiver);
     }
 
     private void removeNotification() {
@@ -375,11 +421,4 @@ public class ForegroundToastService extends Service {
 //        manager.notify(NOTIFICATION_ID, notification);
 //        return notification;
 //    }
-
-
 }
-
-// TODO: 3/4/17 add totalOpens
-// TODO: 3/4/17 add deviceInfo to server through Helper class
-// TODO: 4/5/17 add a way to indicate user data should stop logging
-// TODO: 4/6/17 remove manual service start 

@@ -16,17 +16,16 @@ class Store {
 
     final static String FB_MAX_TIME = "adminFBMaxMins";
     final static String FB_MAX_OPENS = "adminFBMaxOpens";
+    static final String SCREEN_LOGS = "screenLogs";
 
     final static String DAILY_RESET_HOUR = "dailyResetHour";
     final static String WORKER_ID = "workerID";
     final static String EXPERIMENT_JOIN_DATE = "experimentJoinDate";
 
-    final static String CAN_CONTINUE = "canContinue";
-    final static String ENROLLED = "userIsEnrolled";
-
     private static final String PREF_NAME = "prefs";
     static final String CAN_SHOW_PERMISSION_BTN = "canShowPermissionBtn";
     static final String CAN_SHOW_SUBMIT_BTN = "canShowServiceBtn";
+    final static String ENROLLED = "userIsEnrolled";
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);

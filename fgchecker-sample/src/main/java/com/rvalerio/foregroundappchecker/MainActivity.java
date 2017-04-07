@@ -44,11 +44,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mContext = this;
-
         setResources();
-//        promptIfNoFBInstalled();
-//        requestPermissionAndStartService();
-//        prepareToReceiveWorkerID();
     }
 
     @Override
