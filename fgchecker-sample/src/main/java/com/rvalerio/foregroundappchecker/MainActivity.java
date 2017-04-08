@@ -3,12 +3,14 @@ package com.rvalerio.foregroundappchecker;
 import android.annotation.TargetApi;
 import android.app.AppOpsManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -102,13 +104,13 @@ public class MainActivity extends AppCompatActivity {
         btStartService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
                 startTrackingService();
             }
         });
     }
 
     private void startTrackingService() {
-        Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
         RefreshService.startRefreshInIntervals(mContext);
 //        ForegroundToastService.start(mContext);
 //        finish();
@@ -123,22 +125,39 @@ public class MainActivity extends AppCompatActivity {
         btnSubmitMturkID.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 if (!Helper.isNetworkAvailable(mContext)) {
                     String msg = "You do not have any network connection.";
                     showError(tvSubmitFeedback, msg);
                     return;
                 }
-
-                setStoreString(mContext, Store.WORKER_ID, etWorkerID.getText().toString());
-                JSONObject params = new JSONObject();
-                Helper.setJSONValue(params, "worker_id", etWorkerID.getText().toString());
-
-                JSONObject deviceInfo = DeviceInfo.getPhoneDetails(mContext);
-                Helper.copy(deviceInfo, params);
-                CallAPI.submitTurkPrimeID(mContext, params, submitIDResponseHandler);
+                confirmAndSubmitDialog();
             }
         });
+    }
+
+    private void confirmAndSubmitDialog() {
+        new AlertDialog.Builder(mContext)
+                .setTitle("Confirm workerId submission")
+                .setMessage("This cannot be changed once submitted. Are you sure you entered correct workerId?")
+                .setIcon(R.drawable.ic_chart_pink)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Toast.makeText(mContext, "WorkerId submitted.", Toast.LENGTH_SHORT).show();
+                        submitWorkerID();
+                        startTrackingService();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, null).show();
+    }
+
+    private void submitWorkerID() {
+        setStoreString(mContext, Store.WORKER_ID, etWorkerID.getText().toString());
+        JSONObject params = new JSONObject();
+        Helper.setJSONValue(params, "worker_id", etWorkerID.getText().toString());
+
+        JSONObject deviceInfo = DeviceInfo.getPhoneDetails(mContext);
+        Helper.copy(deviceInfo, params);
+        CallAPI.submitTurkPrimeID(mContext, params, submitIDResponseHandler);
     }
 
     VolleyJsonCallback submitIDResponseHandler = new VolleyJsonCallback() {

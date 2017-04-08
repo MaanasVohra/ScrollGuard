@@ -88,7 +88,7 @@ class StudyInfo {
         return group;
     }
 
-    public static String getWorkerID(Context context) {
+    static String getWorkerID(Context context) {
         return Store.getStoreString(context, Store.WORKER_ID);
     }
 }

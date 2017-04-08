@@ -22,4 +22,5 @@
     <string name="mturk_submit_feedback">Worker ID Successfully Submitted.</string>
     <string name="mturk_submit_failed">Error submitting worker id. Contact researcher.</string>
     <string name="btn_stop_service">Stop Service</string>
+    <string name="yes">yes</string>
 </resources>
