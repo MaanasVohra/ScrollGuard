@@ -238,6 +238,7 @@ public class ForegroundToastService extends Service {
         }
         JSONObject params = generateParamsForServer();
         CallAPI.submitFBStats(mContext, params, submitStatsResponseHandler);
+//        Helper.showInstantNotif(mContext, "Server Updated", "Update at: " + Helper.getTimestamp());
     }
 
     private JSONObject generateParamsForServer() {

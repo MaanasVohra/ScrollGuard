@@ -111,8 +111,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startTrackingService() {
+        ForegroundToastService.start(mContext);
         RefreshService.startRefreshInIntervals(mContext);
-//        ForegroundToastService.start(mContext);
 //        finish();
     }
 
