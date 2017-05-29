@@ -1,4 +1,4 @@
-package helper;
+package com.rvalerio.foregroundappchecker.goodvibe.helper;
 
 import android.content.Context;
 import android.util.Log;

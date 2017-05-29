@@ -1,4 +1,4 @@
-package io.smalldata.api;
+package com.rvalerio.foregroundappchecker.goodvibe.api;
 
 
 import com.android.volley.VolleyError;
@@ -6,6 +6,7 @@ import com.android.volley.VolleyError;
 import org.json.JSONObject;
 
 /**
+ * Callback function for REST requests with Android Volley
  * Created by fnokeke on 1/22/17.
  */
 

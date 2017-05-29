@@ -1,4 +1,4 @@
-package com.rvalerio.foregroundappchecker;
+package com.rvalerio.foregroundappchecker.goodvibe.src;
 
 import android.annotation.TargetApi;
 import android.app.AppOpsManager;
@@ -23,14 +23,11 @@ import com.android.volley.VolleyError;
 
 import org.json.JSONObject;
 
-import io.smalldata.api.CallAPI;
-import io.smalldata.api.VolleyJsonCallback;
+import com.rvalerio.foregroundappchecker.R;
+import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
+import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
 
 import static android.view.View.GONE;
-import static com.rvalerio.foregroundappchecker.Store.getStoreBoolean;
-import static com.rvalerio.foregroundappchecker.Store.getStoreString;
-import static com.rvalerio.foregroundappchecker.Store.setStoreBoolean;
-import static com.rvalerio.foregroundappchecker.Store.setStoreString;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -70,14 +67,14 @@ public class MainActivity extends AppCompatActivity {
         if (!isInstalled) {
             String msg = "Error: cannot continue because your phone is not compatible with experiment.";
             showError(tvSubmitFeedback, msg);
-            setStoreBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, false);
+            Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, false);
         } else {
-            setStoreBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
+            Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
         }
     }
 
     private void requestPermissionAndStartService() {
-        if (!getStoreBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN)) return;
+        if (!Store.getBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN)) return;
 
         TextView tvPermission = (TextView) findViewById(R.id.tv_permission_text);
         tvPermission.setVisibility(View.VISIBLE);
@@ -111,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startTrackingService() {
+        StudyInfo.setDefaults(mContext);
         ForegroundToastService.start(mContext);
         RefreshService.startRefreshInIntervals(mContext);
 //        finish();
@@ -118,9 +116,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void prepareToReceiveWorkerID() {
-        if (!getStoreBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN)) return;
+        if (!Store.getBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN)) return;
 
-        showPlain(etWorkerID, getStoreString(mContext, Store.WORKER_ID));
+        showPlain(etWorkerID, Store.getString(mContext, Store.WORKER_ID));
         btnSubmitMturkID.setVisibility(View.VISIBLE);
         btnSubmitMturkID.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -151,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void submitWorkerID() {
-        setStoreString(mContext, Store.WORKER_ID, etWorkerID.getText().toString());
+        Store.setString(mContext, Store.WORKER_ID, etWorkerID.getText().toString());
         JSONObject params = new JSONObject();
         Helper.setJSONValue(params, "worker_id", etWorkerID.getText().toString());
 
@@ -166,13 +164,13 @@ public class MainActivity extends AppCompatActivity {
             Log.i("submitIDSuccess: ", result.toString());
             String response = result.optString("response");
             if (result.optInt("status") == 200) {
-                setStoreBoolean(mContext, Store.ENROLLED, true);
+                Store.setBoolean(mContext, Store.ENROLLED, true);
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 showSuccess(tvSubmitFeedback, response);
                 showSuccess(tvSurveyLink, result.optString("survey_link"));
             } else {
                 tvSurveyLink.setVisibility(View.GONE);
-                setStoreBoolean(mContext, Store.ENROLLED, false);
+                Store.setBoolean(mContext, Store.ENROLLED, false);
                 showError(tvSubmitFeedback, response);
             }
         }

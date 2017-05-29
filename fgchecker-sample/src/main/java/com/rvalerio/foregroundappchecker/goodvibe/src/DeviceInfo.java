@@ -1,4 +1,4 @@
-package com.rvalerio.foregroundappchecker;
+package com.rvalerio.foregroundappchecker.goodvibe.src;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -8,14 +8,14 @@ import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 
+import com.rvalerio.foregroundappchecker.BuildConfig;
+
 import org.json.JSONObject;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
-import static com.rvalerio.foregroundappchecker.Helper.setJSONValue;
 
 /**
  * DeviceInfo provides detailed information about each device where app is installed
@@ -35,14 +35,14 @@ public class DeviceInfo {
         phoneModel = phoneModel.length() > 30 ? phoneModel.substring(0, 30) : phoneModel;
 
         JSONObject phoneDetails = new JSONObject();
-        setJSONValue(phoneDetails, "last_installed_ms", String.valueOf(lastInstalledTimeMS));
-        setJSONValue(phoneDetails, "pretty_last_installed", prettyLastInstalledTime);
-        setJSONValue(phoneDetails, "app_version_name", BuildConfig.VERSION_CODE);
-        setJSONValue(phoneDetails, "app_version_code", BuildConfig.VERSION_NAME);
-        setJSONValue(phoneDetails, "phone_model", phoneModel);
-        setJSONValue(phoneDetails, "android_version", Build.VERSION.RELEASE);
-        setJSONValue(phoneDetails, "device_country", getDeviceCountry(context));
-        setJSONValue(phoneDetails, "device_id", getDeviceID(context));
+        Helper.setJSONValue(phoneDetails, "last_installed_ms", String.valueOf(lastInstalledTimeMS));
+        Helper.setJSONValue(phoneDetails, "pretty_last_installed", prettyLastInstalledTime);
+        Helper.setJSONValue(phoneDetails, "app_version_name", BuildConfig.VERSION_CODE);
+        Helper.setJSONValue(phoneDetails, "app_version_code", BuildConfig.VERSION_NAME);
+        Helper.setJSONValue(phoneDetails, "phone_model", phoneModel);
+        Helper.setJSONValue(phoneDetails, "android_version", Build.VERSION.RELEASE);
+        Helper.setJSONValue(phoneDetails, "device_country", getDeviceCountry(context));
+        Helper.setJSONValue(phoneDetails, "device_id", getDeviceID(context));
 
         return phoneDetails;
     }

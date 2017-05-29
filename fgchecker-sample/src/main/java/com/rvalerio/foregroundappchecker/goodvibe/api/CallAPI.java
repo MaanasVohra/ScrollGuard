@@ -1,4 +1,4 @@
-package io.smalldata.api;
+package com.rvalerio.foregroundappchecker.goodvibe.api;
 
 import android.content.Context;
 import android.util.Log;
@@ -22,6 +22,7 @@ public class CallAPI {
     final static private String CONNECT_URL = BASE_URL + "/mobile/connect/study";
     final static private String TURKPRIME_REGISTER_URL = BASE_URL + "/mobile/turkprime/enroll";
     final static private String TURKPRIME_ADD_FB_STATS = BASE_URL + "/mobile/turkprime/fb-stats";
+    private static final String TURKPRIME_FG_APP_LOGS = BASE_URL + "/mobile/turkprime/fg-app-logs";
     final static private String CAL_CHECK_CONN_URL = BASE_URL + "/mobile/check/calendar";
     final static private String RT_CHECK_CONN_URL = BASE_URL + "/mobile/check/rescuetime";
     final static private String RT_SUMMARY_URL = BASE_URL + "/rescuetime/summary";
@@ -63,6 +64,11 @@ public class CallAPI {
 
     public static void submitFBStats(Context mContext, JSONObject params, VolleyJsonCallback callback) {
         JsonObjectRequest request = createRequest(TURKPRIME_ADD_FB_STATS, params, callback);
+        SingletonRequest.getInstance(mContext).addToRequestQueue(request);
+    }
+
+    public static void submitFgAppLogs(Context mContext, JSONObject params, VolleyJsonCallback callback) {
+        JsonObjectRequest request = createRequest(TURKPRIME_FG_APP_LOGS, params, callback);
         SingletonRequest.getInstance(mContext).addToRequestQueue(request);
     }
 

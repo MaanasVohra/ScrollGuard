@@ -1,9 +1,8 @@
-package com.rvalerio.foregroundappchecker;
+package com.rvalerio.foregroundappchecker.goodvibe.src;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.widget.Toast;
 
 /**
  * Restart service on reboot

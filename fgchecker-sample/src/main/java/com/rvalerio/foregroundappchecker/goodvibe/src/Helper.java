@@ -1,18 +1,15 @@
-package com.rvalerio.foregroundappchecker;
+package com.rvalerio.foregroundappchecker.goodvibe.src;
 
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.RingtoneManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
-import android.telephony.TelephonyManager;
+
+import com.rvalerio.foregroundappchecker.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,17 +20,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import static android.content.Context.TELEPHONY_SERVICE;
-
 /**
  * Helper for all classes
  * Created by fnokeke on 1/26/17.
  */
 
-class Helper {
+public class Helper {
     private static Locale LOCALE = Locale.getDefault();
 
-    static void copy(JSONObject from, JSONObject to) {
+    public static void copy(JSONObject from, JSONObject to) {
         for (int i = 0; i < from.names().length(); i++) {
             String key = from.names().optString(i);
             Object value = from.opt(key);
@@ -41,7 +36,7 @@ class Helper {
         }
     }
 
-    static void setJSONValue(JSONObject jsonObject, String key, Object value) {
+    public static void setJSONValue(JSONObject jsonObject, String key, Object value) {
         try {
             jsonObject.put(key, value);
         } catch (JSONException je) {
@@ -49,23 +44,23 @@ class Helper {
         }
     }
 
-    static String getTodayDateStr() {
+    public static String getTodayDateStr() {
         return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().getTime());
     }
 
-    static boolean isNetworkAvailable(Context context) {
+    public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
 
-    static String dateToStr(Date date) {
+    public static String dateToStr(Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", LOCALE);
         return sdf.format(date);
     }
 
-    static Date strToDate(String dateStr) {
+    public static Date strToDate(String dateStr) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", LOCALE);
         Date formattedDate = new Date();
         try {
@@ -76,7 +71,7 @@ class Helper {
         return formattedDate;
     }
 
-    static Date addDays(Date date, int days)
+    public static Date addDays(Date date, int days)
     {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -90,7 +85,7 @@ class Helper {
         return mainDate.getTime() >= compareDate.getTime();
     }
 
-    static boolean isPackageInstalled(String packagename, PackageManager packageManager) {
+    public static boolean isPackageInstalled(String packagename, PackageManager packageManager) {
         try {
             packageManager.getPackageInfo(packagename, 0);
             return true;

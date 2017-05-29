@@ -1,4 +1,4 @@
-package io.smalldata.api;
+package com.rvalerio.foregroundappchecker.goodvibe.api;
 
 import android.content.Context;
 
@@ -7,6 +7,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
 /**
+ * REST API calls with a single network request instance
  * Created by fnokeke on 1/22/17.
  */
 

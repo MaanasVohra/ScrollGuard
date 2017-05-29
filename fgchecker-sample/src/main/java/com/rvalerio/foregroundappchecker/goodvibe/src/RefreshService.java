@@ -1,4 +1,4 @@
-package com.rvalerio.foregroundappchecker;
+package com.rvalerio.foregroundappchecker.goodvibe.src;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
