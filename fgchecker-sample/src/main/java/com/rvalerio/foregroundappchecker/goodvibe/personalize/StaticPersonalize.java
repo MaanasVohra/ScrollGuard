@@ -7,8 +7,6 @@ import com.rvalerio.foregroundappchecker.goodvibe.src.Store;
 
 import org.json.JSONArray;
 
-import java.util.Date;
-
 /**
  * Created by fnokeke on 5/29/17.
  * Personalized to Facebook usage from just one period
@@ -16,36 +14,64 @@ import java.util.Date;
 
 public class StaticPersonalize {
 
-    public static final String ALL_TIME_SPENT = "allStoredTimeSpent";
-    public static final String ALL_NUM_OF_OPENS = "allStoredNumOfOpens";
-    public static final int FIRST_7_DAYS = 7;
+    static final String ALL_TIME_SPENT = "allStoredTimeSpent";
+    static final String ALL_NUM_OF_OPENS = "allStoredNumOfOpens";
+    static final String CURRENT_AVG_TIME_SPENT = "currentAvgTimeSpent";
+    static final String CURRENT_AVG_NUM_OF_OPENS = "currentAvgNumOfOpens";
+    private static final int FIRST_N_DAYS = 7;
 
-    public static void addDataPoint(Context context, int timeSpent, int noOfOpen, String beforeMidnightOfDate) {
-        if (isPast(beforeMidnightOfDate)) return;
+    private Context mContext;
+    private String mTreatmentStartDateStr;
 
-        JSONArray allTimeSpent = Store.getJsonArray(context, ALL_TIME_SPENT);
+    public StaticPersonalize(Context context, String treatmentStartDateStr) {
+        mContext = context;
+        mTreatmentStartDateStr = treatmentStartDateStr;
+    }
+
+    Context getCxt() {
+        return mContext;
+    }
+
+    String getTreatStart() {
+        return mTreatmentStartDateStr;
+    }
+
+    public int getAverageTimeSpent() {
+        return Store.getInt(mContext, CURRENT_AVG_TIME_SPENT);
+    }
+
+    public int getAverageTimeOpen() {
+        return Store.getInt(mContext, CURRENT_AVG_NUM_OF_OPENS);
+    }
+
+    public void addDataPoint(int timeSpent, int noOfOpen) {
+        if (!DateHelper.isPastMidnightOfDate(mTreatmentStartDateStr)) {
+            insertDataIntoStore(timeSpent, noOfOpen);
+            computeAndStoreNewAverage(ALL_TIME_SPENT, CURRENT_AVG_TIME_SPENT, FIRST_N_DAYS);
+            computeAndStoreNewAverage(ALL_NUM_OF_OPENS, CURRENT_AVG_NUM_OF_OPENS, FIRST_N_DAYS);
+        }
+    }
+
+    void insertDataIntoStore(int timeSpent, int noOfOpen) {
+        JSONArray allTimeSpent = Store.getJsonArray(mContext, ALL_TIME_SPENT);
         allTimeSpent.put(timeSpent);
-        Store.setJsonArray(context, ALL_TIME_SPENT, allTimeSpent);
+        Store.setJsonArray(mContext, ALL_TIME_SPENT, allTimeSpent);
 
-        JSONArray allOpens = Store.getJsonArray(context, ALL_NUM_OF_OPENS);
+        JSONArray allOpens = Store.getJsonArray(mContext, ALL_NUM_OF_OPENS);
         allOpens.put(noOfOpen);
-        Store.setJsonArray(context, ALL_NUM_OF_OPENS, allOpens);
+        Store.setJsonArray(mContext, ALL_NUM_OF_OPENS, allOpens);
     }
 
-    private static boolean isPast(String beforeMidnightOfDateStr) {
-        long rightNow = System.currentTimeMillis();
-        Date beforeMidnightOfDate = DateHelper.strToDate(beforeMidnightOfDateStr);
-        return rightNow > beforeMidnightOfDate.getTime();
-    }
+    private void computeAndStoreNewAverage(String storeKey, String avgKey, int firstKDays) {
+        JSONArray allTimeSpent = Store.getJsonArray(mContext, storeKey);
+        if (allTimeSpent.length() == 0) return;
 
-    public static int getAverage(Context context, String storeKey, int firstKDays) {
-        JSONArray allTimeSpent = Store.getJsonArray(context, storeKey);
         float total = 0;
         int limit = firstKDays <= allTimeSpent.length() ? firstKDays : allTimeSpent.length();
         for (int i = 0; i < limit; i++) {
             total += allTimeSpent.optInt(i);
         }
-        return Math.round(total/limit);
+        Store.setInt(mContext, avgKey, Math.round(total / limit));
     }
 
 }

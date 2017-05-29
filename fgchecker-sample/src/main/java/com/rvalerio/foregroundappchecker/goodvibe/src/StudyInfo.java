@@ -2,8 +2,6 @@ package com.rvalerio.foregroundappchecker.goodvibe.src;
 
 import android.content.Context;
 
-import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
-
 import org.json.JSONObject;
 
 import java.util.Date;
@@ -103,7 +101,6 @@ class StudyInfo {
     }
 
     static void updateFBLimitsOfStudy(Context context, int fbTimeSpent, int fbNumOfOpens) {
-        if (!DateHelper.isPastMidnightOfDate(getTreatmentStartDateStr(context))) return;
         Store.setInt(context, Store.FB_MAX_TIME, fbTimeSpent);
         Store.setInt(context, Store.FB_MAX_OPENS, fbNumOfOpens);
     }

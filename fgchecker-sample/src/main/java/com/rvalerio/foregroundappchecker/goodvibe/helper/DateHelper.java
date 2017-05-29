@@ -18,11 +18,16 @@ import java.util.TimeZone;
 public class DateHelper {
     private static Locale locale = Locale.getDefault();
 
-    public static String getTodayDateStr() {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", locale);
-        Calendar cal = Calendar.getInstance();
-        return dateFormat.format(cal.getTime());
+    public static boolean isPastMidnightOfDate(String beforeMidnightOfDateStr) {
+        long rightNow = System.currentTimeMillis();
+        Date beforeMidnightOfDate = DateHelper.strToDate(beforeMidnightOfDateStr);
+        return rightNow > beforeMidnightOfDate.getTime();
     }
+
+    public static String getTodayDateStr() {
+        return new SimpleDateFormat("yyyy-MM-dd", locale).format(Calendar.getInstance().getTime());
+    }
+
 
     public static Date getDatetimeGMT(String datetimeStr) {
         String format = "yyyy-MM-dd'T'HH:mm:ss-05:00";
@@ -49,12 +54,6 @@ public class DateHelper {
     public static String millisToDateFormat(long timeInMillis) {
         if (timeInMillis <= 0) return "Zero.am";
         return new SimpleDateFormat("yyyy-MM-dd h:mm:ss a", locale).format(timeInMillis);
-    }
-
-    public static boolean isPastMidnightOfDate(String beforeMidnightOfDateStr) {
-        long rightNow = System.currentTimeMillis();
-        Date beforeMidnightOfDate = DateHelper.strToDate(beforeMidnightOfDateStr);
-        return rightNow > beforeMidnightOfDate.getTime();
     }
 
     public static String dateToStr(Date date) {

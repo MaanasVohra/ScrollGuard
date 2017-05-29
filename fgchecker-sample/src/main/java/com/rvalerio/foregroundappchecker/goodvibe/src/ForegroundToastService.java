@@ -18,6 +18,12 @@ import android.util.Log;
 
 import com.android.volley.VolleyError;
 import com.rvalerio.fgchecker.AppChecker;
+import com.rvalerio.foregroundappchecker.R;
+import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
+import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.personalize.AdaptivePersonalize;
+import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,11 +34,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import com.rvalerio.foregroundappchecker.R;
-import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
-import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
-import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
-import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
+import static com.rvalerio.foregroundappchecker.goodvibe.src.Store.setBoolean;
 
 
 public class ForegroundToastService extends Service {
@@ -120,33 +122,25 @@ public class ForegroundToastService extends Service {
         return myKM.inKeyguardRestrictedInputMode();
     }
 
-    private int getFBTimeSpent() {
+    private int getCurrentFBTimeSpent() {
         return Store.getInt(mContext, FB_TIME_SPENT);
     }
 
-    private int getFBNumOfOpens() {
+    private int getCurrentFBNumOfOpens() {
         return Store.getInt(mContext, FB_NUM_OF_OPENS);
     }
 
     private void updateFBLimits() {
-        int fbTimeSpent = getFBTimeSpent();
-        int fbNumOfOpens = getFBNumOfOpens();
-        String beforeMidnightOfDate = StudyInfo.getTreatmentStartDateStr(mContext);
-
-        int timeLimit = 0;
-        int openLimit = 0;
+        String treatmentStartDateStr = StudyInfo.getTreatmentStartDateStr(mContext);
         int experimentGroup = StudyInfo.getCurrentExperimentGroup(mContext);
-        switch (experimentGroup) {
-            case StudyInfo.STATIC_GROUP:
-                StaticPersonalize.addDataPoint(mContext, fbTimeSpent, fbNumOfOpens, beforeMidnightOfDate);
-                timeLimit = StaticPersonalize.getAverage(mContext, StaticPersonalize.ALL_TIME_SPENT, StaticPersonalize.FIRST_7_DAYS);
-                openLimit = StaticPersonalize.getAverage(mContext, StaticPersonalize.ALL_NUM_OF_OPENS, StaticPersonalize.FIRST_7_DAYS);
-                break;
-            case StudyInfo.ADAPTIVE_GROUP:
-                break;
-        }
-        StudyInfo.updateFBLimitsOfStudy(mContext, timeLimit, openLimit);
+        StaticPersonalize personalize = (experimentGroup == StudyInfo.STATIC_GROUP) ?
+                new StaticPersonalize(mContext, treatmentStartDateStr) :
+                new AdaptivePersonalize(mContext, treatmentStartDateStr);
 
+        personalize.addDataPoint(getCurrentFBTimeSpent(), getCurrentFBNumOfOpens());
+        int timeLimit = personalize.getAverageTimeSpent();
+        int openLimit = personalize.getAverageTimeOpen();
+        StudyInfo.updateFBLimitsOfStudy(mContext, timeLimit, openLimit);
     }
 
     private void updateLastDate() {
@@ -160,7 +154,7 @@ public class ForegroundToastService extends Service {
             Store.setInt(mContext, "totalSeconds", 0);
             Store.setInt(mContext, "totalOpens", 0);
             Store.setString(mContext, Store.SCREEN_LOGS, "");
-            Store.setBoolean(mContext, "serverUpdatedToday", false);
+            setBoolean(mContext, "serverUpdatedToday", false);
         }
     }
 
@@ -192,9 +186,10 @@ public class ForegroundToastService extends Service {
                     public void onForeground(String packageName) {
                         if (isLockedScreen()) return;
                         recordTimeSpent(packageName);
+                        updateLastDate();
+                        setBoolean(mContext, "fbVisitedAnotherApp", true);
 
 //                        increaseInt(mContext, "totalSeconds", 5);
-//                        setBoolean(mContext, "fbVisitedAnotherApp", true);
 
 //                        updateNotification(getCurrentStats());
 //                        updateLastDate();
@@ -241,7 +236,7 @@ public class ForegroundToastService extends Service {
 
         if (Store.getBoolean(mContext, "fbVisitedAnotherApp")) {
             Store.increaseInt(mContext, FB_NUM_OF_OPENS, 1);
-            Store.setBoolean(mContext, "fbVisitedAnotherApp", false);
+            setBoolean(mContext, "fbVisitedAnotherApp", false);
         }
 
         int fbTimeSpent = Store.getInt(mContext, FB_TIME_SPENT);
@@ -265,9 +260,9 @@ public class ForegroundToastService extends Service {
 
     private void checkIfShouldSubmitID(int fbTimeSpent, int fbNumOfOpens) {
         if (!Store.getBoolean(mContext, Store.ENROLLED)) {
-            if (fbTimeSpent >= 15 && fbNumOfOpens >= 3) {
+            if (fbTimeSpent >= 15 && fbNumOfOpens >= 2) {
                 updateNotification("Successful! Submit workerId in app to get code.");
-                Store.setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
+                setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
             }
         }
     }
@@ -280,7 +275,7 @@ public class ForegroundToastService extends Service {
     }
 
     private boolean shouldAllowVibration() {
-        return Store.getInt(mContext, Store.EXPERIMENT_GROUP) == 2;
+        return Store.getInt(mContext, Store.EXPERIMENT_GROUP) == StudyInfo.ADAPTIVE_GROUP;
     }
 
     private boolean shouldStopServerLogging() {
@@ -332,7 +327,7 @@ public class ForegroundToastService extends Service {
         @Override
         public void onConnectSuccess(JSONObject result) {
             Log.i(TAG, "Submit Stats: " + result.toString());
-            Store.setBoolean(mContext, "serverUpdatedToday", true);
+            setBoolean(mContext, "serverUpdatedToday", true);
             StudyInfo.updateStoredAdminParams(mContext, result);
         }
 
