@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import helper.FileHelper;
 import io.smalldata.api.CallAPI;
 import io.smalldata.api.VolleyJsonCallback;
 
@@ -42,6 +43,7 @@ import static com.rvalerio.foregroundappchecker.Store.setStoreString;
 
 
 public class ForegroundToastService extends Service {
+    private static final String FG_LOGS_CSV_FILENAME = "fgLogs.csv";
     private static String TAG = "ForegroundToastService";
     private final static String STOP_SERVICE = ForegroundToastService.class.getPackage() + ".stop";
     private final static int NOTIFICATION_ID = 1234;
@@ -160,6 +162,7 @@ public class ForegroundToastService extends Service {
                     public void onForeground(String packageName) {
                         if (isLockedScreen()) return;
                         doFacebookOperation();
+                        recordTimeSpent(packageName);
                     }
                 })
                 .when(StudyInfo.GMAIL_PACKAGE_NAME, new AppChecker.Listener() {
@@ -218,13 +221,22 @@ public class ForegroundToastService extends Service {
 
     private void recordTimeSpent(String packageName) {
         if (isLockedScreen()) return;
+
         int timer = 0;
         if (packageName.equals(getLastFgApp())) {
             timer = getStoreInt(mContext, packageName);
+        } else {
+            String lastApp = getLastFgApp();
+            int lastAppTimeSpent = getStoreInt(mContext, lastApp);
+            String data = String.format(locale, "%s, %d, %d \n", lastApp, lastAppTimeSpent, System.currentTimeMillis());
+            FileHelper.appendToFile(mContext, FG_LOGS_CSV_FILENAME, data);
         }
+
         timer += 5;
-        String msg = String.format(locale, "%s: %d secs.", packageName, timer);
-        updateNotification(msg);
+        if (!packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
+            String msg = String.format(locale, "%s: %d secs.", packageName, timer);
+            updateNotification(msg);
+        }
         setStoreInt(mContext, packageName, timer);
         setLastFgApp(packageName);
     }
