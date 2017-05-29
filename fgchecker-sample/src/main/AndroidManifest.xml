@@ -23,7 +23,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".goodvibe.src.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -32,7 +32,7 @@
 
 
         <receiver
-            android:name=".StartMyServiceAtBootReceiver">
+            android:name=".goodvibe.src.StartMyServiceAtBootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
@@ -42,13 +42,13 @@
 
 
         <service
-            android:name=".ForegroundToastService"
+            android:name=".goodvibe.src.ForegroundToastService"
             android:enabled="true"
             android:exported="false" />
 
 
         <service
-            android:name=".RefreshService"
+            android:name=".goodvibe.src.RefreshService"
             android:enabled="true"
             android:exported="false" />
 
