@@ -165,54 +165,54 @@ public class ForegroundToastService extends Service {
                         recordTimeSpent(packageName);
                     }
                 })
-                .when(StudyInfo.GMAIL_PACKAGE_NAME, new AppChecker.Listener() {
-                    @Override
-                    public void onForeground(String packageName) {
-                        recordTimeSpent(packageName);
-                    }
-                })
-                .when(StudyInfo.INSTAGRAM_PACKAGE_NAME, new AppChecker.Listener() {
-                    @Override
-                    public void onForeground(String packageName) {
-                        recordTimeSpent(packageName);
-                    }
-                })
-                .when(StudyInfo.PINTEREST_PACKAGE_NAME, new AppChecker.Listener() {
-                    @Override
-                    public void onForeground(String packageName) {
-                        recordTimeSpent(packageName);
-                    }
-                })
-                .when(StudyInfo.SNAPCHAT_PACKAGE_NAME, new AppChecker.Listener() {
-                    @Override
-                    public void onForeground(String packageName) {
-                        recordTimeSpent(packageName);
-                    }
-                })
-                .when(StudyInfo.WHATSAPP_PACKAGE_NAME, new AppChecker.Listener() {
-                    @Override
-                    public void onForeground(String packageName) {
-                        recordTimeSpent(packageName);
-                    }
-                })
-                .when(StudyInfo.YOUTUBE_PACKAGE_NAME, new AppChecker.Listener() {
-                    @Override
-                    public void onForeground(String packageName) {
-                        recordTimeSpent(packageName);
-                    }
-                })
+//                .when(StudyInfo.GMAIL_PACKAGE_NAME, new AppChecker.Listener() {
+//                    @Override
+//                    public void onForeground(String packageName) {
+//                        recordTimeSpent(packageName);
+//                    }
+//                })
+//                .when(StudyInfo.INSTAGRAM_PACKAGE_NAME, new AppChecker.Listener() {
+//                    @Override
+//                    public void onForeground(String packageName) {
+//                        recordTimeSpent(packageName);
+//                    }
+//                })
+//                .when(StudyInfo.PINTEREST_PACKAGE_NAME, new AppChecker.Listener() {
+//                    @Override
+//                    public void onForeground(String packageName) {
+//                        recordTimeSpent(packageName);
+//                    }
+//                })
+//                .when(StudyInfo.SNAPCHAT_PACKAGE_NAME, new AppChecker.Listener() {
+//                    @Override
+//                    public void onForeground(String packageName) {
+//                        recordTimeSpent(packageName);
+//                    }
+//                })
+//                .when(StudyInfo.WHATSAPP_PACKAGE_NAME, new AppChecker.Listener() {
+//                    @Override
+//                    public void onForeground(String packageName) {
+//                        recordTimeSpent(packageName);
+//                    }
+//                })
+//                .when(StudyInfo.YOUTUBE_PACKAGE_NAME, new AppChecker.Listener() {
+//                    @Override
+//                    public void onForeground(String packageName) {
+//                        recordTimeSpent(packageName);
+//                    }
+//                })
                 .other(new AppChecker.Listener() {
                     @Override
                     public void onForeground(String packageName) {
                         if (isLockedScreen()) return;
-                        setLastFgApp(packageName);
+                        recordTimeSpent(packageName);
 
-                        increaseStoreInt(mContext, "totalSeconds", 5);
-                        setStoreBoolean(mContext, "fbVisitedAnotherApp", true);
+//                        increaseStoreInt(mContext, "totalSeconds", 5);
+//                        setStoreBoolean(mContext, "fbVisitedAnotherApp", true);
 
-                        updateNotification(getCurrentStats());
-                        updateLastDate();
-                        checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
+//                        updateNotification(getCurrentStats());
+//                        updateLastDate();
+//                        checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
 
                     }
 
