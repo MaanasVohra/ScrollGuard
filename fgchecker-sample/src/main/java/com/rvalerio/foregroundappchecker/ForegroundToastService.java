@@ -154,53 +154,115 @@ public class ForegroundToastService extends Service {
 
     private void startChecker() {
         appChecker = new AppChecker();
-        appChecker.when(StudyInfo.FACEBOOK_PACKAGE_NAME, new AppChecker.Listener() {
-            @Override
-            public void onForeground(String packageName) {
-                if (isLockedScreen()) return;
+        appChecker
+                .when(StudyInfo.FACEBOOK_PACKAGE_NAME, new AppChecker.Listener() {
+                    @Override
+                    public void onForeground(String packageName) {
+                        if (isLockedScreen()) return;
+                        doFacebookOperation();
+                    }
+                })
+                .when(StudyInfo.GMAIL_PACKAGE_NAME, new AppChecker.Listener() {
+                    @Override
+                    public void onForeground(String packageName) {
+                        recordTimeSpent(packageName);
+                    }
+                })
+                .when(StudyInfo.INSTAGRAM_PACKAGE_NAME, new AppChecker.Listener() {
+                    @Override
+                    public void onForeground(String packageName) {
+                        recordTimeSpent(packageName);
+                    }
+                })
+                .when(StudyInfo.PINTEREST_PACKAGE_NAME, new AppChecker.Listener() {
+                    @Override
+                    public void onForeground(String packageName) {
+                        recordTimeSpent(packageName);
+                    }
+                })
+                .when(StudyInfo.SNAPCHAT_PACKAGE_NAME, new AppChecker.Listener() {
+                    @Override
+                    public void onForeground(String packageName) {
+                        recordTimeSpent(packageName);
+                    }
+                })
+                .when(StudyInfo.WHATSAPP_PACKAGE_NAME, new AppChecker.Listener() {
+                    @Override
+                    public void onForeground(String packageName) {
+                        recordTimeSpent(packageName);
+                    }
+                })
+                .when(StudyInfo.YOUTUBE_PACKAGE_NAME, new AppChecker.Listener() {
+                    @Override
+                    public void onForeground(String packageName) {
+                        recordTimeSpent(packageName);
+                    }
+                })
+                .other(new AppChecker.Listener() {
+                    @Override
+                    public void onForeground(String packageName) {
+                        if (isLockedScreen()) return;
+                        setLastFgApp(packageName);
 
-                increaseStoreInt(mContext, "totalSeconds", 5);
-                increaseStoreInt(mContext, "fbTimeSpent", 5);
+                        increaseStoreInt(mContext, "totalSeconds", 5);
+                        setStoreBoolean(mContext, "fbVisitedAnotherApp", true);
 
-                if (getStoreBoolean(mContext, "fbVisitedAnotherApp")) {
-                    increaseStoreInt(mContext, "fbNumOfOpens", 1);
-                    setStoreBoolean(mContext, "fbVisitedAnotherApp", false);
-                }
+                        updateNotification(getCurrentStats());
+                        updateLastDate();
+                        checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
 
-                fbTimeSpent = getStoreInt(mContext, "fbTimeSpent");
-                fbNumOfOpens = getStoreInt(mContext, "fbNumOfOpens");
-                updateNotification(getCurrentStats());
-                updateLastDate();
+                    }
 
-                checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
-                if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
+                }).timeout(5000).start(this);
+    }
 
-                    // vibration should only happen during treatment/intervention period
-                    // and only participants in group 2 should experience vibration as group 1 is control group
-                    if (!isTreatmentPeriod()) return;
-                    if (!shouldAllowVibration()) return;
-                    Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                    long[] pattern = {0, 100, 100, 100, 100};
-                    v.vibrate(pattern, -1);
-                }
+    private void recordTimeSpent(String packageName) {
+        if (isLockedScreen()) return;
+        int timer = 0;
+        if (packageName.equals(getLastFgApp())) {
+            timer = getStoreInt(mContext, packageName);
+        }
+        timer += 5;
+        String msg = String.format(locale, "%s: %d secs.", packageName, timer);
+        updateNotification(msg);
+        setStoreInt(mContext, packageName, timer);
+        setLastFgApp(packageName);
+    }
 
-            }
+    private String getLastFgApp() {
+        return getStoreString(mContext, "lastFgApp");
+    }
 
-        }).other(new AppChecker.Listener() {
-            @Override
-            public void onForeground(String packageName) {
-                if (isLockedScreen()) return;
+    private void setLastFgApp(String packageName) {
+        setStoreString(mContext, "lastFgApp", packageName);
+    }
 
-                increaseStoreInt(mContext, "totalSeconds", 5);
-                setStoreBoolean(mContext, "fbVisitedAnotherApp", true);
+    private void doFacebookOperation() {
+        increaseStoreInt(mContext, "totalSeconds", 5);
+        increaseStoreInt(mContext, "fbTimeSpent", 5);
 
-                updateNotification(getCurrentStats());
-                updateLastDate();
-                checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
+        if (getStoreBoolean(mContext, "fbVisitedAnotherApp")) {
+            increaseStoreInt(mContext, "fbNumOfOpens", 1);
+            setStoreBoolean(mContext, "fbVisitedAnotherApp", false);
+        }
 
-            }
+        fbTimeSpent = getStoreInt(mContext, "fbTimeSpent");
+        fbNumOfOpens = getStoreInt(mContext, "fbNumOfOpens");
+        updateNotification(getCurrentStats());
+        updateLastDate();
 
-        }).timeout(5000).start(this);
+        checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
+        if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
+
+            // vibration should only happen during treatment/intervention period
+            // and only participants in group 2 should experience vibration as group 1 is control group
+            if (!isTreatmentPeriod()) return;
+            if (!shouldAllowVibration()) return;
+            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            long[] pattern = {0, 100, 100, 100, 100};
+            v.vibrate(pattern, -1);
+        }
+
     }
 
     private void checkIfShouldSubmitID(int fbTimeSpent, int fbNumOfOpens) {
@@ -368,8 +430,8 @@ public class ForegroundToastService extends Service {
     }
 
     private String getLastNChars(String myString, int n) {
-        if(myString.length() > n) {
-            return myString.substring(myString.length()-n);
+        if (myString.length() > n) {
+            return myString.substring(myString.length() - n);
         } else {
             return myString;
         }

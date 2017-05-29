@@ -18,6 +18,12 @@ class StudyInfo {
     private static final int TEMP_FB_MAX_DAILY_MINUTES = 10;
     private static final int TEMP_FB_MAX_DAILY_OPENS = 2;
     final static String FACEBOOK_PACKAGE_NAME = "com.facebook.katana";
+    final static String GMAIL_PACKAGE_NAME = "com.google.android.gm";
+    final static String INSTAGRAM_PACKAGE_NAME = "com.instagram.android";
+    final static String PINTEREST_PACKAGE_NAME = "com.pinterest";
+    final static String SNAPCHAT_PACKAGE_NAME = "com.snapchat.android";
+    final static String WHATSAPP_PACKAGE_NAME = "com.whatsapp";
+    final static String YOUTUBE_PACKAGE_NAME = "com.google.android.youtube";
 
     static void saveTodayAsExperimentJoinDate(Context context) {
         Store.setStoreString(context, Store.EXPERIMENT_JOIN_DATE, Helper.getTodayDateStr());
