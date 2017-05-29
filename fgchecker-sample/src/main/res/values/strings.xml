@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Beevibe</string>
+    <string name="app_name">GoodVibes</string>
     <string name="btn_usage_permission">Request permission</string>
     <string name="btn_service_start">Start Service</string>
     <string name="usage_permission_granted">Application has been successfully granted usage stats permission.</string>
