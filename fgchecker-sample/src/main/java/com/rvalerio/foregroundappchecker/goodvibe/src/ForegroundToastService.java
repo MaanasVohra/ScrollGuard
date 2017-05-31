@@ -21,7 +21,9 @@ import com.rvalerio.fgchecker.AppChecker;
 import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.JsonHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.AdaptivePersonalize;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
 
@@ -34,6 +36,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import static com.rvalerio.foregroundappchecker.goodvibe.helper.JsonHelper.strToJsonObject;
 import static com.rvalerio.foregroundappchecker.goodvibe.src.Store.setBoolean;
 
 
@@ -193,7 +196,7 @@ public class ForegroundToastService extends Service {
 
 //                        updateNotification(getCurrentStats());
 //                        updateLastDate();
-//                        checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
+//                        checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
 
                     }
 
@@ -244,7 +247,7 @@ public class ForegroundToastService extends Service {
         updateNotification(getCurrentStats());
         updateLastDate();
 
-        checkIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
+        checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
         if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
 
             // vibration should only happen during treatment/intervention period
@@ -258,7 +261,7 @@ public class ForegroundToastService extends Service {
 
     }
 
-    private void checkIfShouldSubmitID(int fbTimeSpent, int fbNumOfOpens) {
+    private void checkAndActivateIfShouldSubmitID(int fbTimeSpent, int fbNumOfOpens) {
         if (!Store.getBoolean(mContext, Store.ENROLLED)) {
             if (fbTimeSpent >= 15 && fbNumOfOpens >= 2) {
                 updateNotification("Successful! Submit workerId in app to get code.");
@@ -284,23 +287,20 @@ public class ForegroundToastService extends Service {
         return rightNow > loggingStop.getTime();
     }
 
-    // only update server records when user has submitted ID and study is still ongoing
     public void updateServerRecords() {
         if (StudyInfo.getWorkerID(mContext).equals("")) return;
+        if (StudyInfo.getLoggingStopDateStr(mContext).equals("")) return;
         if (shouldStopServerLogging()) {
-            updateNotification("Experiment has ended. Uninstall app.");
+            updateNotification("Experiment has ended. Please Uninstall app.");
             return;
         }
         JSONObject params = generateParamsForServer();
         CallAPI.submitFBStats(mContext, params, submitStatsResponseHandler);
 
-        String logs = FileHelper.readFromFile(mContext, FG_LOGS_CSV_FILENAME);
-        try {
-            JSONObject fgParams = new JSONObject(logs);
-            CallAPI.submitFgAppLogs(mContext, fgParams, submitStatsResponseHandler);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        // FIXME: 5/30/17 wrong logging stop date
+//        String logs = FileHelper.readFromFile(mContext, FG_LOGS_CSV_FILENAME);
+//        JSONObject fgParams = JsonHelper.strToJsonObject(logs);
+//        CallAPI.submitFgAppLogs(mContext, fgParams, submitStatsResponseHandler);
     }
 
     private JSONObject generateParamsForServer() {
@@ -335,6 +335,7 @@ public class ForegroundToastService extends Service {
         public void onConnectFailure(VolleyError error) {
             String msg = "Stats submit error: " + error.toString();
             Log.e(TAG, "StatsError: " + msg);
+            AlarmHelper.showInstantNotif(mContext, "OnConnectFailure() error", msg, "", 3333);
         }
 
     };
