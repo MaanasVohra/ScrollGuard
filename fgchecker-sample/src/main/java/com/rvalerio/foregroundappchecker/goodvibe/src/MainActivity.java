@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
     private void startTrackingService() {
         StudyInfo.setDefaults(mContext);
         ForegroundToastService.start(mContext);
-        RefreshService.startRefreshInIntervals(mContext);
+//        RefreshService.startRefreshInIntervals(mContext);
 //        finish();
     }
 
@@ -149,9 +149,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void submitWorkerID() {
-        Store.setString(mContext, Store.WORKER_ID, etWorkerID.getText().toString());
+        String workerId = etWorkerID.getText().toString().toLowerCase().trim();
+        etWorkerID.setText(workerId);
+        Store.setString(mContext, Store.WORKER_ID, workerId);
         JSONObject params = new JSONObject();
-        Helper.setJSONValue(params, "worker_id", etWorkerID.getText().toString());
+        Helper.setJSONValue(params, "worker_id", workerId);
 
         JSONObject deviceInfo = DeviceInfo.getPhoneDetails(mContext);
         Helper.copy(deviceInfo, params);
@@ -166,6 +168,8 @@ public class MainActivity extends AppCompatActivity {
             if (result.optInt("status") == 200) {
                 Store.setBoolean(mContext, Store.ENROLLED, true);
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
+                StudyInfo.setDefaults(mContext);
+                RefreshService.startRefreshInIntervals(mContext);
                 showSuccess(tvSubmitFeedback, response);
                 showSuccess(tvSurveyLink, result.optString("survey_link"));
             } else {
