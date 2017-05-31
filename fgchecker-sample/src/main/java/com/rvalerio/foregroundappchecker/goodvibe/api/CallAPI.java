@@ -97,29 +97,5 @@ public class CallAPI {
         SingletonRequest.getInstance(cxt).addToRequestQueue(request);
     }
 
-
-// TODO:
-/*
-    'fetch_all_intv_by_order': { // code
-      method: 'GET',
-      url: BASE_URL + '/mobile/ordered/interventions/:code',
-      timeout: TIMEOUT,
-      isArray: true
-    },
-
-    'fetch_rt_realtime': { // email, date
-      method: 'GET',
-      url: BASE_URL + '/rescuetime/realtime/:email/:date',
-      timeout: TIMEOUT
-    },
-
-    'fetch_rt_summary': { // email, date
-      method: 'GET',
-      url: BASE_URL + '/rescuetime/summary/:email/:date',
-      timeout: TIMEOUT
-    }
- */
-
-
 }
 

@@ -59,9 +59,6 @@ public class ForegroundToastService extends Service {
 
     private boolean firstTime = true;
 
-//    private final static long UPDATE_SERVER_INTERVAL_MS = 2 * 3600 * 1000 / 6; // FIXME: 4/6/17
-//    private Handler serverHandler = new Handler();
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -267,7 +264,7 @@ public class ForegroundToastService extends Service {
 
     private void checkAndActivateIfShouldSubmitID(int fbTimeSpent, int fbNumOfOpens) {
         if (!Store.getBoolean(mContext, Store.ENROLLED)) {
-            if (fbTimeSpent >= 15 && fbNumOfOpens >= 2) {
+            if (fbTimeSpent >= 15 && fbNumOfOpens >= 2) { 
                 updateNotification("Successful! Submit workerId in app to get code.");
                 setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
             }
@@ -305,7 +302,7 @@ public class ForegroundToastService extends Service {
         JSONObject params = generateParamsForServer();
         CallAPI.submitFBStats(mContext, params, submitStatsResponseHandler);
 
-        // FIXME: 5/30/17 wrong logging stop date
+        // TODO: 5/31/17 save all logs in file 
 //        String logs = FileHelper.readFromFile(mContext, FG_LOGS_CSV_FILENAME);
 //        JSONObject fgParams = JsonHelper.strToJsonObject(logs);
 //        CallAPI.submitFgAppLogs(mContext, fgParams, submitStatsResponseHandler);
@@ -379,8 +376,9 @@ public class ForegroundToastService extends Service {
                     state = info.getState();
                 }
 
-                Boolean serverIsNotYetUpdated = !Store.getBoolean(mContext, "serverUpdatedToday");
-                if (state == NetworkInfo.State.CONNECTED && serverIsNotYetUpdated) {
+                boolean userIsEnrolled = Store.getBoolean(mContext, Store.ENROLLED);
+                boolean serverIsNotYetUpdated = !Store.getBoolean(mContext, "serverUpdatedToday");
+                if (userIsEnrolled && serverIsNotYetUpdated && state == NetworkInfo.State.CONNECTED) {
                     updateServerRecords();
                 }
             }

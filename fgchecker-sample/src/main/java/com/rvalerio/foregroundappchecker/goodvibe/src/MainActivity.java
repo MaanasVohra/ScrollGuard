@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startTrackingService() {
-        StudyInfo.setDefaults(mContext);
+//        StudyInfo.setDefaults(mContext);
         ForegroundToastService.start(mContext);
 //        RefreshService.startRefreshInIntervals(mContext);
 //        finish();
