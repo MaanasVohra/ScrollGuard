@@ -23,6 +23,7 @@ import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.NetworkHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.AdaptivePersonalize;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
 
@@ -293,6 +294,7 @@ public class ForegroundToastService extends Service {
     }
 
     public void updateServerRecords() {
+        if (!NetworkHelper.isDeviceOnline(mContext)) return;
         if (!workerExists()) return;
         if (!stopDateExists()) return;
         if (shouldStopServerLogging()) {
