@@ -101,19 +101,11 @@ public class MainActivity extends AppCompatActivity {
         btStartService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                ForegroundToastService.startMonitoringFacebookUsage(mContext);
                 Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
-                startTrackingService();
             }
         });
     }
-
-    private void startTrackingService() {
-//        StudyInfo.setDefaults(mContext);
-        ForegroundToastService.start(mContext);
-//        RefreshService.startRefreshInIntervals(mContext);
-//        finish();
-    }
-
 
     private void prepareToReceiveWorkerID() {
         if (!Store.getBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN)) return;
@@ -142,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         Toast.makeText(mContext, "WorkerId submitted.", Toast.LENGTH_SHORT).show();
                         submitWorkerID();
-                        startTrackingService();
+                        ForegroundToastService.startMonitoringFacebookUsage(mContext);
                     }
                 })
                 .setNegativeButton(android.R.string.no, null).show();
@@ -169,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                 Store.setBoolean(mContext, Store.ENROLLED, true);
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 StudyInfo.setDefaults(mContext);
-                RefreshService.startRefreshInIntervals(mContext);
+                new AutoUpdateAlarm().setAlarmForPeriodicUpdate(mContext);
                 showSuccess(tvSubmitFeedback, response);
                 showSuccess(tvSurveyLink, result.optString("survey_link"));
             } else {

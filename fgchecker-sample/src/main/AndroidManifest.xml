@@ -46,11 +46,15 @@
             android:enabled="true"
             android:exported="false" />
 
+        <receiver
+            android:process=":remote"
+            android:name=".goodvibe.src.AutoUpdateAlarm" />
 
         <service
-            android:name=".goodvibe.src.RefreshService"
+            android:name=".goodvibe.src.AutoUpdateAlarmService"
             android:enabled="true"
-            android:exported="false" />
+            android:process=":goodvibeAlarm" >
+        </service>
 
     </application>
 
