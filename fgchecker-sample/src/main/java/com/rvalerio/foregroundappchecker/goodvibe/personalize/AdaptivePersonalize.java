@@ -16,7 +16,6 @@ import java.util.Date;
 
 public class AdaptivePersonalize extends StaticPersonalize {
     private static final int LAST_N_DAYS = 7;
-    private static final int EVERY_N_DAYS = 7;
 
     public AdaptivePersonalize(Context context, String treatmentStartDateStr) {
         super(context, treatmentStartDateStr);
@@ -46,7 +45,7 @@ public class AdaptivePersonalize extends StaticPersonalize {
         Date today = DateHelper.strToDate(DateHelper.getTodayDateStr());
         final long oneDayInMillis = 24 * 60 * 60 * 1000;
         long diffInDays = (today.getTime() - treatmentStartDate.getTime()) / oneDayInMillis;
-        return diffInDays % EVERY_N_DAYS == 0;
+        return diffInDays > LAST_N_DAYS;
     }
 }
 
