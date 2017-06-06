@@ -23,12 +23,11 @@ import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.JsonHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.NetworkHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.AdaptivePersonalize;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
@@ -36,12 +35,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import static android.R.id.message;
 import static com.rvalerio.foregroundappchecker.goodvibe.src.Store.setBoolean;
 
 
 public class ForegroundToastService extends Service {
-    private static final String FG_LOGS_CSV_FILENAME = "fgLogs.csv";
     private static String TAG = "ForegroundToastService";
     private final static String STOP_SERVICE = ForegroundToastService.class.getPackage() + ".stop";
     private final static int NOTIFICATION_ID = 1234;
@@ -56,8 +53,8 @@ public class ForegroundToastService extends Service {
     private BroadcastReceiver screenUnlockReceiver;
     private AppChecker appChecker;
 
-    private NotificationCompat.Builder mBuilder;
-    private NotificationManager mNotificationManager;
+    private NotificationCompat.Builder mBuilder; // FIXME: 6/2/17 return here and fix
+    private NotificationManager mNotificationManager; // FIXME: 6/2/17 return here and fix
 
     private boolean firstTime = true;
 
@@ -148,7 +145,7 @@ public class ForegroundToastService extends Service {
             Store.setInt(mContext, "totalSeconds", 0);
             Store.setInt(mContext, "totalOpens", 0);
             Store.setString(mContext, Store.SCREEN_LOGS, "");
-            setBoolean(mContext, "serverUpdatedToday", false);
+            Store.setBoolean(mContext, "serverUpdatedToday", false);
         }
     }
 
@@ -181,7 +178,7 @@ public class ForegroundToastService extends Service {
                         if (isLockedScreen()) return;
                         recordTimeSpent(packageName);
                         updateLastDate();
-                        setBoolean(mContext, "fbVisitedAnotherApp", true);
+                        Store.setBoolean(mContext, "fbVisitedAnotherApp", true);
 
 //                        increaseInt(mContext, "totalSeconds", 5);
 
@@ -201,10 +198,10 @@ public class ForegroundToastService extends Service {
         if (packageName.equals(getLastFgApp())) {
             timer = Store.getInt(mContext, packageName);
         } else {
-            String lastApp = getLastFgApp();
-            int lastAppTimeSpent = Store.getInt(mContext, lastApp);
-            String data = String.format(locale, "%s, %d, %d \n", lastApp, lastAppTimeSpent, System.currentTimeMillis());
-            FileHelper.appendToFile(mContext, FG_LOGS_CSV_FILENAME, data);
+            String lastAppId = getLastFgApp();
+            int lastAppTimeSpent = Store.getInt(mContext, lastAppId);
+            String data = String.format(locale, "%s, %d, %d;\n", lastAppId, lastAppTimeSpent, System.currentTimeMillis());
+            FileHelper.appendToFile(mContext, Store.FG_LOGS_CSV_FILENAME, data);
         }
 
         timer += 5;
@@ -230,7 +227,7 @@ public class ForegroundToastService extends Service {
 
         if (Store.getBoolean(mContext, "fbVisitedAnotherApp")) {
             Store.increaseInt(mContext, FB_CURRENT_NUM_OF_OPENS, 1);
-            setBoolean(mContext, "fbVisitedAnotherApp", false);
+            Store.setBoolean(mContext, "fbVisitedAnotherApp", false);
         }
 
         int fbTimeSpent = Store.getInt(mContext, FB_CURRENT_TIME_SPENT);
@@ -256,7 +253,7 @@ public class ForegroundToastService extends Service {
         if (!Store.getBoolean(mContext, Store.ENROLLED)) {
             if (fbTimeSpent >= 15 && fbNumOfOpens >= 2) {
                 updateNotification(mContext, "Successful! Submit workerId in app to get code.");
-                setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
+                Store.setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
             }
         }
     }
@@ -290,15 +287,33 @@ public class ForegroundToastService extends Service {
             updateNotification(context, "Experiment has ended. Please Uninstall app.");
             return;
         }
-        CallAPI.submitFBStats(context, getJsonParamsForServer(context), getSubmitStatsResponseHandler(context));
-
-        // TODO: 5/31/17 save all logs in file 
-//        String logs = FileHelper.readFromFile(mContext, FG_LOGS_CSV_FILENAME);
-//        JSONObject fgParams = JsonHelper.strToJsonObject(logs);
-//        CallAPI.submitFgAppLogs(mContext, fgParams, submitStatsResponseHandler);
+        sendFBStats(context);
+        sendFgAppLogs(context);
+        sendScreenEventLogs(context);
     }
 
-    private static JSONObject getJsonParamsForServer(Context context) {
+    private static void sendFBStats(Context context) {
+        CallAPI.submitFBStats(context, getFBParams(context), getFBResponseHandler(context));
+    }
+
+    private static void sendFgAppLogs(Context context) {
+        JSONObject params = getLogParams(context, Store.FG_LOGS_CSV_FILENAME);
+        CallAPI.submitFgAppLogs(context, params, getLogResponseHandler(context, Store.FG_LOGS_CSV_FILENAME));
+    }
+
+    private static void sendScreenEventLogs(Context context) {
+        JSONObject params = getLogParams(context, Store.SCREEN_LOGS_CSV_FILENAME);
+        CallAPI.submitScreenEventLogs(context, params, getLogResponseHandler(context, Store.SCREEN_LOGS_CSV_FILENAME));
+    }
+
+    private static JSONObject getLogParams(Context context, String filename) {
+        JSONObject params = new JSONObject();
+        JsonHelper.setJSONValue(params, "worker_id", StudyInfo.getWorkerID(context));
+        JsonHelper.setJSONValue(params, "logs", FileHelper.readFromFile(context, filename));
+        return params;
+    }
+
+    private static JSONObject getFBParams(Context context) {
         JSONObject params = new JSONObject();
         Helper.setJSONValue(params, "worker_id", Store.getString(context, Store.WORKER_ID));
         Helper.setJSONValue(params, "total_seconds", Store.getInt(context, "totalSeconds"));
@@ -318,12 +333,12 @@ public class ForegroundToastService extends Service {
         return params;
     }
 
-    public static VolleyJsonCallback getSubmitStatsResponseHandler(final Context context) {
+    public static VolleyJsonCallback getFBResponseHandler(final Context context) {
         return new VolleyJsonCallback() {
             @Override
             public void onConnectSuccess(JSONObject result) {
                 Log.i(TAG, "Submit Stats: " + result.toString());
-                setBoolean(context, "serverUpdatedToday", true);
+                Store.setBoolean(context, "serverUpdatedToday", true);
                 StudyInfo.updateStoredAdminParams(context, result);
             }
 
@@ -331,11 +346,30 @@ public class ForegroundToastService extends Service {
             public void onConnectFailure(VolleyError error) {
                 String msg = "Stats submit error: " + error.toString();
                 Log.e(TAG, "StatsError: " + msg);
-                AlarmHelper.showInstantNotif(context, "OnConnectFailure() error", msg, "", 3333);
+                AlarmHelper.showInstantNotif(context, "FB submit error", msg, "", 3333); // FIXME: 6/2/17 remove
+            }
+        };
+    }
+
+    private static VolleyJsonCallback getLogResponseHandler(final Context context, final String filenameToReset) {
+        return new VolleyJsonCallback() {
+            @Override
+            public void onConnectSuccess(JSONObject result) {
+                Log.i(TAG, "FgApp Submit response: " + result.toString());
+                setBoolean(context, filenameToReset + "UpdatedToday", true);
+                FileHelper.resetFile(context, filenameToReset);
+            }
+
+            @Override
+            public void onConnectFailure(VolleyError error) {
+                String msg = "Stats submit error: " + error.toString();
+                AlarmHelper.showInstantNotif(context, filenameToReset + " submit error", msg, "", 3223); // FIXME: 6/2/17 remove
+                Log.e(TAG, "FgApp StatsError: " + msg);
             }
         };
 
     }
+
 
     private String getCurrentStats() {
         Integer fbTimeSpent = Store.getInt(mContext, FB_CURRENT_TIME_SPENT);
@@ -371,6 +405,7 @@ public class ForegroundToastService extends Service {
                 boolean userIsEnrolled = Store.getBoolean(mContext, Store.ENROLLED);
                 boolean serverIsNotYetUpdated = !Store.getBoolean(mContext, "serverUpdatedToday");
                 if (userIsEnrolled && serverIsNotYetUpdated && state == NetworkInfo.State.CONNECTED) {
+
                     updateServerRecords(mContext);
                 }
             }
@@ -386,6 +421,8 @@ public class ForegroundToastService extends Service {
             @Override
             public void onReceive(Context context, Intent intent) {
                 updateScreenLog(context, intent);
+
+                // FIXME: 6/2/17 big time bug with screen lock count!!!!!!!!!!!1
                 if (intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
                     Store.increaseInt(mContext, "totalOpens", 1);
                     Log.d(TAG, "Phone unlocked");
@@ -402,30 +439,23 @@ public class ForegroundToastService extends Service {
     }
 
     private void updateScreenLog(Context context, Intent intent) {
-        String strLogs = Store.getString(context, Store.SCREEN_LOGS);
-
-        JSONArray logs = new JSONArray();
-        if (!strLogs.equals("")) {
-            try {
-                logs = new JSONArray(strLogs);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
         String screenAction = intent.getAction();
-        if (intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
-            screenAction = "0"; //unlocked
-        } else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-            screenAction = "1"; // locked
-        } else {
-            screenAction = getLastNChars(screenAction, 10); // unknown
+        String event;
+
+        switch (screenAction) {
+            case Intent.ACTION_USER_PRESENT:
+                event = "open";
+                break;
+            case Intent.ACTION_SCREEN_OFF:
+                event = "lock";
+                break;
+            default:
+                event = getLastNChars(screenAction, 15);
+                break;
         }
 
-        long nowInMillis = Calendar.getInstance().getTimeInMillis();
-        String entry = String.format("%s, %s", nowInMillis, screenAction);
-        logs.put(entry);
-        Store.setString(mContext, Store.SCREEN_LOGS, logs.toString());
+        String data = String.format(locale, "%s, %d;\n", event, System.currentTimeMillis());
+        FileHelper.appendToFile(context, Store.SCREEN_LOGS_CSV_FILENAME, data);
     }
 
     private String getLastNChars(String myString, int n) {
@@ -479,6 +509,31 @@ public class ForegroundToastService extends Service {
 //        manager.notify(NOTIFICATION_ID, notification);
 //        return notification;
 //    }
+
+//    private void updateScreenLog22(Context context, Intent intent) {
+//        String strLogs = Store.getString(context, Store.SCREEN_LOGS);
+//
+//        JSONArray logs = JsonHelper.strToJsonArray(strLogs);
+//        String screenAction = intent.getAction();
+//        String event;
+//        if (intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
+//            screenAction = "0"; //unlocked
+//            event = "open";
+//        } else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+//            screenAction = "1"; // locked
+//            event = "lock";
+//        } else {
+//            screenAction = getLastNChars(screenAction, 15); // unknown
+//            event = getLastNChars(screenAction, 15); // unknown
+//        }
+//
+//        long nowInMillis = Calendar.getInstance().getTimeInMillis();
+//        String entry = String.format("%s, %s", nowInMillis, screenAction);
+//        logs.put(entry);
+//        Store.setString(mContext, Store.SCREEN_LOGS, logs.toString());
+//    }
+//
 }
+
 
 // TODO: 5/29/17 refactor Store.getInt(mContext, FB_CURRENT_NUM_OF_OPENS) ==> getFBOpens()

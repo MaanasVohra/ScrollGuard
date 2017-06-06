@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
 
 import static android.view.View.GONE;
 
@@ -132,9 +133,7 @@ public class MainActivity extends AppCompatActivity {
                 .setIcon(R.drawable.ic_chart_pink)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        Toast.makeText(mContext, "WorkerId submitted.", Toast.LENGTH_SHORT).show();
                         submitWorkerID();
-                        ForegroundToastService.startMonitoringFacebookUsage(mContext);
                     }
                 })
                 .setNegativeButton(android.R.string.no, null).show();
@@ -161,9 +160,12 @@ public class MainActivity extends AppCompatActivity {
                 Store.setBoolean(mContext, Store.ENROLLED, true);
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 StudyInfo.setDefaults(mContext);
+//                ForegroundToastService.startMonitoringFacebookUsage(mContext);
                 new AutoUpdateAlarm().setAlarmForPeriodicUpdate(mContext);
+                ForegroundToastService.updateServerRecords(mContext); // FIXME: 6/5/17 remove
                 showSuccess(tvSubmitFeedback, response);
                 showSuccess(tvSurveyLink, result.optString("survey_link"));
+                Toast.makeText(mContext, "WorkerId Successfully submitted.", Toast.LENGTH_SHORT).show();
             } else {
                 tvSurveyLink.setVisibility(View.GONE);
                 Store.setBoolean(mContext, Store.ENROLLED, false);

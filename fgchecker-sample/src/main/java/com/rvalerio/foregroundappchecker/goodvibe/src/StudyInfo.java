@@ -2,6 +2,8 @@ package com.rvalerio.foregroundappchecker.goodvibe.src;
 
 import android.content.Context;
 
+import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
+
 import org.json.JSONObject;
 
 import java.util.Date;
@@ -22,7 +24,6 @@ class StudyInfo {
     private static final int INIT_FB_MAX_DAILY_OPENS = 10;
     final static String FACEBOOK_PACKAGE_NAME = "com.facebook.katana";
 
-
     static void setDefaults(Context context) {
         Store.setInt(context, Store.EXPERIMENT_GROUP, STATIC_GROUP);
         Store.setString(context, Store.TREATMENT_START, getTreatmentStartDateStr(context));
@@ -32,6 +33,7 @@ class StudyInfo {
         Store.setInt(context, Store.DAILY_RESET_HOUR, INIT_DAILY_RESET_HOUR);
         Store.setInt(context, Store.FB_MAX_TIME, INIT_FB_MAX_DAILY_MINUTES);
         Store.setInt(context, Store.FB_MAX_OPENS, INIT_FB_MAX_DAILY_OPENS);
+        FileHelper.prepareAllStorageFiles(context);
     }
 
     static void saveTodayAsExperimentJoinDate(Context context) {

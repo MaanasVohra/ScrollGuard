@@ -18,17 +18,11 @@ public class CallAPI {
 
     final static private String BASE_URL = "https://slm.smalldata.io";
 //    final static private String BASE_URL = "http://10.0.0.166:5000";
-//    final static private String BASE_URL = "http://10.128.19.232:5000";
-    final static private String CONNECT_URL = BASE_URL + "/mobile/connect/study";
+//    final static private String BASE_URL = "http://172.20.1.91:5000";
     final static private String TURKPRIME_REGISTER_URL = BASE_URL + "/mobile/turkprime/enroll";
     final static private String TURKPRIME_ADD_FB_STATS = BASE_URL + "/mobile/turkprime/fb-stats";
     private static final String TURKPRIME_FG_APP_LOGS = BASE_URL + "/mobile/turkprime/fg-app-logs";
-    final static private String CAL_CHECK_CONN_URL = BASE_URL + "/mobile/check/calendar";
-    final static private String RT_CHECK_CONN_URL = BASE_URL + "/mobile/check/rescuetime";
-    final static private String RT_SUMMARY_URL = BASE_URL + "/rescuetime/summary";
-    final static private String RT_ACTIVITY_URL = BASE_URL + "/rescuetime/realtime";
-    final static private String CAL_EVENTS_URL = BASE_URL + "/mobile/calendar/events";
-
+    private static final String TURKPRIME_SCREEN_EVENT_LOGS = BASE_URL + "/mobile/turkprime/screen-event-logs";
 
     private static JsonObjectRequest createRequest(final String url, final JSONObject params, final VolleyJsonCallback callback) {
 
@@ -50,52 +44,24 @@ public class CallAPI {
 
     }
 
-    public static void connectStudy(final Context cxt, final JSONObject params, final VolleyJsonCallback callback) {
-        Log.w("Connect study details: ", params.toString());
-        JsonObjectRequest request = createRequest(CONNECT_URL, params, callback);
-        SingletonRequest.getInstance(cxt).addToRequestQueue(request);
-    }
-
-    public static void submitTurkPrimeID(final Context cxt, final JSONObject params, final VolleyJsonCallback callback) {
-        Log.w("Submit worker details: ", params.toString());
+    public static void submitTurkPrimeID(final Context context, final JSONObject params, final VolleyJsonCallback callback) {
         JsonObjectRequest request = createRequest(TURKPRIME_REGISTER_URL, params, callback);
-        SingletonRequest.getInstance(cxt).addToRequestQueue(request);
+        SingletonRequest.getInstance(context).addToRequestQueue(request);
     }
 
-    public static void submitFBStats(Context mContext, JSONObject params, VolleyJsonCallback callback) {
+    public static void submitFBStats(Context context, JSONObject params, VolleyJsonCallback callback) {
         JsonObjectRequest request = createRequest(TURKPRIME_ADD_FB_STATS, params, callback);
-        SingletonRequest.getInstance(mContext).addToRequestQueue(request);
+        SingletonRequest.getInstance(context).addToRequestQueue(request);
     }
 
-    public static void submitFgAppLogs(Context mContext, JSONObject params, VolleyJsonCallback callback) {
+    public static void submitFgAppLogs(Context context, JSONObject params, VolleyJsonCallback callback) {
         JsonObjectRequest request = createRequest(TURKPRIME_FG_APP_LOGS, params, callback);
-        SingletonRequest.getInstance(mContext).addToRequestQueue(request);
+        SingletonRequest.getInstance(context).addToRequestQueue(request);
     }
 
-    public static void checkRTConn(final Context cxt, final JSONObject params, final VolleyJsonCallback callback) {
-        JsonObjectRequest request = createRequest(RT_CHECK_CONN_URL, params, callback);
-        SingletonRequest.getInstance(cxt).addToRequestQueue(request);
+    public static void submitScreenEventLogs(Context context, JSONObject params, VolleyJsonCallback callback) {
+        JsonObjectRequest request = createRequest(TURKPRIME_SCREEN_EVENT_LOGS, params, callback);
+        SingletonRequest.getInstance(context).addToRequestQueue(request);
     }
-
-    public static void checkCalConn(final Context cxt, final JSONObject params, final VolleyJsonCallback callback) {
-        JsonObjectRequest request = createRequest(CAL_CHECK_CONN_URL, params, callback);
-        SingletonRequest.getInstance(cxt).addToRequestQueue(request);
-    }
-
-    public static void getAllCalEvents(final Context cxt, final JSONObject params, final VolleyJsonCallback callback) {
-        JsonObjectRequest request = createRequest(CAL_EVENTS_URL, params, callback);
-        SingletonRequest.getInstance(cxt).addToRequestQueue(request);
-    }
-
-    public static void getRTSummary(final Context cxt, final JSONObject params, final VolleyJsonCallback callback) {
-        JsonObjectRequest request = createRequest(RT_SUMMARY_URL, params, callback);
-        SingletonRequest.getInstance(cxt).addToRequestQueue(request);
-    }
-
-    public static void getRTRealtimeActivity(final Context cxt, final JSONObject params, final VolleyJsonCallback callback) {
-        JsonObjectRequest request = createRequest(RT_ACTIVITY_URL, params, callback);
-        SingletonRequest.getInstance(cxt).addToRequestQueue(request);
-    }
-
 }
 

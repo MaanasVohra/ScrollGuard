@@ -32,6 +32,9 @@ public class Store {
     static final String CAN_SHOW_SUBMIT_BTN = "canShowServiceBtn";
     final static String ENROLLED = "userIsEnrolled";
 
+    public static final String FG_LOGS_CSV_FILENAME = "fgLogs.csv";
+    public static final String SCREEN_LOGS_CSV_FILENAME = "screenLogs.csv";
+
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }

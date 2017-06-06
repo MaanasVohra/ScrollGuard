@@ -3,6 +3,8 @@ package com.rvalerio.foregroundappchecker.goodvibe.helper;
 import android.content.Context;
 import android.util.Log;
 
+import com.rvalerio.foregroundappchecker.goodvibe.src.Store;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -19,6 +21,11 @@ import java.io.OutputStreamWriter;
 public class FileHelper {
     private static final String TAG = "FileHelper";
 
+    public static void prepareAllStorageFiles(Context context) {
+        FileHelper.appendToFile(context, Store.FG_LOGS_CSV_FILENAME, "");
+        FileHelper.appendToFile(context, Store.SCREEN_LOGS_CSV_FILENAME, "");
+    }
+
     public static void appendToFile(Context context, String filename, String data) {
         try {
             FileOutputStream fileOutputStream = context.openFileOutput(filename, Context.MODE_APPEND);
@@ -27,6 +34,7 @@ public class FileHelper {
             outputStreamWriter.close();
         } catch (IOException e) {
             Log.e(TAG, "appendToFile: error" + e.toString());
+            AlarmHelper.showInstantNotif(context, "appendToFile error", e.toString(), "", 5003); // FIXME: 6/2/17 remove
         }
     }
 
@@ -52,8 +60,10 @@ public class FileHelper {
             }
         } catch (FileNotFoundException e) {
             Log.e(TAG, "File not found: " + e.toString());
+            AlarmHelper.showInstantNotif(context, "File not found error", e.toString(), "", 5113); // FIXME: 6/2/17 remove
         } catch (IOException e) {
             Log.e(TAG, "Can not read file: " + e.toString());
+            AlarmHelper.showInstantNotif(context, "Cannot read file", e.toString(), "", 5223); // FIXME: 6/2/17 remove
         }
 
         return ret;
@@ -67,6 +77,7 @@ public class FileHelper {
             outputStreamWriter.close();
         } catch (IOException e) {
             Log.e(TAG, "resetFile: error" + e.toString());
+            AlarmHelper.showInstantNotif(context, "resetFile error", e.toString(), "", 5333); // FIXME: 6/2/17 remove
         }
     }
 }
