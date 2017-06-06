@@ -32,8 +32,8 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent(context, AutoUpdateAlarm.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, 0);
-//        am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), getVariableHourInterval(4, 6), pi);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5*60000, pi);
+        am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), getVariableHourInterval(2, 4), pi);
+//        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5*60000, pi);
     }
 
     private int getVariableHourInterval(int lowerHour, int upperHour) {

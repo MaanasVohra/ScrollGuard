@@ -405,7 +405,6 @@ public class ForegroundToastService extends Service {
                 boolean userIsEnrolled = Store.getBoolean(mContext, Store.ENROLLED);
                 boolean serverIsNotYetUpdated = !Store.getBoolean(mContext, "serverUpdatedToday");
                 if (userIsEnrolled && serverIsNotYetUpdated && state == NetworkInfo.State.CONNECTED) {
-
                     updateServerRecords(mContext);
                 }
             }
