@@ -57,6 +57,9 @@
             android:process=":goodvibeAlarm" >
         </service>
 
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="a89a2256d46d96dd8ec48a4fa61c26eba3db0baa" />
     </application>
 
 

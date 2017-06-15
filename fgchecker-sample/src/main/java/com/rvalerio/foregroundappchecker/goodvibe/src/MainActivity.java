@@ -20,13 +20,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
-
-import org.json.JSONObject;
-
+import com.crashlytics.android.Crashlytics;
 import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
-import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
+
+import org.json.JSONObject;
+
+import io.fabric.sdk.android.Fabric;
 
 import static android.view.View.GONE;
 
@@ -42,8 +43,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         mContext = this;
+        Fabric.with(this, new Crashlytics());
+        setContentView(R.layout.activity_main);
         setResources();
     }
 
@@ -142,6 +144,8 @@ public class MainActivity extends AppCompatActivity {
     private void submitWorkerID() {
         String workerId = etWorkerID.getText().toString().toLowerCase().trim();
         etWorkerID.setText(workerId);
+        logCrashAnalyticsUser(workerId);
+
         Store.setString(mContext, Store.WORKER_ID, workerId);
         JSONObject params = new JSONObject();
         Helper.setJSONValue(params, "worker_id", workerId);
@@ -150,6 +154,11 @@ public class MainActivity extends AppCompatActivity {
         Helper.copy(deviceInfo, params);
         CallAPI.submitTurkPrimeID(mContext, params, submitIDResponseHandler);
     }
+
+    private void logCrashAnalyticsUser(String workerId) {
+        Crashlytics.setUserIdentifier(workerId);
+    }
+
 
     VolleyJsonCallback submitIDResponseHandler = new VolleyJsonCallback() {
         @Override
