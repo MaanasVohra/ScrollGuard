@@ -22,7 +22,7 @@ android {
     compileSdkVersion 24
     buildToolsVersion '25.0.2'
     defaultConfig {
-        applicationId "rvalerio.com.foregroundappchecker"
+        applicationId "io.smalldata.goodvibe"
         minSdkVersion 14
         targetSdkVersion 24
         versionCode 1
