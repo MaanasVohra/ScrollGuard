@@ -20,6 +20,7 @@ import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 
 import java.util.Map;
 
@@ -41,6 +42,7 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
             String msg = data.get("msg");
             if (msg.equals("server_sync")) {
 //                new SilentRefresh(getApplication()).syncExperiment();
+                AlarmHelper.showInstantNotif(getApplicationContext(), "GoodVibe Sync", "Done!", "", 2233);
             }
         }
 

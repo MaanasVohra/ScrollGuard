@@ -15,7 +15,7 @@ import java.util.Date;
  */
 
 public class AdaptivePersonalize extends StaticPersonalize {
-    private static final int LAST_N_DAYS = 7;
+    private static final int LAST_N_DAYS = 1; //// FIXME: 6/18/17 change back to 7
 
     public AdaptivePersonalize(Context context, String treatmentStartDateStr) {
         super(context, treatmentStartDateStr);

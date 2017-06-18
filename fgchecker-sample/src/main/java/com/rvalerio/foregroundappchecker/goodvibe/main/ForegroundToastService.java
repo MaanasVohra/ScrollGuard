@@ -54,11 +54,6 @@ public class ForegroundToastService extends Service {
     private BroadcastReceiver screenUnlockReceiver;
     private AppChecker appChecker;
 
-    private NotificationCompat.Builder mBuilder; // FIXME: 6/2/17 return here and fix
-    private NotificationManager mNotificationManager; // FIXME: 6/2/17 return here and fix
-
-    private boolean firstTime = true;
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -69,14 +64,14 @@ public class ForegroundToastService extends Service {
     public void onCreate() {
         super.onCreate();
         mContext = this;
-        mBuilder = new NotificationCompat.Builder(this);
-        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         registerStopCheckerReceiver();
         registerScreenUnlockReceiver();
         registerNetworkMonitorReceiver();
 
+        startChecker();
         updateNotification(mContext, "Your stats updates during usage.");
+        AlarmHelper.showInstantNotif(mContext, "onCreate", "Creating!!", "", 4530);
     }
 
     public static void startMonitoringFacebookUsage(Context context) {
@@ -93,7 +88,7 @@ public class ForegroundToastService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        startChecker();
+        AlarmHelper.showInstantNotif(mContext, "startChecker", "Checking!!", "", 4532);
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -101,6 +96,7 @@ public class ForegroundToastService extends Service {
     public void onDestroy() {
         super.onDestroy();
         ForegroundToastService.start(mContext);
+        AlarmHelper.showInstantNotif(mContext, "onDestroy()", "Restarting!!", "", 4533);
     }
 
     public Boolean isLockedScreen() {
@@ -176,7 +172,6 @@ public class ForegroundToastService extends Service {
                     Store.setBoolean(mContext, "fbVisitedAnotherApp", true);
                 }
                 recordTimeSpent(packageName);
-
             }
 
         }).timeout(5000).start(this);
@@ -239,8 +234,9 @@ public class ForegroundToastService extends Service {
 
     private void checkAndActivateIfShouldSubmitID(int fbTimeSpent, int fbNumOfOpens) {
         if (!Store.getBoolean(mContext, Store.ENROLLED)) {
-            if (fbTimeSpent >= 15 && fbNumOfOpens >= 2) {
-                updateNotification(mContext, "Successful! Submit workerId in app to get code.");
+            if (fbTimeSpent >= 0 && fbNumOfOpens >= 0) { // FIXME: 6/18/17 update this to minimum value
+//                if (fbTimeSpent >= 15 && fbNumOfOpens >= 2) {
+                updateNotification(mContext, "Successful! Submit workerId.");
                 Store.setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
             }
         }
