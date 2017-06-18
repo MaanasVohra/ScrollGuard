@@ -173,8 +173,7 @@ public class MainActivity extends AppCompatActivity {
                 Store.setBoolean(mContext, Store.ENROLLED, true);
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 StudyInfo.setDefaults(mContext);
-//                ForegroundToastService.startMonitoringFacebookUsage(mContext);
-                new AutoUpdateAlarm().setAlarmForPeriodicUpdate(mContext);
+                AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
                 showSuccess(tvSubmitFeedback, response);
                 showSuccess(tvSurveyLink, result.optString("survey_link"));
                 Toast.makeText(mContext, "WorkerId Successfully submitted.", Toast.LENGTH_SHORT).show();

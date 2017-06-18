@@ -13,6 +13,15 @@ import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 import java.util.Calendar;
 
 public class AutoUpdateAlarm extends BroadcastReceiver {
+    private static AutoUpdateAlarm mInstance;
+
+    public static AutoUpdateAlarm getInstance() {
+        if (mInstance == null) {
+            mInstance = new AutoUpdateAlarm();
+        }
+        return mInstance;
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -30,10 +39,9 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
 
     public void setAlarmForPeriodicUpdate(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent i = new Intent(context, AutoUpdateAlarm.class);
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, 0);
+        Intent intent = new Intent(context, AutoUpdateAlarm.class);
+        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
         am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), getVariableHourInterval(2, 4), pi);
-//        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5*60000, pi);
     }
 
     private int getVariableHourInterval(int lowerHour, int upperHour) {

@@ -6,7 +6,7 @@ import android.os.IBinder;
 
 public class AutoUpdateAlarmService extends Service
 {
-    AutoUpdateAlarm autoUpdateAlarm = new AutoUpdateAlarm();
+    AutoUpdateAlarm autoUpdateAlarm = AutoUpdateAlarm.getInstance();
     public void onCreate()
     {
         super.onCreate();
