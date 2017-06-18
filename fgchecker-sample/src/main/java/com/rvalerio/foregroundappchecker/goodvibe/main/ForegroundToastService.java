@@ -1,4 +1,4 @@
-package com.rvalerio.foregroundappchecker.goodvibe.src;
+package com.rvalerio.foregroundappchecker.goodvibe.main;
 
 import android.app.KeyguardManager;
 import android.app.NotificationManager;
@@ -35,7 +35,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import static com.rvalerio.foregroundappchecker.goodvibe.src.Store.setBoolean;
+import static com.rvalerio.foregroundappchecker.goodvibe.main.Store.setBoolean;
 
 
 public class ForegroundToastService extends Service {
@@ -162,7 +162,7 @@ public class ForegroundToastService extends Service {
     }
 
     private void startChecker() {
-        appChecker = new AppChecker();
+        appChecker = AppChecker.getInstance();
         appChecker
                 .when(StudyInfo.FACEBOOK_PACKAGE_NAME, new AppChecker.Listener() {
                     @Override

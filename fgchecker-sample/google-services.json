@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "237207846020",
+    "firebase_url": "https://fgapp-f6c80.firebaseio.com",
+    "project_id": "fgapp-f6c80",
+    "storage_bucket": "fgapp-f6c80.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:237207846020:android:665779b6492e3c44",
+        "android_client_info": {
+          "package_name": "io.smalldata.goodvibe"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "237207846020-9h8fk2venra2t00o93rf4mjinldvc3ls.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.smalldata.goodvibe",
+            "certificate_hash": "9e552858f1f1fe26c542a813d6bfe1d2537caceb"
+          }
+        },
+        {
+          "client_id": "237207846020-lu55v1hhmtapjqhrvblcgie96u98ukrg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAP412F5cCQFv9UlZERt6_oawM_bmUy5zw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "237207846020-lu55v1hhmtapjqhrvblcgie96u98ukrg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

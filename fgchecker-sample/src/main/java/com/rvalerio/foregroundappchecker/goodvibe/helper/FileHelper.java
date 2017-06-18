@@ -3,7 +3,7 @@ package com.rvalerio.foregroundappchecker.goodvibe.helper;
 import android.content.Context;
 import android.util.Log;
 
-import com.rvalerio.foregroundappchecker.goodvibe.src.Store;
+import com.rvalerio.foregroundappchecker.goodvibe.main.Store;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

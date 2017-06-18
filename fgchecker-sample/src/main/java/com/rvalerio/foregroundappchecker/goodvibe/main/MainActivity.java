@@ -1,4 +1,4 @@
-package com.rvalerio.foregroundappchecker.goodvibe.src;
+package com.rvalerio.foregroundappchecker.goodvibe.main;
 
 import android.annotation.TargetApi;
 import android.app.AppOpsManager;
@@ -21,6 +21,8 @@ import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.crashlytics.android.Crashlytics;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+        FirebaseMessaging.getInstance().subscribeToTopic("goodvibe");
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
         setResources();
@@ -149,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
         Store.setString(mContext, Store.WORKER_ID, workerId);
         JSONObject params = new JSONObject();
         Helper.setJSONValue(params, "worker_id", workerId);
+        Helper.setJSONValue(params, "firebase_token", FirebaseInstanceId.getInstance().getToken());
 
         JSONObject deviceInfo = DeviceInfo.getPhoneDetails(mContext);
         Helper.copy(deviceInfo, params);

@@ -1,4 +1,4 @@
-package com.rvalerio.foregroundappchecker.goodvibe.src;
+package com.rvalerio.foregroundappchecker.goodvibe.main;
 
 import android.app.NotificationManager;
 import android.content.Context;

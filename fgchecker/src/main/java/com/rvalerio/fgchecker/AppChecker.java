@@ -26,11 +26,18 @@ public class AppChecker {
     Map<String, Listener> listeners;
     Detector detector;
     Handler handler;
+    private static AppChecker mInstance;
 
     public interface Listener {
         void onForeground(String process);
     }
 
+    public static AppChecker getInstance() {
+        if (mInstance == null) {
+            mInstance = new AppChecker();
+        }
+        return mInstance;
+    }
 
     public AppChecker() {
         listeners = new HashMap<>();

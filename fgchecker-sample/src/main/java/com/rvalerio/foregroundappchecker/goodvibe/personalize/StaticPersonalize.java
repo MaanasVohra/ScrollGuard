@@ -3,7 +3,7 @@ package com.rvalerio.foregroundappchecker.goodvibe.personalize;
 import android.content.Context;
 
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
-import com.rvalerio.foregroundappchecker.goodvibe.src.Store;
+import com.rvalerio.foregroundappchecker.goodvibe.main.Store;
 
 import org.json.JSONArray;
 
