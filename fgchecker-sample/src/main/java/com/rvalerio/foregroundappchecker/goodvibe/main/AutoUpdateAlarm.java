@@ -22,6 +22,18 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
         return mInstance;
     }
 
+    public void setAlarmForPeriodicUpdate(Context context) {
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, AutoUpdateAlarm.class);
+        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
+        am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), getVariableHourInterval(2, 4), pi);
+    }
+
+    private int getVariableHourInterval(int lowerHour, int upperHour) {
+        int hourInMillis = 60 * 60 * 1000;
+        return DateHelper.getRandomInt(lowerHour * hourInMillis, upperHour * hourInMillis);
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -35,18 +47,6 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
         // check if ForegroundToast is running otherwise start it // FIXME: 6/2/17
         ForegroundToastService.startMonitoringFacebookUsage(context);
         ForegroundToastService.updateServerRecords(context);
-    }
-
-    public void setAlarmForPeriodicUpdate(Context context) {
-        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, AutoUpdateAlarm.class);
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
-        am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), getVariableHourInterval(2, 4), pi);
-    }
-
-    private int getVariableHourInterval(int lowerHour, int upperHour) {
-        int hourInMillis = 60 * 60 * 1000;
-        return DateHelper.getRandomInt(lowerHour * hourInMillis, upperHour * hourInMillis);
     }
 
     public void cancelAlarm(Context context) {

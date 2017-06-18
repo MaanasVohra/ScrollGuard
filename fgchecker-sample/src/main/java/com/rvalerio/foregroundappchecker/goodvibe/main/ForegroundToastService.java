@@ -79,6 +79,10 @@ public class ForegroundToastService extends Service {
         updateNotification(mContext, "Your stats updates during usage.");
     }
 
+    public static void startMonitoringFacebookUsage(Context context) {
+        ForegroundToastService.start(context);
+    }
+
     public static void start(Context context) {
         context.startService(new Intent(context, ForegroundToastService.class));
     }
@@ -131,10 +135,6 @@ public class ForegroundToastService extends Service {
         StudyInfo.updateFBLimitsOfStudy(mContext, timeLimit, openLimit);
     }
 
-    public static void startMonitoringFacebookUsage(Context context) {
-        ForegroundToastService.start(context);
-    }
-
     private void updateLastDate() {
 
         if (isNewDay() && isPastDailyResetHour()) {
@@ -164,39 +164,22 @@ public class ForegroundToastService extends Service {
 
     private void startChecker() {
         appChecker = AppChecker.getInstance();
-        appChecker
-//                .when(StudyInfo.FACEBOOK_PACKAGE_NAME, new AppChecker.Listener() {
-//                    @Override
-//                    public void onForeground(String packageName) {
-//                        updateLastDate();
-//                        if (isLockedScreen()) return;
-//                        doFacebookOperation();
-//                        recordTimeSpent(packageName);
-//                    }
-//                })
-                .other(new AppChecker.Listener() {
-                    @Override
-                    public void onForeground(String packageName) {
-                        updateLastDate();
-                        if (isLockedScreen()) return;
+        appChecker.other(new AppChecker.Listener() {
+            @Override
+            public void onForeground(String packageName) {
+                updateLastDate();
 
-                        if (packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
-                            doFacebookOperation();
-                        } else {
-                            Store.setBoolean(mContext, "fbVisitedAnotherApp", true);
-                        }
+                if (isLockedScreen()) return;
+                if (packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
+                    doFacebookOperation();
+                } else {
+                    Store.setBoolean(mContext, "fbVisitedAnotherApp", true);
+                }
+                recordTimeSpent(packageName);
 
-                        recordTimeSpent(packageName);
+            }
 
-//                        increaseInt(mContext, "totalSeconds", 5);
-
-//                        updateNotification(getCurrentStats());
-//                        updateLastDate();
-//                        checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
-
-                    }
-
-                }).timeout(5000).start(this);
+        }).timeout(5000).start(this);
     }
 
     private void recordTimeSpent(String packageName) {
