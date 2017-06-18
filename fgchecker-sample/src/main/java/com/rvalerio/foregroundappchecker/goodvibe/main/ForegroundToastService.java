@@ -15,6 +15,7 @@ import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -23,6 +24,7 @@ import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.JsonHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.NetworkHelper;
@@ -71,7 +73,7 @@ public class ForegroundToastService extends Service {
 
         startChecker();
         updateNotification(mContext, "Your stats updates during usage.");
-        AlarmHelper.showInstantNotif(mContext, "onCreate", "Creating!!", "", 4530);
+        AlarmHelper.showInstantNotif(mContext, "onCreate", "Creating!!", "", 4530); //// FIXME: 6/18/17 
     }
 
     public static void startMonitoringFacebookUsage(Context context) {
@@ -88,7 +90,7 @@ public class ForegroundToastService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        AlarmHelper.showInstantNotif(mContext, "startChecker", "Checking!!", "", 4532);
+        AlarmHelper.showInstantNotif(mContext, "startChecker", "Checking!!", "", 4532); //// FIXME: 6/18/17 
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -96,7 +98,7 @@ public class ForegroundToastService extends Service {
     public void onDestroy() {
         super.onDestroy();
         ForegroundToastService.start(mContext);
-        AlarmHelper.showInstantNotif(mContext, "onDestroy()", "Restarting!!", "", 4533);
+        AlarmHelper.showInstantNotif(mContext, "onDestroy()", "Restarting!!", "", 4533); // FIXME: 6/18/17 
     }
 
     public Boolean isLockedScreen() {
@@ -260,7 +262,7 @@ public class ForegroundToastService extends Service {
     }
 
     public static void updateServerRecords(Context context) {
-        if (!NetworkHelper.isDeviceOnline(context)) return;
+//        if (!NetworkHelper.isDeviceOnline(context)) return;
         if (!workerExists(context)) return;
         if (!stopDateExists(context)) return;
         if (shouldStopServerLogging(context)) {
@@ -270,6 +272,8 @@ public class ForegroundToastService extends Service {
         sendFBStats(context);
         sendFgAppLogs(context);
         sendScreenEventLogs(context);
+        AlarmHelper.showInstantNotif(context, "UpdateServerRecords()",
+                "Done: " + DateHelper.currentMillisToDateFormat(), "", 7733); // FIXME: 6/2/17 remove
     }
 
     private static void sendFBStats(Context context) {
@@ -386,7 +390,8 @@ public class ForegroundToastService extends Service {
                 boolean userIsEnrolled = Store.getBoolean(mContext, Store.ENROLLED);
                 boolean serverIsNotYetUpdated = !Store.getBoolean(mContext, "serverUpdatedToday");
                 if (userIsEnrolled && serverIsNotYetUpdated && state == NetworkInfo.State.CONNECTED) {
-                    updateServerRecords(mContext);
+//                    updateServerRecords(mContext);
+                    Log.i(TAG, "onReceive: updateServerRecords.");
                 }
             }
         };

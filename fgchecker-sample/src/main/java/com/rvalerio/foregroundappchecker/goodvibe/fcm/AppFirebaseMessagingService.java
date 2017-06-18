@@ -54,7 +54,7 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
 //    /**
 //     * Schedule a job using FirebaseJobDispatcher.
 //     */
-//    private void scheduleJob() {
+//    private void scheduleFirebaseJob() {
 //        // [START dispatch_job]
 //        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
 //        Job myJob = dispatcher.newJobBuilder()

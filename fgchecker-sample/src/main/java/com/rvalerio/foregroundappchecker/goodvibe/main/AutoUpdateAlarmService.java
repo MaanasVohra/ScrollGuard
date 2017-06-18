@@ -15,14 +15,14 @@ public class AutoUpdateAlarmService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        autoUpdateAlarm.setAlarmForPeriodicUpdate(this);
+//        autoUpdateAlarm.setAlarmForPeriodicUpdate(this);
         return START_STICKY;
     }
 
     @Override
     public void onStart(Intent intent, int startId)
     {
-        autoUpdateAlarm.setAlarmForPeriodicUpdate(this);
+//        autoUpdateAlarm.setAlarmForPeriodicUpdate(this);
     }
 
     @Override

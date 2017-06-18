@@ -50,6 +50,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.volley:volley:1.0.0'
     compile 'com.google.firebase:firebase-messaging:10.0.1'
+    compile 'com.firebase:firebase-jobdispatcher:0.6.0'
     testCompile 'junit:junit:4.12'
 }
 

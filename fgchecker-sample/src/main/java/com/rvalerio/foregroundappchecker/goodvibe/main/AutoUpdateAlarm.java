@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.PowerManager;
 import android.os.SystemClock;
 
+import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 
 import java.util.Calendar;
@@ -45,8 +46,8 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
 
     private void performUpdate(Context context) {
         // check if ForegroundToast is running otherwise start it // FIXME: 6/2/17
-        ForegroundToastService.startMonitoringFacebookUsage(context);
-        ForegroundToastService.updateServerRecords(context);
+//        ForegroundToastService.startMonitoringFacebookUsage(context);
+//        ForegroundToastService.updateServerRecords(context);
     }
 
     public void cancelAlarm(Context context) {
