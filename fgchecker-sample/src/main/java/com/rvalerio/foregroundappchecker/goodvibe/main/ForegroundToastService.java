@@ -17,6 +17,7 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.android.volley.VolleyError;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.rvalerio.fgchecker.AppChecker;
 import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
@@ -245,8 +246,6 @@ public class ForegroundToastService extends Service {
         checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
         if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
 
-            // vibration should only happen during treatment/intervention period
-            // and only participants in group 2 should experience vibration as group 1 is control group
             if (!isTreatmentPeriod()) return;
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             long[] pattern = {0, 100, 100, 100, 100};
@@ -325,6 +324,7 @@ public class ForegroundToastService extends Service {
         Helper.setJSONValue(params, "ringer_mode", DeviceInfo.getRingerMode(context));
         Helper.setJSONValue(params, "daily_reset_hour", StudyInfo.getDailyResetHour(context));
         Helper.setJSONValue(params, "screen_logs", Store.getString(context, Store.SCREEN_LOGS));
+        Helper.setJSONValue(params, "firebase_token", FirebaseInstanceId.getInstance().getToken());
 
         Helper.setJSONValue(params, "current_experiment_group", StudyInfo.getCurrentExperimentGroup(context));
         Helper.setJSONValue(params, "current_fb_max_mins", StudyInfo.getFBMaxDailyMinutes(context));

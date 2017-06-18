@@ -15,8 +15,7 @@ import java.util.Date;
 
 class StudyInfo {
     static final int STATIC_GROUP = 1;
-    static final int ADAPTIVE_GROUP = 2;
-    private static final int TREATMENT_START = 8;
+    private static final int TREATMENT_START = 1;
     private static final int FOLLOWUP_START = 50;
     private static final int LOGGING_STOP = 70;
     private static final int INIT_DAILY_RESET_HOUR = 0;
