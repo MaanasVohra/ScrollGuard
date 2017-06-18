@@ -39,7 +39,7 @@ public class AppChecker {
         return mInstance;
     }
 
-    public AppChecker() {
+    private AppChecker() {
         listeners = new HashMap<>();
         handler = new Handler(Looper.getMainLooper());
         if(Utils.postLollipop())

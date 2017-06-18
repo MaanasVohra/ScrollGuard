@@ -236,3 +236,4 @@ public class MainActivity extends AppCompatActivity {
 // TODO: 3/4/17 change every store value from camel case to the exact same name as retrieved from server
 // TODO: 6/6/17 remove store screen logs 
 // TODO: 6/6/17 properly compute total time spent and number of screen unlocks in a day
+// TODO: 6/18/17 update user most recent firebase token when you send server records

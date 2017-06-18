@@ -75,7 +75,6 @@ public class ForegroundToastService extends Service {
         registerScreenUnlockReceiver();
         registerNetworkMonitorReceiver();
 
-        startChecker();
         updateNotification(mContext, "Your stats updates during usage.");
     }
 
@@ -89,6 +88,7 @@ public class ForegroundToastService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        startChecker();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -164,21 +164,28 @@ public class ForegroundToastService extends Service {
     private void startChecker() {
         appChecker = AppChecker.getInstance();
         appChecker
-                .when(StudyInfo.FACEBOOK_PACKAGE_NAME, new AppChecker.Listener() {
-                    @Override
-                    public void onForeground(String packageName) {
-                        if (isLockedScreen()) return;
-                        doFacebookOperation();
-                        recordTimeSpent(packageName);
-                    }
-                })
+//                .when(StudyInfo.FACEBOOK_PACKAGE_NAME, new AppChecker.Listener() {
+//                    @Override
+//                    public void onForeground(String packageName) {
+//                        updateLastDate();
+//                        if (isLockedScreen()) return;
+//                        doFacebookOperation();
+//                        recordTimeSpent(packageName);
+//                    }
+//                })
                 .other(new AppChecker.Listener() {
                     @Override
                     public void onForeground(String packageName) {
-                        if (isLockedScreen()) return;
-                        recordTimeSpent(packageName);
                         updateLastDate();
-                        Store.setBoolean(mContext, "fbVisitedAnotherApp", true);
+                        if (isLockedScreen()) return;
+
+                        if (packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
+                            doFacebookOperation();
+                        } else {
+                            Store.setBoolean(mContext, "fbVisitedAnotherApp", true);
+                        }
+
+                        recordTimeSpent(packageName);
 
 //                        increaseInt(mContext, "totalSeconds", 5);
 
