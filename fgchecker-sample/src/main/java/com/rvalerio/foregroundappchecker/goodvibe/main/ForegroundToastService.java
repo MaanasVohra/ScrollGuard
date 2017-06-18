@@ -248,7 +248,6 @@ public class ForegroundToastService extends Service {
             // vibration should only happen during treatment/intervention period
             // and only participants in group 2 should experience vibration as group 1 is control group
             if (!isTreatmentPeriod()) return;
-            if (!shouldAllowVibration()) return;
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             long[] pattern = {0, 100, 100, 100, 100};
             v.vibrate(pattern, -1);
@@ -270,10 +269,6 @@ public class ForegroundToastService extends Service {
         Date treatmentStart = Helper.strToDate(StudyInfo.getTreatmentStartDateStr(mContext));
         Date followupStart = Helper.strToDate(StudyInfo.getFollowupStartDateStr(mContext));
         return rightNow > treatmentStart.getTime() && rightNow < followupStart.getTime();
-    }
-
-    private boolean shouldAllowVibration() {
-        return Store.getInt(mContext, Store.EXPERIMENT_GROUP) == StudyInfo.ADAPTIVE_GROUP;
     }
 
     private static boolean shouldStopServerLogging(Context context) {
