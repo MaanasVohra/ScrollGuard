@@ -26,6 +26,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
+import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
 
 import org.json.JSONObject;
 
@@ -35,6 +36,7 @@ import static android.view.View.GONE;
 
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
 
     private Context mContext;
     private EditText etWorkerID;
@@ -46,8 +48,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+
         FirebaseMessaging.getInstance().subscribeToTopic("goodvibe");
+
         Fabric.with(this, new Crashlytics());
+        mDefaultUEH = Thread.getDefaultUncaughtExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler(mCaughtExceptionHandler);
+
         setContentView(R.layout.activity_main);
         setResources();
     }
@@ -173,7 +180,9 @@ public class MainActivity extends AppCompatActivity {
                 Store.setBoolean(mContext, Store.ENROLLED, true);
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 StudyInfo.setDefaults(mContext);
-                AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
+                ForegroundToastService.updateServerRecords(getApplicationContext());
+                AppJobService.scheduleFirebaseJob(mContext);
+//                AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
                 showSuccess(tvSubmitFeedback, response);
                 showSuccess(tvSurveyLink, result.optString("survey_link"));
                 Toast.makeText(mContext, "WorkerId Successfully submitted.", Toast.LENGTH_SHORT).show();
@@ -229,6 +238,18 @@ public class MainActivity extends AppCompatActivity {
                 android.os.Process.myUid(), context.getPackageName());
         return mode == AppOpsManager.MODE_ALLOWED;
     }
+
+    private static Thread.UncaughtExceptionHandler mDefaultUEH;
+    private static Thread.UncaughtExceptionHandler mCaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
+        @Override
+        public void uncaughtException(Thread thread, Throwable ex) {
+            Log.e(TAG, "crashlytics uncaughtException: ", ex);
+            Crashlytics.logException(ex);
+
+            // This will make crash analytics do its job
+            mDefaultUEH.uncaughtException(thread, ex);
+        }
+    };
 
 }
 
