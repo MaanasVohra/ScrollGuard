@@ -63,13 +63,13 @@ public class StaticPersonalize {
     }
 
     private void computeAndStoreNewAverage(String storeKey, String avgKey, int firstKDays) {
-        JSONArray allTimeSpent = Store.getJsonArray(mContext, storeKey);
-        if (allTimeSpent.length() == 0) return;
+        JSONArray allStoredValues = Store.getJsonArray(mContext, storeKey);
+        if (allStoredValues.length() == 0) return;
 
         float total = 0;
-        int limit = firstKDays <= allTimeSpent.length() ? firstKDays : allTimeSpent.length();
+        int limit = firstKDays <= allStoredValues.length() ? firstKDays : allStoredValues.length();
         for (int i = 0; i < limit; i++) {
-            total += allTimeSpent.optInt(i);
+            total += allStoredValues.optInt(i);
         }
         Store.setInt(mContext, avgKey, Math.round(total / limit));
     }

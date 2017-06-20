@@ -71,7 +71,7 @@ public class Helper {
         return formattedDate;
     }
 
-    public static Date addDays(Date date, int days)
+    static Date addDays(Date date, int days)
     {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -85,7 +85,7 @@ public class Helper {
         return mainDate.getTime() >= compareDate.getTime();
     }
 
-    public static boolean isPackageInstalled(String packagename, PackageManager packageManager) {
+    static boolean isPackageInstalled(String packagename, PackageManager packageManager) {
         try {
             packageManager.getPackageInfo(packagename, 0);
             return true;

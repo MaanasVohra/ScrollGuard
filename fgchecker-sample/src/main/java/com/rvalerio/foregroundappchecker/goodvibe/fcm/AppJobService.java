@@ -1,7 +1,6 @@
 package com.rvalerio.foregroundappchecker.goodvibe.fcm;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.firebase.jobdispatcher.Constraint;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
@@ -14,6 +13,7 @@ import com.firebase.jobdispatcher.RetryStrategy;
 import com.firebase.jobdispatcher.Trigger;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.NetworkHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.main.ForegroundToastService;
 
 public class AppJobService extends JobService {
@@ -22,8 +22,10 @@ public class AppJobService extends JobService {
 
     @Override
     public boolean onStartJob(final JobParameters jobParameters) {
-        ForegroundToastService.updateServerRecords(getApplicationContext());
-        AlarmHelper.showInstantNotif(getApplicationContext(), "FirebaseJobDispatcher()", "Done: " + DateHelper.currentMillisToDateFormat(), "", 7766); // FIXME: 6/2/17 remove
+        Context context = getApplicationContext();
+        ForegroundToastService.updateServerRecords(context);
+        AlarmHelper.showInstantNotif(context, "FirebaseJobDispatcher()" + DateHelper.currentMillisToDateFormat(),
+                "Network available: " + NetworkHelper.isDeviceOnline(context), "", 7766); // FIXME: 6/2/17 remove
         return false;
     }
 

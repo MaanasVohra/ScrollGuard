@@ -9,6 +9,7 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 
 import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 
 import java.util.Calendar;
@@ -27,7 +28,8 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AutoUpdateAlarm.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
-        am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), getVariableHourInterval(4, 6), pi);
+//        am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), getVariableHourInterval(4, 6), pi);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 60000, pi); // FIXME: 6/19/17 remove
     }
 
     private int getVariableHourInterval(int lowerHour, int upperHour) {
