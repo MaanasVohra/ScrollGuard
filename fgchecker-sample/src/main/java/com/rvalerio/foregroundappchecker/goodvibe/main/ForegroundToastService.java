@@ -91,7 +91,7 @@ public class ForegroundToastService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         AlarmHelper.showInstantNotif(mContext, "startChecker", "Checking!!", "", 4532); //// FIXME: 6/18/17 
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     @Override
@@ -272,8 +272,6 @@ public class ForegroundToastService extends Service {
         sendFBStats(context);
         sendFgAppLogs(context);
         sendScreenEventLogs(context);
-        AlarmHelper.showInstantNotif(context, "UpdateServerRecords()",
-                "Done: " + DateHelper.currentMillisToDateFormat(), "", 7733); // FIXME: 6/2/17 remove
     }
 
     private static void sendFBStats(Context context) {

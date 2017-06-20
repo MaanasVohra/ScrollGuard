@@ -180,9 +180,7 @@ public class MainActivity extends AppCompatActivity {
                 Store.setBoolean(mContext, Store.ENROLLED, true);
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 StudyInfo.setDefaults(mContext);
-                ForegroundToastService.updateServerRecords(getApplicationContext());
-                AppJobService.scheduleFirebaseJob(mContext);
-//                AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
+                AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
                 showSuccess(tvSubmitFeedback, response);
                 showSuccess(tvSurveyLink, result.optString("survey_link"));
                 Toast.makeText(mContext, "WorkerId Successfully submitted.", Toast.LENGTH_SHORT).show();
@@ -257,3 +255,4 @@ public class MainActivity extends AppCompatActivity {
 // TODO: 6/6/17 remove store screen logs 
 // TODO: 6/6/17 properly compute total time spent and number of screen unlocks in a day
 // TODO: 6/18/17 update user most recent firebase token when you send server records
+// TODO: 6/19/17 fix bug with initial default value when someone just reinstalled app

@@ -27,7 +27,7 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AutoUpdateAlarm.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
-        am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), getVariableHourInterval(2, 4), pi);
+        am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), getVariableHourInterval(4, 6), pi);
     }
 
     private int getVariableHourInterval(int lowerHour, int upperHour) {
@@ -45,9 +45,8 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
     }
 
     private void performUpdate(Context context) {
-        // check if ForegroundToast is running otherwise start it // FIXME: 6/2/17
-//        ForegroundToastService.startMonitoringFacebookUsage(context);
-//        ForegroundToastService.updateServerRecords(context);
+        ForegroundToastService.startMonitoringFacebookUsage(context);
+        AppJobService.updateServerThroughFirebaseJob(context);
     }
 
     public void cancelAlarm(Context context) {

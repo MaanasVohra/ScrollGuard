@@ -12,6 +12,8 @@ import com.firebase.jobdispatcher.JobService;
 import com.firebase.jobdispatcher.Lifetime;
 import com.firebase.jobdispatcher.RetryStrategy;
 import com.firebase.jobdispatcher.Trigger;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.main.ForegroundToastService;
 
 public class AppJobService extends JobService {
@@ -20,19 +22,9 @@ public class AppJobService extends JobService {
 
     @Override
     public boolean onStartJob(final JobParameters jobParameters) {
-        Log.d(TAG, "Performing long running task in scheduled job");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                completeJob(jobParameters);
-            }
-        }).start();
-        return true;
-    }
-
-    public void completeJob(final JobParameters parameters) {
         ForegroundToastService.updateServerRecords(getApplicationContext());
-        jobFinished(parameters, false);
+        AlarmHelper.showInstantNotif(getApplicationContext(), "FirebaseJobDispatcher()", "Done: " + DateHelper.currentMillisToDateFormat(), "", 7766); // FIXME: 6/2/17 remove
+        return false;
     }
 
     @Override
@@ -40,23 +32,18 @@ public class AppJobService extends JobService {
         return false;
     }
 
-    public static void scheduleFirebaseJob(Context context) {
+    public static void updateServerThroughFirebaseJob(Context context) {
         FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
-        Job job = createDispatcherJob(dispatcher);
-        dispatcher.mustSchedule(job);
-    }
-
-    public static Job createDispatcherJob(FirebaseJobDispatcher dispatcher) {
-        int oneHour = 3600;
-        return dispatcher.newJobBuilder()
-                .setLifetime(Lifetime.FOREVER)
+        Job job = dispatcher.newJobBuilder()
                 .setService(AppJobService.class)
-                .setRecurring(true)
-                .setTrigger(Trigger.executionWindow(10 * 60, oneHour))
+                .setReplaceCurrent(true)
+                .setLifetime(Lifetime.FOREVER)
+                .setTrigger(Trigger.executionWindow(0, 60))
                 .setConstraints(Constraint.ON_ANY_NETWORK)
                 .setRetryStrategy(RetryStrategy.DEFAULT_LINEAR)
-                .setTag("GoodVibeJob")
+                .setTag(TAG)
                 .build();
+        dispatcher.mustSchedule(job);
     }
 
 }
