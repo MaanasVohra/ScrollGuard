@@ -19,8 +19,8 @@ class StudyInfo {
     private static final int FOLLOWUP_START = 36;
     private static final int LOGGING_STOP = 50;
     private static final int INIT_DAILY_RESET_HOUR = 0;
-    private static final int INIT_FB_MAX_DAILY_MINUTES = 33;
-    private static final int INIT_FB_MAX_DAILY_OPENS = 13;
+    private static final int INIT_FB_MAX_DAILY_MINUTES = 999;
+    private static final int INIT_FB_MAX_DAILY_OPENS = 999;
     final static String FACEBOOK_PACKAGE_NAME = "com.facebook.katana";
 
     static void setDefaults(Context context) {
