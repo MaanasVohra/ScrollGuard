@@ -216,10 +216,10 @@ public class ForegroundToastService extends Service {
         int fbTimeSpent = Store.getInt(mContext, FB_CURRENT_TIME_SPENT);
         int fbNumOfOpens = Store.getInt(mContext, FB_CURRENT_NUM_OF_OPENS);
 
-//        if (fbTimeSpent > 0 && fbNumOfOpens == 0) {
-//            fbNumOfOpens += 1;
-//            Store.increaseInt(mContext, FB_CURRENT_NUM_OF_OPENS, 1);
-//        }
+        if (fbTimeSpent > 0 && fbNumOfOpens == 0) {
+            fbNumOfOpens += 1;
+            Store.increaseInt(mContext, FB_CURRENT_NUM_OF_OPENS, 1);
+        }
 
         updateNotification(mContext, getCurrentStats());
         updateLastDate();
