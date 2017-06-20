@@ -1,7 +1,6 @@
 package com.rvalerio.foregroundappchecker.goodvibe.api;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -21,7 +20,8 @@ public class CallAPI {
 //    final static private String BASE_URL = "http://172.20.1.91:5000";
     final static private String TURKPRIME_REGISTER_URL = BASE_URL + "/mobile/turkprime/enroll";
     final static private String TURKPRIME_ADD_FB_STATS = BASE_URL + "/mobile/turkprime/fb-stats";
-    private static final String TURKPRIME_FG_APP_LOGS = BASE_URL + "/mobile/turkprime/fg-app-logs";
+    private static final String TURKPRIME_FACEBOOK_LOGS = BASE_URL + "/mobile/turkprime/facebook-logs";
+    private static final String TURKPRIME_APP_LOGS = BASE_URL + "/mobile/turkprime/app-logs";
     private static final String TURKPRIME_SCREEN_EVENT_LOGS = BASE_URL + "/mobile/turkprime/screen-event-logs";
 
     private static JsonObjectRequest createRequest(final String url, final JSONObject params, final VolleyJsonCallback callback) {
@@ -54,8 +54,12 @@ public class CallAPI {
         SingletonRequest.getInstance(context).addToRequestQueue(request);
     }
 
-    public static void submitFgAppLogs(Context context, JSONObject params, VolleyJsonCallback callback) {
-        JsonObjectRequest request = createRequest(TURKPRIME_FG_APP_LOGS, params, callback);
+    public static void submitFacebookLogs(Context context, JSONObject params, VolleyJsonCallback callback) {
+        JsonObjectRequest request = createRequest(TURKPRIME_FACEBOOK_LOGS, params, callback);
+        SingletonRequest.getInstance(context).addToRequestQueue(request);
+    }
+    public static void submitAppLogs(Context context, JSONObject params, VolleyJsonCallback callback) {
+        JsonObjectRequest request = createRequest(TURKPRIME_APP_LOGS, params, callback);
         SingletonRequest.getInstance(context).addToRequestQueue(request);
     }
 

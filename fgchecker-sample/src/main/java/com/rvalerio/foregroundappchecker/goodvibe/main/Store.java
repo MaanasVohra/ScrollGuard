@@ -32,8 +32,12 @@ public class Store {
     static final String CAN_SHOW_SUBMIT_BTN = "canShowServiceBtn";
     final static String ENROLLED = "userIsEnrolled";
 
-    public static final String FG_LOGS_CSV_FILENAME = "fgLogs.csv";
+    public static final String FB_LOGS_CSV_FILENAME = "fbLogs.csv";
+    public static final String APP_LOGS_CSV_FILENAME = "appLogs.csv";
     public static final String SCREEN_LOGS_CSV_FILENAME = "screenLogs.csv";
+    public static final String BACKUP_FB_LOGS_CSV_FILENAME = "bk-fbLogs.csv";
+    public static final String BACKUP_APP_LOGS_CSV_FILENAME = "bk-appLogs.csv";
+    public static final String BACKUP_SCREEN_LOGS_CSV_FILENAME = "bk-screenLogs.csv";
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);

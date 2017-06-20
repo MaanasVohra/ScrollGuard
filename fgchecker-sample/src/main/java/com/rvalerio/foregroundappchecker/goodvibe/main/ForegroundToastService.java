@@ -131,6 +131,18 @@ public class ForegroundToastService extends Service {
     private void updateLastDate() {
         boolean shouldUpdate = isNewDay() && isPastDailyResetHour();
         if (shouldUpdate) {
+
+            long timeMillis = System.currentTimeMillis();
+            String fbDate = Store.getString(mContext, "lastRecordedDate");
+            fbDate = fbDate.equals("") ? "launchDate" : fbDate;
+            int timeSpent = getCurrentFBTimeSpent();
+            int timeOpen = getCurrentFBNumOfOpens();
+
+            String data = String.format(locale, "%d, %s, %d, %d;\n", timeMillis, fbDate, timeSpent, timeOpen);
+            FileHelper.appendToFile(mContext, Store.FB_LOGS_CSV_FILENAME, data);
+            FileHelper.appendToFile(mContext, Store.BACKUP_FB_LOGS_CSV_FILENAME, data);
+
+
             applyPersonalizedFacebookLimits();
             updateServerRecords(mContext);
             Store.setString(mContext, "lastRecordedDate", Helper.getTodayDateStr());
@@ -184,7 +196,8 @@ public class ForegroundToastService extends Service {
             String lastAppId = getLastFgApp();
             int lastAppTimeSpent = Store.getInt(mContext, lastAppId);
             String data = String.format(locale, "%s, %d, %d;\n", lastAppId, lastAppTimeSpent, System.currentTimeMillis());
-            FileHelper.appendToFile(mContext, Store.FG_LOGS_CSV_FILENAME, data);
+            FileHelper.appendToFile(mContext, Store.APP_LOGS_CSV_FILENAME, data);
+            FileHelper.appendToFile(mContext, Store.BACKUP_APP_LOGS_CSV_FILENAME, data);
         }
 
         timer += 5;
@@ -286,11 +299,13 @@ public class ForegroundToastService extends Service {
 
     private static void sendFBStats(Context context) {
         CallAPI.submitFBStats(context, getFBParams(context), getFBResponseHandler(context));
+        JSONObject params = getLogParams(context, Store.FB_LOGS_CSV_FILENAME);
+        CallAPI.submitFacebookLogs(context, params, getLogResponseHandler(context, Store.FB_LOGS_CSV_FILENAME));
     }
 
     private static void sendFgAppLogs(Context context) {
-        JSONObject params = getLogParams(context, Store.FG_LOGS_CSV_FILENAME);
-        CallAPI.submitFgAppLogs(context, params, getLogResponseHandler(context, Store.FG_LOGS_CSV_FILENAME));
+        JSONObject params = getLogParams(context, Store.APP_LOGS_CSV_FILENAME);
+        CallAPI.submitAppLogs(context, params, getLogResponseHandler(context, Store.APP_LOGS_CSV_FILENAME));
     }
 
     private static void sendScreenEventLogs(Context context) {
@@ -449,6 +464,7 @@ public class ForegroundToastService extends Service {
 
         String data = String.format(locale, "%s, %d;\n", event, System.currentTimeMillis());
         FileHelper.appendToFile(context, Store.SCREEN_LOGS_CSV_FILENAME, data);
+        FileHelper.appendToFile(context, Store.BACKUP_SCREEN_LOGS_CSV_FILENAME, data);
     }
 
     private String getLastNChars(String myString, int n) {

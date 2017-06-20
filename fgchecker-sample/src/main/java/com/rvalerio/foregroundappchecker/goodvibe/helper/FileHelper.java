@@ -22,8 +22,12 @@ public class FileHelper {
     private static final String TAG = "FileHelper";
 
     public static void prepareAllStorageFiles(Context context) {
-        FileHelper.appendToFile(context, Store.FG_LOGS_CSV_FILENAME, "");
+        FileHelper.appendToFile(context, Store.FB_LOGS_CSV_FILENAME, "");
+        FileHelper.appendToFile(context, Store.APP_LOGS_CSV_FILENAME, "");
         FileHelper.appendToFile(context, Store.SCREEN_LOGS_CSV_FILENAME, "");
+        FileHelper.appendToFile(context, Store.BACKUP_FB_LOGS_CSV_FILENAME, "");
+        FileHelper.appendToFile(context, Store.BACKUP_APP_LOGS_CSV_FILENAME, "");
+        FileHelper.appendToFile(context, Store.BACKUP_SCREEN_LOGS_CSV_FILENAME, "");
     }
 
     public static void appendToFile(Context context, String filename, String data) {
