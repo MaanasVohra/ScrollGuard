@@ -15,6 +15,7 @@ import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -118,9 +119,22 @@ public class ForegroundToastService extends Service {
 
         String treatmentStartDateStr = StudyInfo.getTreatmentStartDateStr(mContext);
         int experimentGroup = StudyInfo.getCurrentExperimentGroup(mContext);
-        StaticPersonalize personalize = (experimentGroup == StudyInfo.STATIC_GROUP) ?
-                new StaticPersonalize(mContext, treatmentStartDateStr) :
-                new AdaptivePersonalize(mContext, treatmentStartDateStr);
+        StaticPersonalize personalize;
+
+        switch (experimentGroup) {
+            case StudyInfo.STATIC_GROUP:
+                personalize = new StaticPersonalize(mContext, treatmentStartDateStr);
+                break;
+            case StudyInfo.ADAPTIVE_GROUP:
+                personalize = new AdaptivePersonalize(mContext, treatmentStartDateStr);
+                break;
+            case StudyInfo.POPUP_ADAPTIVE_GROUP:
+                personalize = new AdaptivePersonalize(mContext, treatmentStartDateStr);
+                break;
+            default:
+                personalize = new StaticPersonalize(mContext, treatmentStartDateStr);
+                break;
+        }
 
         personalize.addDataPoint(getCurrentFBTimeSpent(), getCurrentFBNumOfOpens());
         int timeLimit = personalize.getAverageTimeSpent();
@@ -246,16 +260,22 @@ public class ForegroundToastService extends Service {
             Store.setString(mContext, "lastRecordedDate", "");
         }
 
-
         checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
         if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
             if (!isTreatmentPeriod()) return;
+            vibrateOrPopup();
+        }
+    }
+
+    private void vibrateOrPopup() {
+        int experimentGroup = StudyInfo.getCurrentExperimentGroup(mContext);
+        if (experimentGroup == 3) {
+            Toast.makeText(mContext, "Facebook Limit Exceeded", Toast.LENGTH_SHORT).show();
+        } else {
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             long[] pattern = {0, 100, 100, 100, 100};
             v.vibrate(pattern, -1);
-
         }
-
     }
 
     private void checkAndActivateIfShouldSubmitID(int fbTimeSpent, int fbNumOfOpens) {
