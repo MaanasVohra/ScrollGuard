@@ -15,19 +15,18 @@ import java.util.Date;
 
 class StudyInfo {
     static final int STATIC_GROUP = 1;
-    private static final int TREATMENT_START = 1;
-    private static final int FOLLOWUP_START = 50;
-    private static final int LOGGING_STOP = 70;
+    private static final int TREATMENT_START = 8;
+    private static final int FOLLOWUP_START = 36;
+    private static final int LOGGING_STOP = 50;
     private static final int INIT_DAILY_RESET_HOUR = 0;
-    private static final int INIT_FB_MAX_DAILY_MINUTES = 30;
-    private static final int INIT_FB_MAX_DAILY_OPENS = 10;
+    private static final int INIT_FB_MAX_DAILY_MINUTES = 33;
+    private static final int INIT_FB_MAX_DAILY_OPENS = 13;
     final static String FACEBOOK_PACKAGE_NAME = "com.facebook.katana";
 
     static void setDefaults(Context context) {
         Store.setInt(context, Store.EXPERIMENT_GROUP, STATIC_GROUP);
         Store.setString(context, Store.TREATMENT_START, getTreatmentStartDateStr(context));
         Store.setString(context, Store.FOLLOWUP_START, getFollowupStartDateStr(context));
-        Store.setString(context, Store.LOGGING_STOP, getLoggingStopDateStr(context));
         Store.setString(context, Store.LOGGING_STOP, getLoggingStopDateStr(context));
         Store.setInt(context, Store.DAILY_RESET_HOUR, INIT_DAILY_RESET_HOUR);
         Store.setInt(context, Store.FB_MAX_TIME, INIT_FB_MAX_DAILY_MINUTES);
