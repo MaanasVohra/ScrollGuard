@@ -224,6 +224,16 @@ public class ForegroundToastService extends Service {
         updateNotification(mContext, getCurrentStats());
         updateLastDate();
 
+
+        if (fbNumOfOpens % 3 == 0) { // FIXME: 6/19/17 remove
+            int maxMins = StudyInfo.getFBMaxDailyMinutes(mContext);
+            int maxOpens = StudyInfo.getFBMaxDailyOpens(mContext);
+            AlarmHelper.showInstantNotif(mContext, String.format(locale, "*Day Reset* (max: %dsecs / %dx)", maxMins * 60, maxOpens),
+                    String.format(locale, "Current: %dsecs / %dx", fbTimeSpent, fbNumOfOpens), "", 8001);
+            Store.setString(mContext, "lastRecordedDate", "");
+        }
+
+
         checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
         if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
             if (!isTreatmentPeriod()) return;
@@ -231,20 +241,13 @@ public class ForegroundToastService extends Service {
             long[] pattern = {0, 100, 100, 100, 100};
             v.vibrate(pattern, -1);
 
-            if (fbNumOfOpens % 3 == 0) { // FIXME: 6/19/17 remove
-                int maxMins = StudyInfo.getFBMaxDailyMinutes(mContext);
-                int maxOpens = StudyInfo.getFBMaxDailyOpens(mContext);
-                AlarmHelper.showInstantNotif(mContext, String.format(locale, "Updating Server (max: %dsecs / %dx)", maxMins*60, maxOpens),
-                        String.format(locale, "Current: %dsecs / %dx", fbTimeSpent, fbNumOfOpens), "", 8001);
-                updateServerRecords(mContext);
-            }
         }
 
     }
 
     private void checkAndActivateIfShouldSubmitID(int fbTimeSpent, int fbNumOfOpens) {
         if (!Store.getBoolean(mContext, Store.ENROLLED)) {
-            if (fbTimeSpent >= 0 && fbNumOfOpens >= 0) { // FIXME: 6/18/17 update this to minimum value
+            if (fbTimeSpent >= 0 && fbNumOfOpens >= 1) {
                 updateNotification(mContext, "Successful! Submit workerId.");
                 Store.setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
             }
