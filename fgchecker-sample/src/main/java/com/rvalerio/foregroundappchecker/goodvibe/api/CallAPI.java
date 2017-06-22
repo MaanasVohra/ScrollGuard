@@ -2,6 +2,7 @@ package com.rvalerio.foregroundappchecker.goodvibe.api;
 
 import android.content.Context;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -16,7 +17,7 @@ import org.json.JSONObject;
 public class CallAPI {
 
     final static private String BASE_URL = "https://slm.smalldata.io";
-//    final static private String BASE_URL = "http://10.0.0.166:5000";
+    //    final static private String BASE_URL = "http://10.0.0.166:5000";
 //    final static private String BASE_URL = "http://172.20.1.91:5000";
     final static private String TURKPRIME_REGISTER_URL = BASE_URL + "/mobile/turkprime/enroll";
     final static private String TURKPRIME_ADD_FB_STATS = BASE_URL + "/mobile/turkprime/fb-stats";
@@ -26,7 +27,7 @@ public class CallAPI {
 
     private static JsonObjectRequest createRequest(final String url, final JSONObject params, final VolleyJsonCallback callback) {
 
-        return new JsonObjectRequest(url, params,
+        JsonObjectRequest request = new JsonObjectRequest(url, params,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject result) {
@@ -42,6 +43,11 @@ public class CallAPI {
                 }
         );
 
+        final int SOCKET_TIMEOUT_MILLIS = 3000;
+        final int MAX_RETRIES = 2;
+        final float DEFAULT_BACKOFF_MULTIPLIER = 2f;
+        request.setRetryPolicy(new DefaultRetryPolicy(SOCKET_TIMEOUT_MILLIS, MAX_RETRIES, DEFAULT_BACKOFF_MULTIPLIER));
+        return request;
     }
 
     public static void submitTurkPrimeID(final Context context, final JSONObject params, final VolleyJsonCallback callback) {
@@ -58,6 +64,7 @@ public class CallAPI {
         JsonObjectRequest request = createRequest(TURKPRIME_FACEBOOK_LOGS, params, callback);
         SingletonRequest.getInstance(context).addToRequestQueue(request);
     }
+
     public static void submitAppLogs(Context context, JSONObject params, VolleyJsonCallback callback) {
         JsonObjectRequest request = createRequest(TURKPRIME_APP_LOGS, params, callback);
         SingletonRequest.getInstance(context).addToRequestQueue(request);
