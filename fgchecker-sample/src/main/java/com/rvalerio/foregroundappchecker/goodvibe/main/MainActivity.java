@@ -26,9 +26,11 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
-import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 
 import org.json.JSONObject;
+
+import java.util.Arrays;
 
 import io.fabric.sdk.android.Fabric;
 
@@ -43,20 +45,36 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvSubmitFeedback;
     private TextView tvSurveyLink;
     private Button btnSubmitMturkID;
+    private static Thread.UncaughtExceptionHandler mDefaultUEH;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
-
-        FirebaseMessaging.getInstance().subscribeToTopic("goodvibe");
-
-        Fabric.with(this, new Crashlytics());
-        mDefaultUEH = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(mCaughtExceptionHandler);
-
         setContentView(R.layout.activity_main);
         setResources();
+
+        FirebaseMessaging.getInstance().subscribeToTopic("goodvibe");
+        Fabric.with(this, new Crashlytics());
+        mDefaultUEH = Thread.getDefaultUncaughtExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler(getUnCaughtExceptionHandler(mContext));
+    }
+
+
+    private static Thread.UncaughtExceptionHandler getUnCaughtExceptionHandler(final Context context) {
+        return new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable ex) {
+                Crashlytics.logException(ex);
+                Crashlytics.log(1, TAG, "Custom Error: " + ex.toString());
+
+                StackTraceElement ste = ex.getStackTrace()[0];
+                String title = String.format("%s: Line%s", ste.getFileName(), ste.getLineNumber());
+                String content = Arrays.toString(ex.getStackTrace());
+                AlarmHelper.showInstantNotif(context, title, content, "", 3490);
+                mDefaultUEH.uncaughtException(thread, ex);
+            }
+        };
     }
 
     @Override
@@ -236,18 +254,6 @@ public class MainActivity extends AppCompatActivity {
                 android.os.Process.myUid(), context.getPackageName());
         return mode == AppOpsManager.MODE_ALLOWED;
     }
-
-    private static Thread.UncaughtExceptionHandler mDefaultUEH;
-    private static Thread.UncaughtExceptionHandler mCaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
-        @Override
-        public void uncaughtException(Thread thread, Throwable ex) {
-            Log.e(TAG, "crashlytics uncaughtException: ", ex);
-            Crashlytics.logException(ex);
-
-            // This will make crash analytics do its job
-            mDefaultUEH.uncaughtException(thread, ex);
-        }
-    };
 
 }
 
