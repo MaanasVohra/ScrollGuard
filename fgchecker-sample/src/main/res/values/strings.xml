@@ -17,10 +17,12 @@
     <string name="max_opens">max opens</string>
     <string name="fb_limit_prompt">Tap <b>Start Service</b> then follow instructions on website.
         If successfully set up, you will be to join experiment and your code will appear below.</string>
-    <string name="btn_mturk_label">Submit your ID</string>
-    <string name="et_mturk_id_prompt">Enter your worker ID</string>
-    <string name="mturk_submit_feedback">Worker ID Successfully Submitted.</string>
+    <string name="btn_mturk_label">Submit Participant ID</string>
+    <string name="et_mturk_id_prompt">Enter your ID</string>
+    <string name="mturk_submit_feedback">Successfully Submitted.</string>
     <string name="mturk_submit_failed">Error submitting worker id. Contact researcher.</string>
     <string name="btn_stop_service">Stop Service</string>
     <string name="yes">yes</string>
+    <string name="title_confirm_id">Confirm ID submission</string>
+    <string name="message_confirm_id">This cannot be changed once submitted. Are you sure you entered correct ID?</string>
 </resources>

@@ -158,8 +158,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void confirmAndSubmitDialog() {
         new AlertDialog.Builder(mContext)
-                .setTitle("Confirm workerId submission")
-                .setMessage("This cannot be changed once submitted. Are you sure you entered correct workerId?")
+                .setTitle(R.string.title_confirm_id)
+                .setMessage(R.string.message_confirm_id)
                 .setIcon(R.drawable.ic_chart_pink)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
