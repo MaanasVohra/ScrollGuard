@@ -38,10 +38,10 @@ import static android.view.View.GONE;
 
 
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
 
     private Context mContext;
     private EditText etWorkerID;
+    private EditText etStudyCode;
     private TextView tvSubmitFeedback;
     private TextView tvSurveyLink;
     private Button btnSubmitMturkID;
@@ -66,13 +66,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void uncaughtException(Thread thread, Throwable ex) {
                 Crashlytics.logException(ex);
-                Crashlytics.log(1, TAG, "Custom Error: " + ex.toString());
+                Crashlytics.log(Log.ERROR, "MyApp", "Higgs-Boson detected! Bailing out...");
 
                 StackTraceElement ste = ex.getStackTrace()[0];
                 String title = String.format("%s: Line%s", ste.getFileName(), ste.getLineNumber());
                 String content = Arrays.toString(ex.getStackTrace());
                 AlarmHelper.showInstantNotif(context, title, content, "", 3490);
                 mDefaultUEH.uncaughtException(thread, ex);
+                ForegroundToastService.startMonitoringFacebookUsage(context);
+
             }
         };
     }
@@ -87,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setResources() {
         etWorkerID = (EditText) findViewById(R.id.et_mturk_id);
+        etStudyCode = (EditText) findViewById(R.id.et_study_code);
         tvSubmitFeedback = (TextView) findViewById(R.id.tv_submit_id_feedback);
         tvSurveyLink = (TextView) findViewById(R.id.tv_survey_link);
         btnSubmitMturkID = (Button) findViewById(R.id.btn_submit_mturk_id);
@@ -142,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
         if (!Store.getBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN)) return;
 
         showPlain(etWorkerID, Store.getString(mContext, Store.WORKER_ID));
+        showPlain(etStudyCode, Store.getString(mContext, Store.STUDY_CODE));
         btnSubmitMturkID.setVisibility(View.VISIBLE);
         btnSubmitMturkID.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -171,12 +175,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void submitWorkerID() {
         String workerId = etWorkerID.getText().toString().toLowerCase().trim();
+        String studyCode = etStudyCode.getText().toString().toLowerCase().trim();
+        if (workerId.equals("") || studyCode.equals("")) {
+            showError(tvSubmitFeedback, "Valid input required.");
+            return;
+        }
+
         etWorkerID.setText(workerId);
+        etStudyCode.setText(studyCode);
+        Store.setString(mContext, Store.WORKER_ID, workerId);
+        Store.setString(mContext, Store.STUDY_CODE, studyCode);
         logCrashAnalyticsUser(workerId);
 
-        Store.setString(mContext, Store.WORKER_ID, workerId);
         JSONObject params = new JSONObject();
         Helper.setJSONValue(params, "worker_id", workerId);
+        Helper.setJSONValue(params, "study_code", studyCode);
         Helper.setJSONValue(params, "firebase_token", FirebaseInstanceId.getInstance().getToken());
 
         JSONObject deviceInfo = DeviceInfo.getPhoneDetails(mContext);
@@ -253,6 +266,11 @@ public class MainActivity extends AppCompatActivity {
         int mode = appOps.checkOpNoThrow("android:get_usage_stats",
                 android.os.Process.myUid(), context.getPackageName());
         return mode == AppOpsManager.MODE_ALLOWED;
+    }
+
+    public static void crashApp() {
+        String x = null;
+        x.equals("");
     }
 
 }
