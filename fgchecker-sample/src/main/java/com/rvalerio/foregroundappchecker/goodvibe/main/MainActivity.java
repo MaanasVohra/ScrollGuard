@@ -26,6 +26,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
+import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 
 import org.json.JSONObject;
@@ -211,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
                 Store.setBoolean(mContext, Store.ENROLLED, true);
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 StudyInfo.setDefaults(mContext);
+                AppJobService.updateServerThroughFirebaseJob(mContext);
                 AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
                 showSuccess(tvSubmitFeedback, response);
                 showSuccess(tvSurveyLink, result.optString("survey_link"));
