@@ -24,15 +24,17 @@ import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.JsonHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.NetworkHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.AdaptivePersonalize;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -142,13 +144,17 @@ public class ForegroundToastService extends Service {
         StudyInfo.updateFBLimitsOfStudy(mContext, timeLimit, openLimit);
     }
 
+    private String getYesterday() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -1);
+        return DateHelper.dateToStr(cal.getTime());
+    }
+
     private void updateLastDate() {
         boolean shouldUpdate = isNewDay() && isPastDailyResetHour();
         if (shouldUpdate) {
-
             long timeMillis = System.currentTimeMillis();
-            String fbDate = Store.getString(mContext, "lastRecordedDate");
-            fbDate = fbDate.equals("") ? "launchDate" : fbDate;
+            String fbDate = getYesterday();
             int timeSpent = getCurrentFBTimeSpent();
             int timeOpen = getCurrentFBNumOfOpens();
 
@@ -156,22 +162,18 @@ public class ForegroundToastService extends Service {
             FileHelper.appendToFile(mContext, Store.FB_LOGS_CSV_FILENAME, data);
             FileHelper.appendToFile(mContext, Store.BACKUP_FB_LOGS_CSV_FILENAME, data);
 
-
             applyPersonalizedFacebookLimits();
-            updateServerRecords(mContext);
             Store.setString(mContext, "lastRecordedDate", Helper.getTodayDateStr());
             Store.setInt(mContext, FB_CURRENT_TIME_SPENT, 0);
             Store.setInt(mContext, FB_CURRENT_NUM_OF_OPENS, 0);
-//            Store.setInt(mContext, "totalSeconds", 0); // FIXME: 6/19/17 put right value
-//            Store.setInt(mContext, "totalOpens", 0);
-//            Store.setString(mContext, Store.SCREEN_LOGS, "");
             Store.setBoolean(mContext, "serverUpdatedToday", false);
+            updateServerRecords(mContext);
         }
     }
 
     private boolean isNewDay() {
         String lastRecordedDate = Store.getString(mContext, "lastRecordedDate");
-        String today = new SimpleDateFormat("yyyy-MM-dd", locale).format(Calendar.getInstance().getTime());
+        String today = DateHelper.getTodayDateStr();
         return !lastRecordedDate.equals(today);
     }
 
@@ -189,11 +191,18 @@ public class ForegroundToastService extends Service {
                 updateLastDate();
 
                 if (isLockedScreen()) return;
+
+                if (packageName == null) {
+                    AlarmHelper.showInstantNotif(mContext, "Empty packageName!", DateHelper.currentMillisToDateFormat(), "", 9009); // FIXME: 6/26/17 remove alarm popup
+                    return;
+                }
+
                 if (packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
                     doFacebookOperation();
                 } else {
                     Store.setBoolean(mContext, "fbVisitedAnotherApp", true);
                 }
+
                 recordTimeSpent(packageName);
             }
 
@@ -201,8 +210,6 @@ public class ForegroundToastService extends Service {
     }
 
     private void recordTimeSpent(String packageName) {
-        if (isLockedScreen()) return;
-
         int timer = 0;
         if (packageName.equals(getLastFgApp())) {
             timer = Store.getInt(mContext, packageName);
@@ -232,7 +239,6 @@ public class ForegroundToastService extends Service {
     }
 
     private void doFacebookOperation() {
-//        Store.increaseInt(mContext, "totalSeconds", 5);
         Store.increaseInt(mContext, FB_CURRENT_TIME_SPENT, 5);
 
         if (Store.getBoolean(mContext, "fbVisitedAnotherApp")) {
@@ -242,35 +248,66 @@ public class ForegroundToastService extends Service {
 
         int fbTimeSpent = Store.getInt(mContext, FB_CURRENT_TIME_SPENT);
         int fbNumOfOpens = Store.getInt(mContext, FB_CURRENT_NUM_OF_OPENS);
-
         if (fbTimeSpent > 0 && fbNumOfOpens == 0) {
             fbNumOfOpens += 1;
             Store.increaseInt(mContext, FB_CURRENT_NUM_OF_OPENS, 1);
         }
 
         updateNotification(mContext, getCurrentStats());
-        updateLastDate();
 
-
-        if (fbNumOfOpens % 3 == 0) { // FIXME: 6/19/17 remove
-            int maxMins = StudyInfo.getFBMaxDailyMinutes(mContext);
-            int maxOpens = StudyInfo.getFBMaxDailyOpens(mContext);
-            AlarmHelper.showInstantNotif(mContext, String.format(locale, "*Day Reset* (max: %dsecs / %dx)", maxMins * 60, maxOpens),
-                    String.format(locale, "Current: %dsecs / %dx", fbTimeSpent, fbNumOfOpens), "", 8001);
-            Store.setString(mContext, "lastRecordedDate", "");
-        }
+//        ############## REMOVE THIS DEBUG PART #################
+//        if (fbNumOfOpens % 2 == 0) { // FIXME: 6/19/17 remove
+//            int maxMins = StudyInfo.getFBMaxDailyMinutes(mContext);
+//            int maxOpens = StudyInfo.getFBMaxDailyOpens(mContext);
+//            int groupInfo = StudyInfo.getCurrentExperimentGroup(mContext);
+//
+//            JSONArray allTimeSpent = Store.getJsonArray(mContext, StaticPersonalize.ALL_TIME_SPENT);
+//            int limit = allTimeSpent.length() <= 7 ? allTimeSpent.length() : 7;
+//            String arrValues = groupInfo == 1 ? getFirstK(allTimeSpent, limit) : getLastK(allTimeSpent, limit);
+//            String label = groupInfo == 1 ? "SP" : "AP";
+//
+//            AlarmHelper.showInstantNotif(mContext,
+//                    String.format(locale, "Max(%dsecs/%dx); Now(%dsecs/%dx)", maxMins * 60, maxOpens, fbTimeSpent, fbNumOfOpens),
+//                    String.format(locale, "%s:{%s}", label, arrValues),
+//                    "", 8001);
+//            Store.setString(mContext, "lastRecordedDate", "");
+//            MainActivity.causeCrash();
+//        }
+//        ############## DEBUG PART ENDS #################
 
         checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
+
         if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
-            if (!isTreatmentPeriod()) return;
-            vibrateOrPopup();
+            if (isTreatmentPeriod()) {
+                vibrateOrPopup();
+            }
         }
+
+    }
+
+    public static String getLastK(JSONArray allTimeSpent, int limit) { // FIXME: 6/23/17 remove
+        if (allTimeSpent.length() == 0) return "";
+        int lastIndex = allTimeSpent.length() - 1;
+        String arrValues = "";
+        for (int i = 0; i < limit; i++) {
+            arrValues += allTimeSpent.optInt(lastIndex - i) + ",";
+        }
+        return arrValues;
+    }
+
+    public static String getFirstK(JSONArray allTimeSpent, int limit) { // FIXME: 6/23/17 remove
+        if (allTimeSpent.length() == 0) return "";
+        String arrValues = "";
+        for (int i = 0; i < limit; i++) {
+            arrValues += allTimeSpent.optInt(i) + ",";
+        }
+        return arrValues;
     }
 
     private void vibrateOrPopup() {
         int experimentGroup = StudyInfo.getCurrentExperimentGroup(mContext);
         if (experimentGroup == 3) {
-            Toast.makeText(mContext, "Facebook Limit Exceeded", Toast.LENGTH_SHORT).show();
+            AlarmHelper.showCenterToast(mContext, "Facebook Limit Exceeded.");
         } else {
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             long[] pattern = {0, 100, 100, 100, 100};
@@ -281,7 +318,8 @@ public class ForegroundToastService extends Service {
     private void checkAndActivateIfShouldSubmitID(int fbTimeSpent, int fbNumOfOpens) {
         if (!Store.getBoolean(mContext, Store.ENROLLED)) {
             if (fbTimeSpent >= 0 && fbNumOfOpens >= 1) {
-                updateNotification(mContext, "Successful! Submit workerId.");
+                updateNotification(mContext, "Successful! Submit ID.");
+                AlarmHelper.showInstantNotif(mContext, "Successful activation!", "Submit your ID in app.", "io.smalldata.goodvibe", 5005);
                 Store.setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
             }
         }
