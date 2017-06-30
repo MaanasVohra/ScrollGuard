@@ -13,27 +13,62 @@ import java.util.Date;
  * Created by fnokeke on 3/10/17.
  */
 
-class StudyInfo {
+public class StudyInfo {
     static final int STATIC_GROUP = 1;
     static final int ADAPTIVE_GROUP = 2;
     static final int POPUP_ADAPTIVE_GROUP = 3;
-    private static final int TREATMENT_START = 8;
-    private static final int FOLLOWUP_START = 36;
-    private static final int LOGGING_STOP = 50;
+
+    private static int TREATMENT_START = 8;
+    private static int FOLLOWUP_START = 36;
+    private static int LOGGING_STOP = 50;
+
+    private static final int TREATMENT_START_MTURK = 8;
+    private static final int FOLLOWUP_START_MTURK = 36;
+    private static final int LOGGING_STOP_MTURK = 50;
+
+    private static final int TREATMENT_START_TECHNION = 8;
+    private static final int FOLLOWUP_START_TECHNION = 15;
+    private static final int LOGGING_STOP_TECHNION = 22;
+
+    private static final int TREATMENT_START_HCI = 15;
+    private static final int FOLLOWUP_START_HCI = 29;
+    private static final int LOGGING_STOP_HCI = 36;
+
     private static final int INIT_DAILY_RESET_HOUR = 0;
     private static final int INIT_FB_MAX_DAILY_MINUTES = 999;
     private static final int INIT_FB_MAX_DAILY_OPENS = 999;
     final static String FACEBOOK_PACKAGE_NAME = "com.facebook.katana";
 
-    static void setDefaults(Context context) {
+    static void setDefaults(Context context, String studyCode) {
+        setStudyPeriods(studyCode);
         Store.setInt(context, Store.EXPERIMENT_GROUP, STATIC_GROUP);
         Store.setString(context, Store.TREATMENT_START, getTreatmentStartDateStr(context));
         Store.setString(context, Store.FOLLOWUP_START, getFollowupStartDateStr(context));
         Store.setString(context, Store.LOGGING_STOP, getLoggingStopDateStr(context));
         Store.setInt(context, Store.DAILY_RESET_HOUR, INIT_DAILY_RESET_HOUR);
-        Store.setInt(context, Store.FB_MAX_TIME, INIT_FB_MAX_DAILY_MINUTES);
+        Store.setInt(context, Store.FB_MAX_MINUTES, INIT_FB_MAX_DAILY_MINUTES);
         Store.setInt(context, Store.FB_MAX_OPENS, INIT_FB_MAX_DAILY_OPENS);
         FileHelper.prepareAllStorageFiles(context);
+    }
+
+    private static void setStudyPeriods(String studyCode) {
+        switch (studyCode) {
+            case "mturk":
+                TREATMENT_START = TREATMENT_START_MTURK;
+                FOLLOWUP_START = FOLLOWUP_START_MTURK;
+                LOGGING_STOP = LOGGING_STOP_MTURK;
+                break;
+            case "technion":
+                TREATMENT_START = TREATMENT_START_TECHNION;
+                FOLLOWUP_START = FOLLOWUP_START_TECHNION;
+                LOGGING_STOP = LOGGING_STOP_TECHNION;
+                break;
+            case "hci":
+                TREATMENT_START = TREATMENT_START_HCI;
+                FOLLOWUP_START = FOLLOWUP_START_HCI;
+                LOGGING_STOP = LOGGING_STOP_HCI;
+                break;
+        }
     }
 
     static void saveTodayAsExperimentJoinDate(Context context) {
@@ -65,11 +100,11 @@ class StudyInfo {
         return loggingStopStr;
     }
 
-    static int getFBMaxDailyMinutes(Context context) {
-        return Store.getInt(context, Store.FB_MAX_TIME);
+    public static int getFBMaxDailyMinutes(Context context) {
+        return Store.getInt(context, Store.FB_MAX_MINUTES);
     }
 
-    static int getFBMaxDailyOpens(Context context) {
+    public static int getFBMaxDailyOpens(Context context) {
         return Store.getInt(context, Store.FB_MAX_OPENS) ;
     }
 
@@ -85,7 +120,7 @@ class StudyInfo {
 
     static void updateStoredAdminParams(Context context, JSONObject result) {
         Store.setInt(context, Store.EXPERIMENT_GROUP, result.optInt("admin_experiment_group"));
-        Store.setInt(context, Store.FB_MAX_TIME, result.optInt("admin_fb_max_mins", getFBMaxDailyMinutes(context)));
+        Store.setInt(context, Store.FB_MAX_MINUTES, result.optInt("admin_fb_max_mins", getFBMaxDailyMinutes(context)));
         Store.setInt(context, Store.FB_MAX_OPENS, result.optInt("admin_fb_max_opens", getFBMaxDailyOpens(context)));
         Store.setString(context, Store.TREATMENT_START, result.optString("admin_treatment_start", getTreatmentStartDateStr(context)));
         Store.setString(context, Store.FOLLOWUP_START, result.optString("admin_followup_start", getFollowupStartDateStr(context)));
@@ -93,7 +128,7 @@ class StudyInfo {
         Store.setInt(context, Store.DAILY_RESET_HOUR, result.optInt("admin_daily_reset_hour", getDailyResetHour(context)));
     }
 
-    static int getCurrentExperimentGroup(Context context) {
+    public static int getCurrentExperimentGroup(Context context) {
         int group = Store.getInt(context, Store.EXPERIMENT_GROUP);
         return group == 0 ? STATIC_GROUP : group;
     }
@@ -102,8 +137,8 @@ class StudyInfo {
         return Store.getString(context, Store.WORKER_ID);
     }
 
-    static void updateFBLimitsOfStudy(Context context, int fbTimeSpent, int fbNumOfOpens) {
-        Store.setInt(context, Store.FB_MAX_TIME, fbTimeSpent);
+    static void updateFBLimitsOfStudy(Context context, int fbTimeSpentMinutes, int fbNumOfOpens) {
+        Store.setInt(context, Store.FB_MAX_MINUTES, fbTimeSpentMinutes);
         Store.setInt(context, Store.FB_MAX_OPENS, fbNumOfOpens);
     }
 
