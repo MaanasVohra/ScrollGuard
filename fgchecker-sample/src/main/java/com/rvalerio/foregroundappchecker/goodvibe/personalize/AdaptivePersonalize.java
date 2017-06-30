@@ -21,8 +21,8 @@ public class AdaptivePersonalize extends StaticPersonalize {
         super(context, treatmentStartDateStr);
     }
 
-    public void addDataPoint(int timeSpent, int noOfOpen) {
-        insertDataIntoStore(timeSpent, noOfOpen);
+    public void addDataPoint(int timeSpentMinutes, int noOfOpen) {
+        insertDataIntoStore(timeSpentMinutes, noOfOpen);
         computeAndStoreNewAverage(ALL_TIME_SPENT, CURRENT_AVG_TIME_SPENT, LAST_N_DAYS);
         computeAndStoreNewAverage(ALL_NUM_OF_OPENS, CURRENT_AVG_NUM_OF_OPENS, LAST_N_DAYS);
 //        if (canComputeNewAvg(getTreatStart())) {

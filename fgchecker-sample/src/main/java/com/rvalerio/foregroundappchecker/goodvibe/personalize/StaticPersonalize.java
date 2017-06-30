@@ -14,7 +14,7 @@ import org.json.JSONArray;
 
 public class StaticPersonalize {
 
-    static final String ALL_TIME_SPENT = "allStoredTimeSpent";
+    public static final String ALL_TIME_SPENT = "allStoredTimeSpent";
     static final String ALL_NUM_OF_OPENS = "allStoredNumOfOpens";
     static final String CURRENT_AVG_TIME_SPENT = "currentAvgTimeSpent";
     static final String CURRENT_AVG_NUM_OF_OPENS = "currentAvgNumOfOpens";
@@ -44,17 +44,17 @@ public class StaticPersonalize {
         return Store.getInt(mContext, CURRENT_AVG_NUM_OF_OPENS);
     }
 
-    public void addDataPoint(int timeSpent, int noOfOpen) {
+    public void addDataPoint(int timeSpentMinutes, int noOfOpen) {
         if (!DateHelper.isPastMidnightOfDate(mTreatmentStartDateStr)) {
-            insertDataIntoStore(timeSpent, noOfOpen);
+            insertDataIntoStore(timeSpentMinutes, noOfOpen);
             computeAndStoreNewAverage(ALL_TIME_SPENT, CURRENT_AVG_TIME_SPENT, FIRST_N_DAYS);
             computeAndStoreNewAverage(ALL_NUM_OF_OPENS, CURRENT_AVG_NUM_OF_OPENS, FIRST_N_DAYS);
         }
     }
 
-    void insertDataIntoStore(int timeSpent, int noOfOpen) {
+    void insertDataIntoStore(int timeSpentMinutes, int noOfOpen) {
         JSONArray allTimeSpent = Store.getJsonArray(mContext, ALL_TIME_SPENT);
-        allTimeSpent.put(timeSpent);
+        allTimeSpent.put(timeSpentMinutes);
         Store.setJsonArray(mContext, ALL_TIME_SPENT, allTimeSpent);
 
         JSONArray allOpens = Store.getJsonArray(mContext, ALL_NUM_OF_OPENS);

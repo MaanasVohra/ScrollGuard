@@ -15,7 +15,6 @@ import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -34,7 +33,6 @@ import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -138,7 +136,8 @@ public class ForegroundToastService extends Service {
                 break;
         }
 
-        personalize.addDataPoint(getCurrentFBTimeSpent(), getCurrentFBNumOfOpens());
+        int timeMinutes = Math.round(getCurrentFBTimeSpent() / 60);
+        personalize.addDataPoint(timeMinutes, getCurrentFBNumOfOpens());
         int timeLimit = personalize.getAverageTimeSpent();
         int openLimit = personalize.getAverageTimeOpen();
         StudyInfo.updateFBLimitsOfStudy(mContext, timeLimit, openLimit);
@@ -192,10 +191,7 @@ public class ForegroundToastService extends Service {
 
                 if (isLockedScreen()) return;
 
-                if (packageName == null) {
-                    AlarmHelper.showInstantNotif(mContext, "Empty packageName!", DateHelper.currentMillisToDateFormat(), "", 9009); // FIXME: 6/26/17 remove alarm popup
-                    return;
-                }
+                if (packageName == null) { return; }
 
                 if (packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
                     doFacebookOperation();
@@ -412,7 +408,6 @@ public class ForegroundToastService extends Service {
             public void onConnectFailure(VolleyError error) {
                 String msg = "Stats submit error: " + error.toString();
                 Log.e(TAG, "StatsError: " + msg);
-                AlarmHelper.showInstantNotif(context, "FB submit error", msg, "", 3333); // FIXME: 6/2/17 remove
             }
         };
     }
@@ -429,7 +424,6 @@ public class ForegroundToastService extends Service {
             @Override
             public void onConnectFailure(VolleyError error) {
                 String msg = "Stats submit error: " + error.toString();
-                AlarmHelper.showInstantNotif(context, filenameToReset + " submit error", msg, "", 3223); // FIXME: 6/2/17 remove
                 Log.e(TAG, "FgApp StatsError: " + msg);
             }
         };

@@ -19,12 +19,13 @@ public class Store {
     final static String LOGGING_STOP = "loggingStop";
     final static String EXPERIMENT_GROUP = "experimentGroup";
 
-    final static String FB_MAX_TIME = "adminFBMaxMins";
+    final static String FB_MAX_MINUTES = "adminFBMaxMins";
     final static String FB_MAX_OPENS = "adminFBMaxOpens";
     static final String SCREEN_LOGS = "screenLogs";
 
     final static String DAILY_RESET_HOUR = "dailyResetHour";
     final static String WORKER_ID = "workerID";
+    final static String STUDY_CODE = "vibeStudyCode";
     final static String EXPERIMENT_JOIN_DATE = "experimentJoinDate";
 
     private static final String PREF_NAME = "prefs";
