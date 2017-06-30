@@ -1,6 +1,7 @@
 package com.rvalerio.foregroundappchecker.goodvibe.main;
 
 import android.content.Context;
+import android.widget.Toast;
 
 import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
 
@@ -40,7 +41,7 @@ public class StudyInfo {
     final static String FACEBOOK_PACKAGE_NAME = "com.facebook.katana";
 
     static void setDefaults(Context context, String studyCode) {
-        setStudyPeriods(studyCode);
+        setStudyPeriods(context, studyCode);
         Store.setInt(context, Store.EXPERIMENT_GROUP, STATIC_GROUP);
         Store.setString(context, Store.TREATMENT_START, getTreatmentStartDateStr(context));
         Store.setString(context, Store.FOLLOWUP_START, getFollowupStartDateStr(context));
@@ -51,14 +52,20 @@ public class StudyInfo {
         FileHelper.prepareAllStorageFiles(context);
     }
 
-    private static void setStudyPeriods(String studyCode) {
+    private static void resetStudyPeriods(Context context) {
+        Store.setString(context, Store.TREATMENT_START, "");
+        Store.setString(context, Store.FOLLOWUP_START, "");
+        Store.setString(context, Store.LOGGING_STOP, "");
+    }
+    private static void setStudyPeriods(Context context, String studyCode) {
+        resetStudyPeriods(context);
         switch (studyCode) {
             case "mturk":
                 TREATMENT_START = TREATMENT_START_MTURK;
                 FOLLOWUP_START = FOLLOWUP_START_MTURK;
                 LOGGING_STOP = LOGGING_STOP_MTURK;
                 break;
-            case "technion":
+            case "tech":
                 TREATMENT_START = TREATMENT_START_TECHNION;
                 FOLLOWUP_START = FOLLOWUP_START_TECHNION;
                 LOGGING_STOP = LOGGING_STOP_TECHNION;

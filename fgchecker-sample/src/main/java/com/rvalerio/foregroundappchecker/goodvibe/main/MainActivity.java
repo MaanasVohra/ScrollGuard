@@ -32,6 +32,7 @@ import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 import io.fabric.sdk.android.Fabric;
 
@@ -71,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
                 StackTraceElement ste = ex.getStackTrace()[0];
                 String title = String.format("%s: Line%s", ste.getFileName(), ste.getLineNumber());
-                String content = Arrays.toString(ex.getStackTrace());
+                String content = "Error! Alert researcher: " + Arrays.toString(ex.getStackTrace());
                 AlarmHelper.showInstantNotif(context, title, content, "", 3490);
                 mDefaultUEH.uncaughtException(thread, ex);
                 ForegroundToastService.startMonitoringFacebookUsage(context);
@@ -147,6 +148,9 @@ public class MainActivity extends AppCompatActivity {
 
         showPlain(etWorkerID, Store.getString(mContext, Store.WORKER_ID));
         showPlain(etStudyCode, Store.getString(mContext, Store.STUDY_CODE));
+        showPlain(tvSubmitFeedback, Store.getString(mContext, Store.RESPONSE_TO_SUBMIT));
+        showStudyInfo();
+
         btnSubmitMturkID.setVisibility(View.VISIBLE);
         btnSubmitMturkID.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -159,6 +163,15 @@ public class MainActivity extends AppCompatActivity {
                 confirmAndSubmitDialog();
             }
         });
+    }
+
+    private void showStudyInfo() {
+        String lastDay = StudyInfo.getLoggingStopDateStr(mContext);
+        String surveyLink = Store.getString(mContext, Store.SURVEY_LINK);
+        String msg = String.format(Locale.getDefault(), "%s\n(Study Ends: %s)", surveyLink, lastDay);
+        if (!surveyLink.equals("")) {
+            showPlain(tvSurveyLink, msg);
+        }
     }
 
     private void confirmAndSubmitDialog() {
@@ -211,12 +224,20 @@ public class MainActivity extends AppCompatActivity {
             if (result.optInt("status") == 200) {
                 Store.setBoolean(mContext, Store.ENROLLED, true);
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
-                StudyInfo.setDefaults(mContext);
+                String studyCode = etStudyCode.getText().toString().toLowerCase().trim();
+                StudyInfo.setDefaults(mContext, studyCode);
                 AppJobService.updateServerThroughFirebaseJob(mContext);
                 AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
+
                 showSuccess(tvSubmitFeedback, response);
-                showSuccess(tvSurveyLink, result.optString("survey_link"));
-                Toast.makeText(mContext, "WorkerId Successfully submitted.", Toast.LENGTH_SHORT).show();
+                Store.setString(mContext, Store.RESPONSE_TO_SUBMIT, response);
+
+                String surveyLink = result.optString("survey_link");
+                Store.setString(mContext, Store.SURVEY_LINK, surveyLink);
+                showStudyInfo();
+//                showSuccess(tvSurveyLink, surveyLink);
+
+                Toast.makeText(mContext, "Successfully submitted.", Toast.LENGTH_SHORT).show();
             } else {
                 tvSurveyLink.setVisibility(View.GONE);
                 Store.setBoolean(mContext, Store.ENROLLED, false);

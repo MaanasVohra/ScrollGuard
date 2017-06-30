@@ -39,6 +39,8 @@ public class Store {
     public static final String BACKUP_FB_LOGS_CSV_FILENAME = "bk-fbLogs.csv";
     public static final String BACKUP_APP_LOGS_CSV_FILENAME = "bk-appLogs.csv";
     public static final String BACKUP_SCREEN_LOGS_CSV_FILENAME = "bk-screenLogs.csv";
+    public static final String RESPONSE_TO_SUBMIT = "submitBtnResponse";
+    public static final String SURVEY_LINK = "surveyLink";
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);

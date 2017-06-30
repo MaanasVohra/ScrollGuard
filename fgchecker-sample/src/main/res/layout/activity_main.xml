@@ -86,19 +86,22 @@
 
     <TextView
         android:id="@+id/tv_submit_id_feedback"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:padding="10dp" />
+        android:padding="10dp"
+        />
 
     <TextView
         android:id="@+id/tv_survey_link"
         android:visibility="gone"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:textAlignment="center"
+        android:textStyle="bold"
         android:autoLink="web"
+        android:padding="10dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         />
 
