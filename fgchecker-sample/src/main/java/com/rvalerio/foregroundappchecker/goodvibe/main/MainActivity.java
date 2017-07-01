@@ -233,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
                 String surveyLink = result.optString("survey_link");
                 Store.setString(mContext, Store.SURVEY_LINK, surveyLink);
                 showStudyInfo();
-//                showSuccess(tvSurveyLink, surveyLink);
 
                 Toast.makeText(mContext, "Successfully submitted.", Toast.LENGTH_SHORT).show();
             } else {
