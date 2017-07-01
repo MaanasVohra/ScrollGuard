@@ -69,7 +69,6 @@ public class ForegroundToastService extends Service {
 
         registerStopCheckerReceiver();
         registerScreenUnlockReceiver();
-        registerNetworkMonitorReceiver();
 
         startChecker();
         updateNotification(mContext, "Your stats updates during usage.");
@@ -251,29 +250,7 @@ public class ForegroundToastService extends Service {
         }
 
         updateNotification(mContext, getCurrentStats());
-
-//        ############## REMOVE THIS DEBUG PART #################
-//        if (fbNumOfOpens % 2 == 0) { // FIXME: 6/19/17 remove
-//            int maxMins = StudyInfo.getFBMaxDailyMinutes(mContext);
-//            int maxOpens = StudyInfo.getFBMaxDailyOpens(mContext);
-//            int groupInfo = StudyInfo.getCurrentExperimentGroup(mContext);
-//
-//            JSONArray allTimeSpent = Store.getJsonArray(mContext, StaticPersonalize.ALL_TIME_SPENT);
-//            int limit = allTimeSpent.length() <= 7 ? allTimeSpent.length() : 7;
-//            String arrValues = groupInfo == 1 ? getFirstK(allTimeSpent, limit) : getLastK(allTimeSpent, limit);
-//            String label = groupInfo == 1 ? "SP" : "AP";
-//
-//            AlarmHelper.showInstantNotif(mContext,
-//                    String.format(locale, "Max(%dsecs/%dx); Now(%dsecs/%dx)", maxMins * 60, maxOpens, fbTimeSpent, fbNumOfOpens),
-//                    String.format(locale, "%s:{%s}", label, arrValues),
-//                    "", 8001);
-//            Store.setString(mContext, "lastRecordedDate", "");
-//            MainActivity.causeCrash();
-//        }
-//        ############## DEBUG PART ENDS #################
-
         checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
-
         if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
             if (isTreatmentPeriod()) {
                 vibrateOrPopup();
@@ -449,32 +426,6 @@ public class ForegroundToastService extends Service {
             }
         };
         registerReceiver(appCheckerReceiver, new IntentFilter(STOP_SERVICE));
-    }
-
-    private void registerNetworkMonitorReceiver() {
-        networkConnReceiver = new BroadcastReceiver() {
-
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Bundle extras = intent.getExtras();
-                NetworkInfo info = extras.getParcelable("networkInfo");
-                NetworkInfo.State state = null; // FIXME: 7/1/17 comment out
-                if (info != null) {
-                    state = info.getState();
-                }
-
-                boolean userIsEnrolled = Store.getBoolean(mContext, Store.ENROLLED);
-                boolean serverIsNotYetUpdated = !Store.getBoolean(mContext, "serverUpdatedToday");
-                if (userIsEnrolled && serverIsNotYetUpdated && state == NetworkInfo.State.CONNECTED) {
-//                    updateServerRecords(mContext);
-                    Log.i(TAG, "onReceive: updateServerRecords.");
-                }
-            }
-        };
-
-        final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(networkConnReceiver, intentFilter);
     }
 
     private void registerScreenUnlockReceiver() {
