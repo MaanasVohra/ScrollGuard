@@ -68,8 +68,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void uncaughtException(Thread thread, Throwable ex) {
                 Crashlytics.logException(ex);
-                Crashlytics.log(Log.ERROR, "MyApp", "Higgs-Boson detected! Bailing out..."); // FIXME: 7/1/17
-
                 StackTraceElement ste = ex.getStackTrace()[0];
                 String title = String.format("%s: Line%s", ste.getFileName(), ste.getLineNumber());
                 String content = "Uh oh. Weird Error! Take a screenshot and send to researcher:\n\n" + Arrays.toString(ex.getStackTrace());
@@ -284,6 +282,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
+
+
     private boolean hasUsageStatsPermission(Context context) {
         AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
         int mode = appOps.checkOpNoThrow("android:get_usage_stats",
@@ -300,6 +300,5 @@ public class MainActivity extends AppCompatActivity {
 
 // TODO: 3/4/17 change every store value from camel case to the exact same name as retrieved from server
 // TODO: 6/6/17 remove store screen logs 
-// TODO: 6/6/17 properly compute total time spent and number of screen unlocks in a day
-// TODO: 6/18/17 update user most recent firebase token when you send server records
-// TODO: 6/19/17 fix bug with initial default value when someone just reinstalled app
+// TODO: 7/1/17 remove screen logs
+// TODO: 7/1/17 remove fb stats log

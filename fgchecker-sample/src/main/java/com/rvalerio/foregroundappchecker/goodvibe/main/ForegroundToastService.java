@@ -44,6 +44,9 @@ public class ForegroundToastService extends Service {
     private final static int NOTIFICATION_ID = 1234;
     private final static String FB_CURRENT_TIME_SPENT = "fbTimeSpent";
     private final static String FB_CURRENT_NUM_OF_OPENS = "fbNumOfOpens";
+    private final static String TOTAL_SECONDS = "totalSeconds";
+    private final static String TOTAL_OPENS = "totalOpens";
+    private final static String LAST_RECORDED_DATE = "lastRecordedDate";
 
     private final Locale locale = Locale.getDefault();
     private Context mContext;
@@ -158,16 +161,17 @@ public class ForegroundToastService extends Service {
             FileHelper.appendToFile(mContext, Store.BACKUP_FB_LOGS_CSV_FILENAME, data);
 
             applyPersonalizedFacebookLimits();
-            Store.setString(mContext, "lastRecordedDate", Helper.getTodayDateStr());
+            Store.setString(mContext, LAST_RECORDED_DATE, Helper.getTodayDateStr());
             Store.setInt(mContext, FB_CURRENT_TIME_SPENT, 0);
             Store.setInt(mContext, FB_CURRENT_NUM_OF_OPENS, 0);
-            Store.setBoolean(mContext, "serverUpdatedToday", false);
+            Store.setInt(mContext, TOTAL_SECONDS, 0);
+            Store.setInt(mContext, TOTAL_OPENS, 0);
             AppJobService.updateServerThroughFirebaseJob(mContext);
         }
     }
 
     private boolean isNewDay() {
-        String lastRecordedDate = Store.getString(mContext, "lastRecordedDate");
+        String lastRecordedDate = Store.getString(mContext, LAST_RECORDED_DATE);
         String today = DateHelper.getTodayDateStr();
         return !lastRecordedDate.equals(today);
     }
@@ -220,7 +224,7 @@ public class ForegroundToastService extends Service {
         }
         Store.setInt(mContext, packageName, timer);
         setLastFgApp(packageName);
-        Store.increaseInt(mContext, "totalSeconds", 5);
+        Store.increaseInt(mContext, TOTAL_SECONDS, 5);
     }
 
     private String getLastFgApp() {
@@ -254,25 +258,6 @@ public class ForegroundToastService extends Service {
             }
         }
 
-    }
-
-    public static String getLastK(JSONArray allTimeSpent, int limit) { // FIXME: 6/23/17 remove
-        if (allTimeSpent.length() == 0) return "";
-        int lastIndex = allTimeSpent.length() - 1;
-        String arrValues = "";
-        for (int i = 0; i < limit; i++) {
-            arrValues += allTimeSpent.optInt(lastIndex - i) + ",";
-        }
-        return arrValues;
-    }
-
-    public static String getFirstK(JSONArray allTimeSpent, int limit) { // FIXME: 6/23/17 remove
-        if (allTimeSpent.length() == 0) return "";
-        String arrValues = "";
-        for (int i = 0; i < limit; i++) {
-            arrValues += allTimeSpent.optInt(i) + ",";
-        }
-        return arrValues;
     }
 
     private void vibrateOrPopup() {
@@ -352,13 +337,13 @@ public class ForegroundToastService extends Service {
     private static JSONObject getFBParams(Context context) {
         JSONObject params = new JSONObject();
         Helper.setJSONValue(params, "worker_id", Store.getString(context, Store.WORKER_ID));
-        Helper.setJSONValue(params, "total_seconds", Store.getInt(context, "totalSeconds"));
-        Helper.setJSONValue(params, "total_opens", Store.getInt(context, "totalOpens"));
+        Helper.setJSONValue(params, "total_seconds", Store.getInt(context, TOTAL_SECONDS));
+        Helper.setJSONValue(params, "total_opens", Store.getInt(context, TOTAL_OPENS));
         Helper.setJSONValue(params, "time_spent", Store.getInt(context, FB_CURRENT_TIME_SPENT));
         Helper.setJSONValue(params, "time_open", Store.getInt(context, FB_CURRENT_NUM_OF_OPENS));
         Helper.setJSONValue(params, "ringer_mode", DeviceInfo.getRingerMode(context));
         Helper.setJSONValue(params, "daily_reset_hour", StudyInfo.getDailyResetHour(context));
-        Helper.setJSONValue(params, "screen_logs", Store.getString(context, Store.SCREEN_LOGS));
+        Helper.setJSONValue(params, "screen_logs", "");
         Helper.setJSONValue(params, "firebase_token", FirebaseInstanceId.getInstance().getToken());
 
         Helper.setJSONValue(params, "current_experiment_group", StudyInfo.getCurrentExperimentGroup(context));
@@ -375,7 +360,6 @@ public class ForegroundToastService extends Service {
             @Override
             public void onConnectSuccess(JSONObject result) {
                 Log.i(TAG, "Submit Stats: " + result.toString());
-                Store.setBoolean(context, "serverUpdatedToday", true);
                 StudyInfo.updateStoredAdminParams(context, result);
             }
 
@@ -405,7 +389,6 @@ public class ForegroundToastService extends Service {
 
     }
 
-
     private String getCurrentStats() {
         Integer fbTimeSpent = Store.getInt(mContext, FB_CURRENT_TIME_SPENT);
         Integer fbNumOfOpens = Store.getInt(mContext, FB_CURRENT_NUM_OF_OPENS);
@@ -434,7 +417,7 @@ public class ForegroundToastService extends Service {
                 if (screenEvent.equals(Intent.ACTION_USER_PRESENT)) { //unlock
                     Log.d(TAG, "Phone unlocked");
                     if (Store.getString(context, Store.LAST_SCREEN_EVENT).equals(Intent.ACTION_SCREEN_OFF)) {
-                        Store.increaseInt(mContext, "totalOpens", 1);
+                        Store.increaseInt(mContext, TOTAL_OPENS, 1);
                     }
                 } else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) { //lock
                     Log.d(TAG, "Phone locked");
@@ -506,6 +489,3 @@ public class ForegroundToastService extends Service {
     }
 
 }
-
-
-// TODO: 5/29/17 refactor Store.getInt(mContext, FB_CURRENT_NUM_OF_OPENS) ==> getFBOpens()

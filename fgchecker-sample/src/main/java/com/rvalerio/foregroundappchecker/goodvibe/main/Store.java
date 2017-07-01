@@ -21,7 +21,6 @@ public class Store {
 
     final static String FB_MAX_MINUTES = "adminFBMaxMins";
     final static String FB_MAX_OPENS = "adminFBMaxOpens";
-    static final String SCREEN_LOGS = "screenLogs";
 
     final static String DAILY_RESET_HOUR = "dailyResetHour";
     final static String WORKER_ID = "workerID";

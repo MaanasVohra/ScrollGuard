@@ -11,20 +11,7 @@ import com.firebase.jobdispatcher.JobService;
 import com.firebase.jobdispatcher.Lifetime;
 import com.firebase.jobdispatcher.RetryStrategy;
 import com.firebase.jobdispatcher.Trigger;
-import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
-import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
-import com.rvalerio.foregroundappchecker.goodvibe.helper.NetworkHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.main.ForegroundToastService;
-import com.rvalerio.foregroundappchecker.goodvibe.main.Store;
-import com.rvalerio.foregroundappchecker.goodvibe.main.StudyInfo;
-import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
-
-import org.json.JSONArray;
-
-import java.util.Locale;
-
-import static com.rvalerio.foregroundappchecker.goodvibe.main.ForegroundToastService.getFirstK;
-import static com.rvalerio.foregroundappchecker.goodvibe.main.ForegroundToastService.getLastK;
 
 public class AppJobService extends JobService {
 
