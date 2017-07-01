@@ -41,6 +41,7 @@ public class Store {
     public static final String BACKUP_SCREEN_LOGS_CSV_FILENAME = "bk-screenLogs.csv";
     public static final String RESPONSE_TO_SUBMIT = "submitBtnResponse";
     public static final String SURVEY_LINK = "surveyLink";
+    public static final String LAST_SCREEN_EVENT = "lastScreenEvent";
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);

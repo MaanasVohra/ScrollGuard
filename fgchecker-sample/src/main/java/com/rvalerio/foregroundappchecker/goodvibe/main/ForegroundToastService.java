@@ -7,9 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
@@ -433,14 +430,16 @@ public class ForegroundToastService extends Service {
             @Override
             public void onReceive(Context context, Intent intent) {
                 updateScreenLog(context, intent);
-
-                // FIXME: 6/2/17 big time bug with screen lock count!!!!!!!!!!!1
-                if (intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
-                    Store.increaseInt(mContext, "totalOpens", 1);
+                String screenEvent = intent.getAction();
+                if (screenEvent.equals(Intent.ACTION_USER_PRESENT)) { //unlock
                     Log.d(TAG, "Phone unlocked");
-                } else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+                    if (Store.getString(context, Store.LAST_SCREEN_EVENT).equals(Intent.ACTION_SCREEN_OFF)) {
+                        Store.increaseInt(mContext, "totalOpens", 1);
+                    }
+                } else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) { //lock
                     Log.d(TAG, "Phone locked");
                 }
+                Store.setString(context, Store.LAST_SCREEN_EVENT, screenEvent);
             }
         };
 
