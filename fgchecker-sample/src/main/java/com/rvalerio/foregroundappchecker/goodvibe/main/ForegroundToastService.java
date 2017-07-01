@@ -49,7 +49,6 @@ public class ForegroundToastService extends Service {
     private Context mContext;
 
     private BroadcastReceiver appCheckerReceiver;
-    private BroadcastReceiver networkConnReceiver;
     private BroadcastReceiver screenUnlockReceiver;
     private AppChecker appChecker;
 
@@ -221,6 +220,7 @@ public class ForegroundToastService extends Service {
         }
         Store.setInt(mContext, packageName, timer);
         setLastFgApp(packageName);
+        Store.increaseInt(mContext, "totalSeconds", 5);
     }
 
     private String getLastFgApp() {
@@ -496,7 +496,6 @@ public class ForegroundToastService extends Service {
     }
 
     private void unregisterAllReceivers() {
-        unregisterReceiver(networkConnReceiver);
         unregisterReceiver(screenUnlockReceiver);
         unregisterReceiver(appCheckerReceiver);
     }
