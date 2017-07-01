@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void uncaughtException(Thread thread, Throwable ex) {
                 Crashlytics.logException(ex);
-                Crashlytics.log(Log.ERROR, "MyApp", "Higgs-Boson detected! Bailing out...");
+                Crashlytics.log(Log.ERROR, "MyApp", "Higgs-Boson detected! Bailing out..."); // FIXME: 7/1/17
 
                 StackTraceElement ste = ex.getStackTrace()[0];
                 String title = String.format("%s: Line%s", ste.getFileName(), ste.getLineNumber());

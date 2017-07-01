@@ -16,17 +16,23 @@
 
 package com.rvalerio.foregroundappchecker.goodvibe.fcm;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.main.AutoUpdateAlarm;
+import com.rvalerio.foregroundappchecker.goodvibe.main.ForegroundToastService;
 
 import java.util.Map;
 
 public class AppFirebaseMessagingService extends FirebaseMessagingService {
 
-    private static final String TAG = "BeehiveFirebaseMsg";
+    private static final String TAG = "GoodVibeFirebase";
+    private static final String SERVER_SYNC = "serverSync";
+    private static final String NOTIFY_USER = "notifyUser";
+    private static final String PROMPT_APP_UPDATE = "promptUpdate";
 
     /**
      * Called when message is received.
@@ -35,33 +41,30 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
      */
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+            Context context = getApplicationContext();
             Map<String, String> data = remoteMessage.getData();
-            String msg = data.get("msg");
-            if (msg.equals("server_sync")) {
-//                new SilentRefresh(getApplication()).syncExperiment();
-                AlarmHelper.showInstantNotif(getApplicationContext(), "GoodVibe Sync", "Done!", "", 2233);
+            String type = data.get("type");
+            switch (type) {
+                case SERVER_SYNC:
+                    AlarmHelper.showInstantNotif(context, "GoodVibe Sync", "Done!", "", 2233); // FIXME: 7/1/17 remove alert
+                    AutoUpdateAlarm.performUpdate(context);
+                    ForegroundToastService.startMonitoringFacebookUsage(context);
+                    AppJobService.updateServerThroughFirebaseJob(context);
+                    break;
+                case NOTIFY_USER:
+                    String title = data.get("title");
+                    String content = data.get("content");
+                    AlarmHelper.showInstantNotif(context, title, content, "io.smalldata.goodvibe", 5003);
+                    break;
+                case PROMPT_APP_UPDATE:
+                    updateApp();
+                    break;
             }
         }
-
-        // Check if message contains a notification payload.
-        if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
-        }
     }
-//    /**
-//     * Schedule a job using FirebaseJobDispatcher.
-//     */
-//    private void updateServerThroughFirebaseJob() {
-//        // [START dispatch_job]
-//        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
-//        Job myJob = dispatcher.newJobBuilder()
-//                .setService(MyJobService.class)
-//                .setTag("my-job-tag")
-//                .build();
-//        dispatcher.schedule(myJob);
-//        // [END dispatch_job]
-//    }
+
+    private void updateApp() { }
+
 }

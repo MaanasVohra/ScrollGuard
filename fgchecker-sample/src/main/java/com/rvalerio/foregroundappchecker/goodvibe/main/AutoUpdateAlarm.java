@@ -29,7 +29,7 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
         Intent intent = new Intent(context, AutoUpdateAlarm.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
 //        am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), getVariableHourInterval(1, 2), pi);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, pi); // FIXME: 6/19/17 remove
+        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 6 * AlarmManager.INTERVAL_HOUR, pi); // FIXME: 6/19/17 remove
     }
 
     private int getVariableHourInterval(int lowerHour, int upperHour) {
@@ -46,7 +46,7 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
         wl.release();
     }
 
-    private void performUpdate(Context context) {
+    public static void performUpdate(Context context) {
         ForegroundToastService.startMonitoringFacebookUsage(context);
         AppJobService.updateServerThroughFirebaseJob(context);
     }

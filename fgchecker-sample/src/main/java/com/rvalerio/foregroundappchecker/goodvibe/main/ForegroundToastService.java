@@ -22,6 +22,7 @@ import com.rvalerio.fgchecker.AppChecker;
 import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
+import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
@@ -166,7 +167,7 @@ public class ForegroundToastService extends Service {
             Store.setInt(mContext, FB_CURRENT_TIME_SPENT, 0);
             Store.setInt(mContext, FB_CURRENT_NUM_OF_OPENS, 0);
             Store.setBoolean(mContext, "serverUpdatedToday", false);
-            updateServerRecords(mContext);
+            AppJobService.updateServerThroughFirebaseJob(mContext);
         }
     }
 
@@ -315,7 +316,7 @@ public class ForegroundToastService extends Service {
         if (!Store.getBoolean(mContext, Store.ENROLLED)) {
             if (fbTimeSpent >= 0 && fbNumOfOpens >= 1) {
                 updateNotification(mContext, "Successful! Submit ID.");
-                AlarmHelper.showInstantNotif(mContext, "Successful activation!", "Submit your ID in app.", "io.smalldata.goodvibe", 5005);
+                AlarmHelper.showInstantNotif(mContext, "Successful activation!", "Tap to submit your ID.", "io.smalldata.goodvibe", 5005);
                 Store.setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
             }
         }
@@ -457,7 +458,7 @@ public class ForegroundToastService extends Service {
             public void onReceive(Context context, Intent intent) {
                 Bundle extras = intent.getExtras();
                 NetworkInfo info = extras.getParcelable("networkInfo");
-                NetworkInfo.State state = null;
+                NetworkInfo.State state = null; // FIXME: 7/1/17 comment out
                 if (info != null) {
                     state = info.getState();
                 }

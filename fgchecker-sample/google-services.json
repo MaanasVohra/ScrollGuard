@@ -1,35 +1,35 @@
 {
   "project_info": {
-    "project_number": "237207846020",
-    "firebase_url": "https://fgapp-f6c80.firebaseio.com",
-    "project_id": "fgapp-f6c80",
-    "storage_bucket": "fgapp-f6c80.appspot.com"
+    "project_number": "275750565556",
+    "firebase_url": "https://beehiveapp-bd24a.firebaseio.com",
+    "project_id": "beehiveapp-bd24a",
+    "storage_bucket": "beehiveapp-bd24a.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:237207846020:android:665779b6492e3c44",
+        "mobilesdk_app_id": "1:275750565556:android:1614171f89712a81",
         "android_client_info": {
-          "package_name": "io.smalldata.goodvibe"
+          "package_name": "io.smalldata.beehiveapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "237207846020-9h8fk2venra2t00o93rf4mjinldvc3ls.apps.googleusercontent.com",
+          "client_id": "275750565556-n9ct76b5vc8kgemb1jcorl14qq65brer.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "io.smalldata.goodvibe",
+            "package_name": "io.smalldata.beehiveapp",
             "certificate_hash": "9e552858f1f1fe26c542a813d6bfe1d2537caceb"
           }
         },
         {
-          "client_id": "237207846020-lu55v1hhmtapjqhrvblcgie96u98ukrg.apps.googleusercontent.com",
+          "client_id": "275750565556-jtmvlqtj73ak0t0mkf17409b60b4m4v8.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAP412F5cCQFv9UlZERt6_oawM_bmUy5zw"
+          "current_key": "AIzaSyA-I27p7pFo9_rDFNUJ4CY2SS2r02TvLx0"
         }
       ],
       "services": {
@@ -40,10 +40,41 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "237207846020-lu55v1hhmtapjqhrvblcgie96u98ukrg.apps.googleusercontent.com",
+              "client_id": "275750565556-jtmvlqtj73ak0t0mkf17409b60b4m4v8.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:275750565556:android:665779b6492e3c44",
+        "android_client_info": {
+          "package_name": "io.smalldata.goodvibe"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "275750565556-jtmvlqtj73ak0t0mkf17409b60b4m4v8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-I27p7pFo9_rDFNUJ4CY2SS2r02TvLx0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
         },
         "ads_service": {
           "status": 2
