@@ -23,7 +23,6 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.main.AutoUpdateAlarm;
-import com.rvalerio.foregroundappchecker.goodvibe.main.ForegroundToastService;
 
 import java.util.Map;
 
@@ -48,15 +47,14 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
             String type = data.get("type");
             switch (type) {
                 case SERVER_SYNC:
-                    AlarmHelper.showInstantNotif(context, "GoodVibe Sync", "Done!", "", 2233); // FIXME: 7/1/17 remove alert
-                    AutoUpdateAlarm.performUpdate(context);
-                    ForegroundToastService.startMonitoringFacebookUsage(context);
-                    AppJobService.updateServerThroughFirebaseJob(context);
+                    AutoUpdateAlarm.performUpdateAndSyncToServer(context);
                     break;
                 case NOTIFY_USER:
                     String title = data.get("title");
                     String content = data.get("content");
-                    AlarmHelper.showInstantNotif(context, title, content, "io.smalldata.goodvibe", 5003);
+                    if (title != null || content != null) {
+                        AlarmHelper.showInstantNotif(context, title, content, "io.smalldata.goodvibe", 5003);
+                    }
                     break;
                 case PROMPT_APP_UPDATE:
                     updateApp();

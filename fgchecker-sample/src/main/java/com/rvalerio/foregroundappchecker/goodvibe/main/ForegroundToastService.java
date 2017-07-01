@@ -556,45 +556,6 @@ public class ForegroundToastService extends Service {
         manager.cancel(NOTIFICATION_ID);
     }
 
-//    private Notification createStickyNotification() {
-//        NotificationManager manager = ((NotificationManager) getSystemService(NOTIFICATION_SERVICE));
-//        Notification notification = new NotificationCompat.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
-//                .setPriority(NotificationCompat.PRIORITY_MIN)
-//                .setOngoing(true).setOnlyAlertOnce(true)
-//                .setAutoCancel(false)
-//                .setContentTitle(getString(R.string.app_name))
-//                .setContentText(getString(R.string.stop_service))
-//                .setContentIntent(PendingIntent.getBroadcast(this, 0,
-//                        new Intent(STOP_SERVICE), PendingIntent.FLAG_UPDATE_CURRENT))
-//                .setWhen(0).build();
-//
-//        manager.notify(NOTIFICATION_ID, notification);
-//        return notification;
-//    }
-
-//    private void updateScreenLog22(Context context, Intent intent) {
-//        String strLogs = Store.getString(context, Store.SCREEN_LOGS);
-//
-//        JSONArray logs = JsonHelper.strToJsonArray(strLogs);
-//        String screenAction = intent.getAction();
-//        String event;
-//        if (intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
-//            screenAction = "0"; //unlocked
-//            event = "open";
-//        } else if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-//            screenAction = "1"; // locked
-//            event = "lock";
-//        } else {
-//            screenAction = getLastNChars(screenAction, 15); // unknown
-//            event = getLastNChars(screenAction, 15); // unknown
-//        }
-//
-//        long nowInMillis = Calendar.getInstance().getTimeInMillis();
-//        String entry = String.format("%s, %s", nowInMillis, screenAction);
-//        logs.put(entry);
-//        Store.setString(mContext, Store.SCREEN_LOGS, logs.toString());
-//    }
-//
 }
 
 

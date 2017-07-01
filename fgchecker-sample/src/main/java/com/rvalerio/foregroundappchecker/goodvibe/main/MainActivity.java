@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
                 StackTraceElement ste = ex.getStackTrace()[0];
                 String title = String.format("%s: Line%s", ste.getFileName(), ste.getLineNumber());
-                String content = "Error! Alert researcher: " + Arrays.toString(ex.getStackTrace());
+                String content = "Uh oh. Weird Error! Take a screenshot and send to researcher: " + Arrays.toString(ex.getStackTrace());
                 AlarmHelper.showInstantNotif(context, title, content, "", 3490);
                 mDefaultUEH.uncaughtException(thread, ex);
                 ForegroundToastService.startMonitoringFacebookUsage(context);

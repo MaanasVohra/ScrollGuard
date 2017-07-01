@@ -6,10 +6,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.PowerManager;
-import android.os.SystemClock;
 
 import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
-import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 
 import java.util.Calendar;
@@ -42,11 +40,11 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "");
         wl.acquire();
-        performUpdate(context);
+        performUpdateAndSyncToServer(context);
         wl.release();
     }
 
-    public static void performUpdate(Context context) {
+    public static void performUpdateAndSyncToServer(Context context) {
         ForegroundToastService.startMonitoringFacebookUsage(context);
         AppJobService.updateServerThroughFirebaseJob(context);
     }
