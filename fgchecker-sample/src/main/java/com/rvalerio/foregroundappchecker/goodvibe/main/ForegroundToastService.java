@@ -219,8 +219,9 @@ public class ForegroundToastService extends Service {
 
         timer += 5;
         if (!packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
-            String msg = String.format(locale, "%s: %d secs.", packageName, timer);
-            updateNotification(mContext, msg);
+//            String msg = String.format(locale, "%s: %d secs.", packageName, timer);
+//            updateNotification(mContext, msg);
+            updateNotification(mContext, getCurrentStats());
         }
         Store.setInt(mContext, packageName, timer);
         setLastFgApp(packageName);
