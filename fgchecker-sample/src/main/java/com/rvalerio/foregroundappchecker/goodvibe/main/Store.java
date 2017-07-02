@@ -19,12 +19,14 @@ public class Store {
     final static String LOGGING_STOP = "loggingStop";
     final static String EXPERIMENT_GROUP = "experimentGroup";
 
-    final static String FB_MAX_MINUTES = "adminFBMaxMins";
-    final static String FB_MAX_OPENS = "adminFBMaxOpens";
+    final static String FB_MAX_MINUTES = "fbMaximumMinutes";
+    final static String FB_MAX_OPENS = "fbMaximumOpens";
+    final static String ADMIN_SET_FB_MAX_MINUTES = "adminSetFBMaxMinutes";
+    final static String ADMIN_SET_FB_MAX_OPENS = "adminSetFBMaxOpens";
 
     final static String DAILY_RESET_HOUR = "dailyResetHour";
     final static String WORKER_ID = "workerID";
-    final static String STUDY_CODE = "vibeStudyCode";
+    final static String STUDY_CODE = "goodVibeStudyCode";
     final static String EXPERIMENT_JOIN_DATE = "experimentJoinDate";
 
     private static final String PREF_NAME = "prefs";
@@ -35,9 +37,9 @@ public class Store {
     public static final String FB_LOGS_CSV_FILENAME = "fbLogs.csv";
     public static final String APP_LOGS_CSV_FILENAME = "appLogs.csv";
     public static final String SCREEN_LOGS_CSV_FILENAME = "screenLogs.csv";
-    public static final String RESPONSE_TO_SUBMIT = "submitBtnResponse";
-    public static final String SURVEY_LINK = "surveyLink";
-    public static final String LAST_SCREEN_EVENT = "lastScreenEvent";
+    static final String RESPONSE_TO_SUBMIT = "submitBtnResponse";
+    static final String SURVEY_LINK = "surveyLink";
+    static final String LAST_SCREEN_EVENT = "lastScreenEvent";
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);

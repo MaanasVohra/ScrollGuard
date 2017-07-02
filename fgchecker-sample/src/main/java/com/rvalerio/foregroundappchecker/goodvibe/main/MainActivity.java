@@ -297,7 +297,5 @@ public class MainActivity extends AppCompatActivity {
 
 }
 
-// TODO: 3/4/17 change every store value from camel case to the exact same name as retrieved from server
-// TODO: 6/6/17 remove store screen logs 
-// TODO: 7/1/17 remove screen logs
-// TODO: 7/1/17 remove fb stats log
+// TODO: 7/2/17 remove fabric keys from github
+// TODO: 7/2/17 test and make sure that admin state works

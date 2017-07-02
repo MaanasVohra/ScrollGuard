@@ -28,14 +28,11 @@ import com.rvalerio.foregroundappchecker.goodvibe.helper.NetworkHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.AdaptivePersonalize;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-
-import static com.rvalerio.foregroundappchecker.goodvibe.main.Store.setBoolean;
 
 
 public class ForegroundToastService extends Service {
@@ -120,18 +117,21 @@ public class ForegroundToastService extends Service {
         int experimentGroup = StudyInfo.getCurrentExperimentGroup(mContext);
         StaticPersonalize personalize;
 
-        switch (experimentGroup) {
+        switch (experimentGroup) { // explicitly handle each condition for clarity
             case StudyInfo.STATIC_GROUP:
                 personalize = new StaticPersonalize(mContext, treatmentStartDateStr);
                 break;
             case StudyInfo.ADAPTIVE_GROUP:
-                personalize = new AdaptivePersonalize(mContext, treatmentStartDateStr);
+                personalize = new AdaptivePersonalize(mContext);
                 break;
             case StudyInfo.POPUP_ADAPTIVE_GROUP:
-                personalize = new AdaptivePersonalize(mContext, treatmentStartDateStr);
+                personalize = new AdaptivePersonalize(mContext);
+                break;
+            case StudyInfo.CONTROL_GROUP:
+                personalize = new AdaptivePersonalize(mContext);
                 break;
             default:
-                personalize = new StaticPersonalize(mContext, treatmentStartDateStr);
+                personalize = new AdaptivePersonalize(mContext);
                 break;
         }
 
@@ -159,7 +159,12 @@ public class ForegroundToastService extends Service {
             String data = String.format(locale, "%d, %s, %d, %d;\n", timeMillis, fbDate, timeSpent, timeOpen);
             FileHelper.appendToFile(mContext, Store.FB_LOGS_CSV_FILENAME, data);
 
-            applyPersonalizedFacebookLimits();
+            if (activeAdminLimit()) {
+                applyAdminLimit();
+            } else {
+                applyPersonalizedFacebookLimits();
+            }
+
             Store.setString(mContext, LAST_RECORDED_DATE, Helper.getTodayDateStr());
             Store.setInt(mContext, FB_CURRENT_TIME_SPENT, 0);
             Store.setInt(mContext, FB_CURRENT_NUM_OF_OPENS, 0);
@@ -167,6 +172,17 @@ public class ForegroundToastService extends Service {
             Store.setInt(mContext, TOTAL_OPENS, 0);
             AppJobService.updateServerThroughFirebaseJob(mContext);
         }
+    }
+
+    private boolean activeAdminLimit() {
+        return Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_MINUTES) != -1 ||
+                Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_OPENS) != -1;
+    }
+
+    private void applyAdminLimit() {
+        int timeLimit = Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_MINUTES);
+        int openLimit = Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_OPENS);
+        StudyInfo.updateFBLimitsOfStudy(mContext, timeLimit, openLimit);
     }
 
     private boolean isNewDay() {
@@ -252,11 +268,15 @@ public class ForegroundToastService extends Service {
         updateNotification(mContext, getCurrentStats());
         checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
         if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
-            if (isTreatmentPeriod()) {
+            if (isTreatmentPeriod() && !isControlGroup()) {
                 vibrateOrPopup();
             }
         }
 
+    }
+
+    private boolean isControlGroup() {
+        return StudyInfo.getCurrentExperimentGroup(mContext) == StudyInfo.CONTROL_GROUP;
     }
 
     private void vibrateOrPopup() {
@@ -305,25 +325,30 @@ public class ForegroundToastService extends Service {
             updateNotification(context, "Experiment has ended. Please Uninstall app.");
             return;
         }
-        sendFBStats(context);
+        sendCurrentUserStatsThenUpdateAdminState(context);
+        sendFacebookLogsThenUpdateAdminState(context);
         sendFgAppLogs(context);
         sendScreenEventLogs(context);
     }
 
-    private static void sendFBStats(Context context) {
-        CallAPI.submitFBStats(context, getFBParams(context), getFBResponseHandler(context));
+    private static void sendCurrentUserStatsThenUpdateAdminState(Context context) {
+        JSONObject params = getFBParams(context);
+        CallAPI.submitFBAndOtherCurrentStats(context, params, getFBResponseHandler(context));
+    }
+
+    private static void sendFacebookLogsThenUpdateAdminState(Context context) {
         JSONObject params = getLogParams(context, Store.FB_LOGS_CSV_FILENAME);
-        CallAPI.submitFacebookLogs(context, params, getLogResponseHandler(context, Store.FB_LOGS_CSV_FILENAME));
+        CallAPI.submitFacebookLogs(context, params, getLogResponseHandler(context, Store.FB_LOGS_CSV_FILENAME, true));
     }
 
     private static void sendFgAppLogs(Context context) {
         JSONObject params = getLogParams(context, Store.APP_LOGS_CSV_FILENAME);
-        CallAPI.submitAppLogs(context, params, getLogResponseHandler(context, Store.APP_LOGS_CSV_FILENAME));
+        CallAPI.submitAppLogs(context, params, getLogResponseHandler(context, Store.APP_LOGS_CSV_FILENAME, false));
     }
 
     private static void sendScreenEventLogs(Context context) {
         JSONObject params = getLogParams(context, Store.SCREEN_LOGS_CSV_FILENAME);
-        CallAPI.submitScreenEventLogs(context, params, getLogResponseHandler(context, Store.SCREEN_LOGS_CSV_FILENAME));
+        CallAPI.submitScreenEventLogs(context, params, getLogResponseHandler(context, Store.SCREEN_LOGS_CSV_FILENAME, false));
     }
 
     private static JSONObject getLogParams(Context context, String filename) {
@@ -370,19 +395,21 @@ public class ForegroundToastService extends Service {
         };
     }
 
-    private static VolleyJsonCallback getLogResponseHandler(final Context context, final String filenameToReset) {
+    private static VolleyJsonCallback getLogResponseHandler(final Context context, final String filenameToReset, final boolean hasAdminInfo) {
         return new VolleyJsonCallback() {
             @Override
             public void onConnectSuccess(JSONObject result) {
-                Log.i(TAG, "FgApp Submit response: " + result.toString());
-                setBoolean(context, filenameToReset + "UpdatedToday", true);
+                Log.i(TAG, filenameToReset + " Submit Response: " + result.toString());
                 FileHelper.resetFile(context, filenameToReset);
+                if (hasAdminInfo) {
+                    StudyInfo.updateStoredAdminParams(context, result);
+                }
             }
 
             @Override
             public void onConnectFailure(VolleyError error) {
                 String msg = "Stats submit error: " + error.toString();
-                Log.e(TAG, "FgApp StatsError: " + msg);
+                Log.e(TAG, filenameToReset + " StatsError: " + msg);
             }
         };
 

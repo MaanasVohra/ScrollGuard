@@ -55,7 +55,7 @@ public class CallAPI {
         SingletonRequest.getInstance(context).addToRequestQueue(request);
     }
 
-    public static void submitFBStats(Context context, JSONObject params, VolleyJsonCallback callback) {
+    public static void submitFBAndOtherCurrentStats(Context context, JSONObject params, VolleyJsonCallback callback) {
         JsonObjectRequest request = createRequest(TURKPRIME_ADD_FB_STATS, params, callback);
         SingletonRequest.getInstance(context).addToRequestQueue(request);
     }

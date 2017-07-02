@@ -1,7 +1,6 @@
 package com.rvalerio.foregroundappchecker.goodvibe.main;
 
 import android.content.Context;
-import android.widget.Toast;
 
 import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
 
@@ -15,6 +14,7 @@ import java.util.Date;
  */
 
 public class StudyInfo {
+    static final int CONTROL_GROUP = 0;
     static final int STATIC_GROUP = 1;
     static final int ADAPTIVE_GROUP = 2;
     static final int POPUP_ADAPTIVE_GROUP = 3;
@@ -42,7 +42,7 @@ public class StudyInfo {
 
     static void setDefaults(Context context, String studyCode) {
         setStudyPeriods(context, studyCode);
-        Store.setInt(context, Store.EXPERIMENT_GROUP, STATIC_GROUP);
+        Store.setInt(context, Store.EXPERIMENT_GROUP, CONTROL_GROUP);
         Store.setString(context, Store.TREATMENT_START, getTreatmentStartDateStr(context));
         Store.setString(context, Store.FOLLOWUP_START, getFollowupStartDateStr(context));
         Store.setString(context, Store.LOGGING_STOP, getLoggingStopDateStr(context));
@@ -107,11 +107,11 @@ public class StudyInfo {
         return loggingStopStr;
     }
 
-    public static int getFBMaxDailyMinutes(Context context) {
+    static int getFBMaxDailyMinutes(Context context) {
         return Store.getInt(context, Store.FB_MAX_MINUTES);
     }
 
-    public static int getFBMaxDailyOpens(Context context) {
+    static int getFBMaxDailyOpens(Context context) {
         return Store.getInt(context, Store.FB_MAX_OPENS) ;
     }
 
@@ -129,15 +129,17 @@ public class StudyInfo {
         Store.setInt(context, Store.EXPERIMENT_GROUP, result.optInt("admin_experiment_group"));
         Store.setInt(context, Store.FB_MAX_MINUTES, result.optInt("admin_fb_max_mins", getFBMaxDailyMinutes(context)));
         Store.setInt(context, Store.FB_MAX_OPENS, result.optInt("admin_fb_max_opens", getFBMaxDailyOpens(context)));
+        Store.setInt(context, Store.ADMIN_SET_FB_MAX_MINUTES, result.optInt("admin_fb_max_mins", -1));
+        Store.setInt(context, Store.ADMIN_SET_FB_MAX_OPENS, result.optInt("admin_fb_max_opens", -1));
         Store.setString(context, Store.TREATMENT_START, result.optString("admin_treatment_start", getTreatmentStartDateStr(context)));
         Store.setString(context, Store.FOLLOWUP_START, result.optString("admin_followup_start", getFollowupStartDateStr(context)));
         Store.setString(context, Store.LOGGING_STOP, result.optString("admin_logging_stop", getLoggingStopDateStr(context)));
         Store.setInt(context, Store.DAILY_RESET_HOUR, result.optInt("admin_daily_reset_hour", getDailyResetHour(context)));
     }
 
-    public static int getCurrentExperimentGroup(Context context) {
+    static int getCurrentExperimentGroup(Context context) {
         int group = Store.getInt(context, Store.EXPERIMENT_GROUP);
-        return group == 0 ? STATIC_GROUP : group;
+        return group == 0 ? CONTROL_GROUP : group;
     }
 
     static String getWorkerID(Context context) {
