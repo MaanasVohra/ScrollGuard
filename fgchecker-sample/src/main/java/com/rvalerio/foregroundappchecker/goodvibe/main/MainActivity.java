@@ -224,17 +224,16 @@ public class MainActivity extends AppCompatActivity {
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 String studyCode = etStudyCode.getText().toString().toLowerCase().trim();
                 StudyInfo.setDefaults(mContext, studyCode);
-                AppJobService.updateServerThroughFirebaseJob(mContext);
                 AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
 
                 showSuccess(tvSubmitFeedback, response);
                 Store.setString(mContext, Store.RESPONSE_TO_SUBMIT, response);
+                Toast.makeText(mContext, "Successfully submitted.", Toast.LENGTH_SHORT).show();
 
                 String surveyLink = result.optString("survey_link");
                 Store.setString(mContext, Store.SURVEY_LINK, surveyLink);
                 showStudyInfo();
 
-                Toast.makeText(mContext, "Successfully submitted.", Toast.LENGTH_SHORT).show();
             } else {
                 tvSurveyLink.setVisibility(View.GONE);
                 Store.setBoolean(mContext, Store.ENROLLED, false);
