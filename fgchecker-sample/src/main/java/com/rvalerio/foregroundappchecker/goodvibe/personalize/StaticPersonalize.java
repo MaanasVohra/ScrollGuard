@@ -28,12 +28,12 @@ public class StaticPersonalize {
         mTreatmentStartDateStr = treatmentStartDateStr;
     }
 
-    Context getCxt() {
-        return mContext;
+    StaticPersonalize(Context context) {
+        mContext = context;
     }
 
-    String getTreatStart() {
-        return mTreatmentStartDateStr;
+    Context getCxt() {
+        return mContext;
     }
 
     public int getAverageTimeSpent() {

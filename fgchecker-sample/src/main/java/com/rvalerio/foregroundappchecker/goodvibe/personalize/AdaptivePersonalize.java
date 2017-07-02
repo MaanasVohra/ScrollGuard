@@ -17,18 +17,14 @@ import java.util.Date;
 public class AdaptivePersonalize extends StaticPersonalize {
     private static final int LAST_N_DAYS = 7;
 
-    public AdaptivePersonalize(Context context, String treatmentStartDateStr) {
-        super(context, treatmentStartDateStr);
+    public AdaptivePersonalize(Context context) {
+        super(context);
     }
 
     public void addDataPoint(int timeSpentMinutes, int noOfOpen) {
         insertDataIntoStore(timeSpentMinutes, noOfOpen);
         computeAndStoreNewAverage(ALL_TIME_SPENT, CURRENT_AVG_TIME_SPENT, LAST_N_DAYS);
         computeAndStoreNewAverage(ALL_NUM_OF_OPENS, CURRENT_AVG_NUM_OF_OPENS, LAST_N_DAYS);
-//        if (canComputeNewAvg(getTreatStart())) {
-//            computeAndStoreNewAverage(ALL_TIME_SPENT, CURRENT_AVG_TIME_SPENT, LAST_N_DAYS);
-//            computeAndStoreNewAverage(ALL_NUM_OF_OPENS, CURRENT_AVG_NUM_OF_OPENS, LAST_N_DAYS);
-//        }
     }
 
     private void computeAndStoreNewAverage(String storeKey, String avgKey, int lastKDays) {
@@ -45,12 +41,5 @@ public class AdaptivePersonalize extends StaticPersonalize {
         Store.setInt(getCxt(), avgKey, Math.round(total / limit));
     }
 
-//    private static boolean canComputeNewAvg(String treatmentStartDateStr) {
-//        Date treatmentStartDate = DateHelper.strToDate(treatmentStartDateStr);
-//        Date today = DateHelper.strToDate(DateHelper.getTodayDateStr());
-//        final long oneDayInMillis = 24 * 60 * 60 * 1000;
-//        long diffInDays = (today.getTime() - treatmentStartDate.getTime()) / oneDayInMillis;
-//        return diffInDays > LAST_N_DAYS;
-//    }
 }
 
