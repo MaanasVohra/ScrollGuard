@@ -25,9 +25,6 @@ public class FileHelper {
         FileHelper.appendToFile(context, Store.FB_LOGS_CSV_FILENAME, "");
         FileHelper.appendToFile(context, Store.APP_LOGS_CSV_FILENAME, "");
         FileHelper.appendToFile(context, Store.SCREEN_LOGS_CSV_FILENAME, "");
-        FileHelper.appendToFile(context, Store.BACKUP_FB_LOGS_CSV_FILENAME, "");
-        FileHelper.appendToFile(context, Store.BACKUP_APP_LOGS_CSV_FILENAME, "");
-        FileHelper.appendToFile(context, Store.BACKUP_SCREEN_LOGS_CSV_FILENAME, "");
     }
 
     public static void appendToFile(Context context, String filename, String data) {
@@ -38,7 +35,7 @@ public class FileHelper {
             outputStreamWriter.close();
         } catch (IOException e) {
             Log.e(TAG, "appendToFile: error" + e.toString());
-            AlarmHelper.showInstantNotif(context, "appendToFile error", e.toString(), "", 5003); // FIXME: 6/2/17 remove
+            AlarmHelper.showInstantNotif(context, "appendToFile error", e.toString(), "", 5003);
         }
     }
 
@@ -64,10 +61,10 @@ public class FileHelper {
             }
         } catch (FileNotFoundException e) {
             Log.e(TAG, "File not found: " + e.toString());
-            AlarmHelper.showInstantNotif(context, "File not found error", e.toString(), "", 5113); // FIXME: 6/2/17 remove
+            AlarmHelper.showInstantNotif(context, "File not found error", e.toString(), "", 5113);
         } catch (IOException e) {
             Log.e(TAG, "Can not read file: " + e.toString());
-            AlarmHelper.showInstantNotif(context, "Cannot read file", e.toString(), "", 5223); // FIXME: 6/2/17 remove
+            AlarmHelper.showInstantNotif(context, "Cannot read file", e.toString(), "", 5223);
         }
 
         return ret;

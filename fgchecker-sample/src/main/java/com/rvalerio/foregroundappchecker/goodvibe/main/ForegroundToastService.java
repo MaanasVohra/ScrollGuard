@@ -158,7 +158,6 @@ public class ForegroundToastService extends Service {
 
             String data = String.format(locale, "%d, %s, %d, %d;\n", timeMillis, fbDate, timeSpent, timeOpen);
             FileHelper.appendToFile(mContext, Store.FB_LOGS_CSV_FILENAME, data);
-            FileHelper.appendToFile(mContext, Store.BACKUP_FB_LOGS_CSV_FILENAME, data);
 
             applyPersonalizedFacebookLimits();
             Store.setString(mContext, LAST_RECORDED_DATE, Helper.getTodayDateStr());
@@ -214,7 +213,6 @@ public class ForegroundToastService extends Service {
             int lastAppTimeSpent = Store.getInt(mContext, lastAppId);
             String data = String.format(locale, "%s, %d, %d;\n", lastAppId, lastAppTimeSpent, System.currentTimeMillis());
             FileHelper.appendToFile(mContext, Store.APP_LOGS_CSV_FILENAME, data);
-            FileHelper.appendToFile(mContext, Store.BACKUP_APP_LOGS_CSV_FILENAME, data);
         }
 
         timer += 5;
@@ -451,7 +449,6 @@ public class ForegroundToastService extends Service {
 
         String data = String.format(locale, "%s, %d;\n", event, System.currentTimeMillis());
         FileHelper.appendToFile(context, Store.SCREEN_LOGS_CSV_FILENAME, data);
-        FileHelper.appendToFile(context, Store.BACKUP_SCREEN_LOGS_CSV_FILENAME, data);
     }
 
     private String getLastNChars(String myString, int n) {

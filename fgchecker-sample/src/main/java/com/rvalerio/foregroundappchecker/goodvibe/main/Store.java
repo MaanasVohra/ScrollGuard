@@ -35,9 +35,6 @@ public class Store {
     public static final String FB_LOGS_CSV_FILENAME = "fbLogs.csv";
     public static final String APP_LOGS_CSV_FILENAME = "appLogs.csv";
     public static final String SCREEN_LOGS_CSV_FILENAME = "screenLogs.csv";
-    public static final String BACKUP_FB_LOGS_CSV_FILENAME = "bk-fbLogs.csv";
-    public static final String BACKUP_APP_LOGS_CSV_FILENAME = "bk-appLogs.csv";
-    public static final String BACKUP_SCREEN_LOGS_CSV_FILENAME = "bk-screenLogs.csv";
     public static final String RESPONSE_TO_SUBMIT = "submitBtnResponse";
     public static final String SURVEY_LINK = "surveyLink";
     public static final String LAST_SCREEN_EVENT = "lastScreenEvent";
