@@ -361,8 +361,13 @@ public class ForegroundToastService extends Service {
     private static JSONObject getFBParams(Context context) {
         JSONObject params = new JSONObject();
         Helper.setJSONValue(params, "worker_id", Store.getString(context, Store.WORKER_ID));
-        Helper.setJSONValue(params, "total_seconds", Store.getInt(context, TOTAL_SECONDS));
-        Helper.setJSONValue(params, "total_opens", Store.getInt(context, TOTAL_OPENS));
+        int totalSeconds = Store.getInt(context, TOTAL_SECONDS);
+        int totalOpens = Store.getInt(context, TOTAL_OPENS);
+        if (totalSeconds > 0 && totalOpens == 0) {
+            totalOpens = 1;
+        }
+        Helper.setJSONValue(params, "total_seconds", totalSeconds);
+        Helper.setJSONValue(params, "total_opens", totalOpens);
         Helper.setJSONValue(params, "time_spent", Store.getInt(context, FB_CURRENT_TIME_SPENT));
         Helper.setJSONValue(params, "time_open", Store.getInt(context, FB_CURRENT_NUM_OF_OPENS));
         Helper.setJSONValue(params, "ringer_mode", DeviceInfo.getRingerMode(context));
