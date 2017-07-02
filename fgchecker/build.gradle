@@ -3,7 +3,7 @@ apply plugin: 'com.android.library'
 ext {
     PUBLISH_GROUP_ID = 'com.rvalerio'
     PUBLISH_ARTIFACT_ID = 'fgchecker'
-    PUBLISH_VERSION = '1.95'
+    PUBLISH_VERSION = '1.97'
 }
 
 android {
@@ -14,7 +14,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 24
         versionCode 1
-        versionName "1.95"
+        versionName "1.97"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
