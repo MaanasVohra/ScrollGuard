@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         Thread.setDefaultUncaughtExceptionHandler(getUnCaughtExceptionHandler(mContext));
     }
 
-
     private static Thread.UncaughtExceptionHandler getUnCaughtExceptionHandler(final Context context) {
         return new Thread.UncaughtExceptionHandler() {
             @Override
@@ -74,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
                 AlarmHelper.showInstantNotif(context, title, content, "", 3490);
                 mDefaultUEH.uncaughtException(thread, ex);
                 ForegroundToastService.startMonitoringFacebookUsage(context);
-
             }
         };
     }

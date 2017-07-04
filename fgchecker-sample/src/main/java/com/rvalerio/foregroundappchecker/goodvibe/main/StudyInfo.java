@@ -57,6 +57,7 @@ public class StudyInfo {
         Store.setString(context, Store.FOLLOWUP_START, "");
         Store.setString(context, Store.LOGGING_STOP, "");
     }
+
     private static void setStudyPeriods(Context context, String studyCode) {
         resetStudyPeriods(context);
         switch (studyCode) {
@@ -79,7 +80,9 @@ public class StudyInfo {
     }
 
     static void saveTodayAsExperimentJoinDate(Context context) {
-        Store.setString(context, Store.EXPERIMENT_JOIN_DATE, Helper.getTodayDateStr());
+        if (Store.getString(context, Store.EXPERIMENT_JOIN_DATE).equals("")) {
+            Store.setString(context, Store.EXPERIMENT_JOIN_DATE, Helper.getTodayDateStr());
+        }
     }
 
     private static String countFromJoinDate(Context context, int noOfDays) {
@@ -112,7 +115,7 @@ public class StudyInfo {
     }
 
     static int getFBMaxDailyOpens(Context context) {
-        return Store.getInt(context, Store.FB_MAX_OPENS) ;
+        return Store.getInt(context, Store.FB_MAX_OPENS);
     }
 
     /**
