@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.main.Store;
+import com.rvalerio.foregroundappchecker.goodvibe.main.StudyInfo;
 
 import org.json.JSONArray;
 
@@ -28,7 +29,7 @@ public class StaticPersonalize {
         mTreatmentStartDateStr = treatmentStartDateStr;
     }
 
-    StaticPersonalize(Context context) {
+    public StaticPersonalize(Context context) {
         mContext = context;
     }
 
@@ -66,12 +67,15 @@ public class StaticPersonalize {
         JSONArray allStoredValues = Store.getJsonArray(mContext, storeKey);
         if (allStoredValues.length() == 0) return;
 
-        float total = 0;
-        int limit = firstKDays <= allStoredValues.length() ? firstKDays : allStoredValues.length();
-        for (int i = 0; i < limit; i++) {
+        double total = 0;
+        int noOfStoredDays = firstKDays <= allStoredValues.length() ? firstKDays : allStoredValues.length();
+        for (int i = 0; i < noOfStoredDays; i++) {
             total += allStoredValues.optInt(i);
         }
-        Store.setInt(mContext, avgKey, Math.round(total / limit));
+
+        double ratio = StudyInfo.getRatioOfLimit(mContext);
+        int newAvg = (int) Math.round(ratio * total / noOfStoredDays);
+        Store.setInt(mContext, avgKey, newAvg);
     }
 
 }

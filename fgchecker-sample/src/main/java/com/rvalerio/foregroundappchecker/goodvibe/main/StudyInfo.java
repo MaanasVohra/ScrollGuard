@@ -19,6 +19,9 @@ public class StudyInfo {
     static final int ADAPTIVE_GROUP = 2;
     static final int POPUP_ADAPTIVE_GROUP = 3;
 
+    private static final Integer INIT_STATIC_RATIO_100 = 50;
+    private static final Integer INIT_ADAPTIVE_RATIO_100 = 80;
+
     private static int TREATMENT_START = 8;
     private static int FOLLOWUP_START = 36;
     private static int LOGGING_STOP = 50;
@@ -42,10 +45,15 @@ public class StudyInfo {
 
     static void setDefaults(Context context, String studyCode) {
         setStudyPeriods(context, studyCode);
+
         Store.setInt(context, Store.EXPERIMENT_GROUP, CONTROL_GROUP);
+        Store.setInt(context, Store.ADMIN_STATIC_RATIO_100, INIT_STATIC_RATIO_100);
+        Store.setInt(context, Store.ADMIN_ADAPTIVE_RATIO_100, INIT_ADAPTIVE_RATIO_100);
+
         Store.setString(context, Store.TREATMENT_START, getTreatmentStartDateStr(context));
         Store.setString(context, Store.FOLLOWUP_START, getFollowupStartDateStr(context));
         Store.setString(context, Store.LOGGING_STOP, getLoggingStopDateStr(context));
+
         Store.setInt(context, Store.DAILY_RESET_HOUR, INIT_DAILY_RESET_HOUR);
         Store.setInt(context, Store.FB_MAX_MINUTES, INIT_FB_MAX_DAILY_MINUTES);
         Store.setInt(context, Store.FB_MAX_OPENS, INIT_FB_MAX_DAILY_OPENS);
@@ -129,15 +137,18 @@ public class StudyInfo {
     }
 
     static void updateStoredAdminParams(Context context, JSONObject result) {
-        Store.setInt(context, Store.EXPERIMENT_GROUP, result.optInt("admin_experiment_group"));
-        Store.setInt(context, Store.FB_MAX_MINUTES, result.optInt("admin_fb_max_mins", getFBMaxDailyMinutes(context)));
-        Store.setInt(context, Store.FB_MAX_OPENS, result.optInt("admin_fb_max_opens", getFBMaxDailyOpens(context)));
-        Store.setInt(context, Store.ADMIN_SET_FB_MAX_MINUTES, result.optInt("admin_fb_max_mins", -1));
-        Store.setInt(context, Store.ADMIN_SET_FB_MAX_OPENS, result.optInt("admin_fb_max_opens", -1));
+        Store.setInt(context, Store.ADMIN_SET_FB_MAX_MINUTES, result.optInt("admin_fb_max_mins", Store.UNAVAILABLE));
+        Store.setInt(context, Store.ADMIN_SET_FB_MAX_OPENS, result.optInt("admin_fb_max_opens", Store.UNAVAILABLE));
+        Store.setInt(context, Store.ADMIN_ADAPTIVE_RATIO_100, result.optInt("admin_adaptive_ratio_100", Store.UNAVAILABLE));
+        Store.setInt(context, Store.ADMIN_STATIC_RATIO_100, result.optInt("admin_static_ratio_100", Store.UNAVAILABLE));
+
+        Store.setInt(context, Store.EXPERIMENT_GROUP, result.optInt("admin_experiment_group", getCurrentExperimentGroup(context)));
         Store.setString(context, Store.TREATMENT_START, result.optString("admin_treatment_start", getTreatmentStartDateStr(context)));
         Store.setString(context, Store.FOLLOWUP_START, result.optString("admin_followup_start", getFollowupStartDateStr(context)));
         Store.setString(context, Store.LOGGING_STOP, result.optString("admin_logging_stop", getLoggingStopDateStr(context)));
         Store.setInt(context, Store.DAILY_RESET_HOUR, result.optInt("admin_daily_reset_hour", getDailyResetHour(context)));
+        Store.setInt(context, Store.FB_MAX_MINUTES, result.optInt("admin_fb_max_mins", getFBMaxDailyMinutes(context)));
+        Store.setInt(context, Store.FB_MAX_OPENS, result.optInt("admin_fb_max_opens", getFBMaxDailyOpens(context)));
     }
 
     static int getCurrentExperimentGroup(Context context) {
@@ -152,6 +163,15 @@ public class StudyInfo {
     static void updateFBLimitsOfStudy(Context context, int fbTimeSpentMinutes, int fbNumOfOpens) {
         Store.setInt(context, Store.FB_MAX_MINUTES, fbTimeSpentMinutes);
         Store.setInt(context, Store.FB_MAX_OPENS, fbNumOfOpens);
+    }
+
+    public static double getRatioOfLimit(Context context) {
+        int studyGroup = StudyInfo.getCurrentExperimentGroup(context);
+        String key = (studyGroup == StudyInfo.STATIC_GROUP) ? Store.ADMIN_STATIC_RATIO_100 : Store.ADMIN_ADAPTIVE_RATIO_100;
+        int defaultRatio100 = (studyGroup == StudyInfo.STATIC_GROUP) ? INIT_STATIC_RATIO_100 : INIT_ADAPTIVE_RATIO_100;
+        int storedRatio = Store.getInt(context, key);
+        storedRatio = (storedRatio == Store.UNAVAILABLE) ? defaultRatio100 : storedRatio;
+        return (double) storedRatio / 100;
     }
 
 }

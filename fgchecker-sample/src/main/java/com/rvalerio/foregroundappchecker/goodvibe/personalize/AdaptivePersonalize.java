@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.main.Store;
+import com.rvalerio.foregroundappchecker.goodvibe.main.StudyInfo;
 
 import org.json.JSONArray;
 
@@ -16,9 +17,11 @@ import java.util.Date;
 
 public class AdaptivePersonalize extends StaticPersonalize {
     private static final int LAST_N_DAYS = 7;
+    private Context mContext;
 
     public AdaptivePersonalize(Context context) {
         super(context);
+        mContext = context;
     }
 
     public void addDataPoint(int timeSpentMinutes, int noOfOpen) {
@@ -28,17 +31,20 @@ public class AdaptivePersonalize extends StaticPersonalize {
     }
 
     private void computeAndStoreNewAverage(String storeKey, String avgKey, int lastKDays) {
-        JSONArray allStoredValues = Store.getJsonArray(getCxt(), storeKey);
+        JSONArray allStoredValues = Store.getJsonArray(mContext, storeKey);
         if (allStoredValues.length() == 0) return;
         float total = 0;
-        int limit = lastKDays <= allStoredValues.length() ? lastKDays : allStoredValues.length();
+        int noOfStoredDays = lastKDays <= allStoredValues.length() ? lastKDays : allStoredValues.length();
         int lastIndex = allStoredValues.length() - 1;
         int value;
-        for (int i = 0; i < limit; i++) {
+        for (int i = 0; i < noOfStoredDays; i++) {
             value = allStoredValues.optInt(lastIndex - i);
             total += value;
         }
-        Store.setInt(getCxt(), avgKey, Math.round(total / limit));
+
+        double ratio = StudyInfo.getRatioOfLimit(mContext);
+        int newAvg = (int) Math.round(ratio * total / noOfStoredDays);
+        Store.setInt(mContext, avgKey, newAvg);
     }
 
 }

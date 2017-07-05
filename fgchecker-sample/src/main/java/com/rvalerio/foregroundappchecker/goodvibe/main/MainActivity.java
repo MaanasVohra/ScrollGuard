@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
                 Store.setBoolean(mContext, Store.ENROLLED, true);
                 StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 String studyCode = etStudyCode.getText().toString().toLowerCase().trim();
-                StudyInfo.setDefaults(mContext, studyCode);
+                StudyInfo.setDefaults(mContext, studyCode); //fallback to defaults if admin values are not set
                 AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
 
                 showSuccess(tvSubmitFeedback, response);
@@ -293,6 +293,3 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
-
-// TODO: 7/2/17 remove fabric keys from github
-// TODO: 7/2/17 test and make sure that admin state works

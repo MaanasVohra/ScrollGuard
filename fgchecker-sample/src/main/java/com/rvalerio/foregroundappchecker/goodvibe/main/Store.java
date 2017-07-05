@@ -40,6 +40,9 @@ public class Store {
     static final String RESPONSE_TO_SUBMIT = "submitBtnResponse";
     static final String SURVEY_LINK = "surveyLink";
     static final String LAST_SCREEN_EVENT = "lastScreenEvent";
+    static final String ADMIN_STATIC_RATIO_100 = "adminStaticRatio100";
+    static final String ADMIN_ADAPTIVE_RATIO_100 = "adminAdaptiveRatio100";
+    static final int UNAVAILABLE = -1;
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);

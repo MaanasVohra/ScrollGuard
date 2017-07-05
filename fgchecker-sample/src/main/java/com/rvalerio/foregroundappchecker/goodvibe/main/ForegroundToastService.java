@@ -175,8 +175,8 @@ public class ForegroundToastService extends Service {
     }
 
     private boolean activeAdminLimit() {
-        return Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_MINUTES) != -1 ||
-                Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_OPENS) != -1;
+        return Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_MINUTES) != Store.UNAVAILABLE ||
+                Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_OPENS) != Store.UNAVAILABLE;
     }
 
     private void applyAdminLimit() {
