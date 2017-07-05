@@ -375,6 +375,8 @@ public class ForegroundToastService extends Service {
         Helper.setJSONValue(params, "screen_logs", "");
         Helper.setJSONValue(params, "firebase_token", FirebaseInstanceId.getInstance().getToken());
 
+        Helper.setJSONValue(params, "current_static_ratio_100", Store.getInt(context, Store.ADMIN_STATIC_RATIO_100));
+        Helper.setJSONValue(params, "current_adaptive_ratio_100", Store.getInt(context, Store.ADMIN_ADAPTIVE_RATIO_100));
         Helper.setJSONValue(params, "current_experiment_group", StudyInfo.getCurrentExperimentGroup(context));
         Helper.setJSONValue(params, "current_fb_max_mins", StudyInfo.getFBMaxDailyMinutes(context));
         Helper.setJSONValue(params, "current_fb_max_opens", StudyInfo.getFBMaxDailyOpens(context));
