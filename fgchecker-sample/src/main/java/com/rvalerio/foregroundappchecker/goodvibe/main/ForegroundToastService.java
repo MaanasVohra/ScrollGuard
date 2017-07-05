@@ -28,11 +28,14 @@ import com.rvalerio.foregroundappchecker.goodvibe.helper.NetworkHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.AdaptivePersonalize;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+
+import static com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize.ALL_TIME_SPENT;
 
 
 public class ForegroundToastService extends Service {
@@ -377,12 +380,17 @@ public class ForegroundToastService extends Service {
 
         Helper.setJSONValue(params, "current_static_ratio_100", Store.getInt(context, Store.ADMIN_STATIC_RATIO_100));
         Helper.setJSONValue(params, "current_adaptive_ratio_100", Store.getInt(context, Store.ADMIN_ADAPTIVE_RATIO_100));
+        Helper.setJSONValue(params, "current_ratio_of_limit", StudyInfo.getRatioOfLimit(context));
         Helper.setJSONValue(params, "current_experiment_group", StudyInfo.getCurrentExperimentGroup(context));
         Helper.setJSONValue(params, "current_fb_max_mins", StudyInfo.getFBMaxDailyMinutes(context));
         Helper.setJSONValue(params, "current_fb_max_opens", StudyInfo.getFBMaxDailyOpens(context));
         Helper.setJSONValue(params, "current_treatment_start", StudyInfo.getTreatmentStartDateStr(context));
         Helper.setJSONValue(params, "current_followup_start", StudyInfo.getFollowupStartDateStr(context));
         Helper.setJSONValue(params, "current_logging_stop", StudyInfo.getLoggingStopDateStr(context));
+
+        Helper.setJSONValue(params, "all_time_spent_array", Store.getString(context, StaticPersonalize.ALL_TIME_SPENT));
+        Helper.setJSONValue(params, "all_num_opens_array", Store.getString(context, StaticPersonalize.ALL_NUM_OF_OPENS));
+
         return params;
     }
 

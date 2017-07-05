@@ -34,6 +34,7 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
     private static final String SERVER_SYNC = "serverSync";
     private static final String NOTIFY_USER = "notifyUser";
     private static final String PROMPT_APP_UPDATE = "promptUpdate";
+    private final Context mContext = getApplicationContext();
 
     /**
      * Called when message is received.
@@ -44,19 +45,21 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
-            Context context = getApplicationContext();
+
             Map<String, String> data = remoteMessage.getData();
             String type = data.get("type");
+            if (type == null) return;
+
             String title = data.get("title");
             String content = data.get("content");
             String url = data.get("url");
             switch (type) {
                 case SERVER_SYNC:
-                    AutoUpdateAlarm.performUpdateAndSyncToServer(context);
+                    AutoUpdateAlarm.performUpdateAndSyncToServer(mContext);
                     break;
                 case NOTIFY_USER:
                     if (title != null || content != null) {
-                        AlarmHelper.showInstantNotif(context, title, content, "io.smalldata.goodvibe", 5003);
+                        AlarmHelper.showInstantNotif(mContext, title, content, "io.smalldata.goodvibe", 5003);
                     }
                     break;
                 case PROMPT_APP_UPDATE:
@@ -68,7 +71,7 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
 
     private void updateApp(String title, String content, String url) {
         if (title != null && content != null && url != null) {
-            AlarmHelper.notifyUpdateApp(getApplicationContext(), title, content, url);
+            AlarmHelper.notifyUpdateApp(mContext, title, content, url);
         }
     }
 

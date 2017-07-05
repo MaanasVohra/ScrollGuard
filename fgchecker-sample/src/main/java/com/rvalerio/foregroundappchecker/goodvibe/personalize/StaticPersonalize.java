@@ -16,7 +16,7 @@ import org.json.JSONArray;
 public class StaticPersonalize {
 
     public static final String ALL_TIME_SPENT = "allStoredTimeSpent";
-    static final String ALL_NUM_OF_OPENS = "allStoredNumOfOpens";
+    public static final String ALL_NUM_OF_OPENS = "allStoredNumOfOpens";
     static final String CURRENT_AVG_TIME_SPENT = "currentAvgTimeSpent";
     static final String CURRENT_AVG_NUM_OF_OPENS = "currentAvgNumOfOpens";
     private static final int FIRST_N_DAYS = 7;
