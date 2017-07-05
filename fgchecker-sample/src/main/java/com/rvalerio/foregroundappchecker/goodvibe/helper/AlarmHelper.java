@@ -10,6 +10,8 @@ import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
 import android.widget.Toast;
 
+import com.rvalerio.foregroundappchecker.R;
+
 /**
  * Helper.java
  * Created: 1/24/17
@@ -22,6 +24,23 @@ public class AlarmHelper {
         Toast toast = Toast.makeText(context, msg, Toast.LENGTH_LONG);
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
+    }
+
+    public static void notifyUpdateApp(Context context, String title, String message, String url) {
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context);
+        mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
+                .setAutoCancel(true)
+                .setContentTitle(title)
+                .setSound(getDefaultSound())
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                .setContentText(message);
+
+        Intent urlIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        PendingIntent urlPendingIntent = PendingIntent.getActivity(context, 33, urlIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        mBuilder.setContentIntent(urlPendingIntent);
+
+        NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(9876, mBuilder.build());
     }
 
     public static void showInstantNotif(Context context, String title, String message, String appIdToLaunch, Integer NOTIF_ID) {

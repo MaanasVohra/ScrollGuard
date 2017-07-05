@@ -17,6 +17,8 @@
 package com.rvalerio.foregroundappchecker.goodvibe.fcm;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -45,24 +47,29 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
             Context context = getApplicationContext();
             Map<String, String> data = remoteMessage.getData();
             String type = data.get("type");
+            String title = data.get("title");
+            String content = data.get("content");
+            String url = data.get("url");
             switch (type) {
                 case SERVER_SYNC:
                     AutoUpdateAlarm.performUpdateAndSyncToServer(context);
                     break;
                 case NOTIFY_USER:
-                    String title = data.get("title");
-                    String content = data.get("content");
                     if (title != null || content != null) {
                         AlarmHelper.showInstantNotif(context, title, content, "io.smalldata.goodvibe", 5003);
                     }
                     break;
                 case PROMPT_APP_UPDATE:
-                    updateApp();
+                    updateApp(title, content, url);
                     break;
             }
         }
     }
 
-    private void updateApp() { }
+    private void updateApp(String title, String content, String url) {
+        if (title != null && content != null && url != null) {
+            AlarmHelper.notifyUpdateApp(getApplicationContext(), title, content, url);
+        }
+    }
 
 }
