@@ -270,7 +270,7 @@ public class ForegroundToastService extends Service {
 
         updateNotification(mContext, getCurrentStats());
         checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
-        if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60 || fbNumOfOpens > StudyInfo.getFBMaxDailyOpens(mContext)) {
+        if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60) {
             if (isTreatmentPeriod() && !isControlGroup()) {
                 vibrateOrPopup();
             }

@@ -34,7 +34,7 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
     private static final String SERVER_SYNC = "serverSync";
     private static final String NOTIFY_USER = "notifyUser";
     private static final String PROMPT_APP_UPDATE = "promptUpdate";
-    private final Context mContext = getApplicationContext();
+    private Context mContext;
 
     /**
      * Called when message is received.
@@ -43,6 +43,7 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
      */
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
+        mContext = getApplicationContext();
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
 
