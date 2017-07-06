@@ -100,7 +100,7 @@ public class StudyInfo {
         return Helper.dateToStr(treatmentStart);
     }
 
-    static String getTreatmentStartDateStr(Context context) {
+    public static String getTreatmentStartDateStr(Context context) {
         String treatmentStartStr = Store.getString(context, Store.TREATMENT_START);
         treatmentStartStr = treatmentStartStr.equals("") ? countFromJoinDate(context, TREATMENT_START) : treatmentStartStr;
         return treatmentStartStr;

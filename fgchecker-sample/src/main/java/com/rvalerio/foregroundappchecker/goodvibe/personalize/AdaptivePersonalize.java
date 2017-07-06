@@ -10,6 +10,8 @@ import org.json.JSONArray;
 
 import java.util.Date;
 
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
+
 /**
  * Created by fnokeke on 5/29/17.
  * Personalized to Facebook usage from period to period
@@ -26,8 +28,19 @@ public class AdaptivePersonalize extends StaticPersonalize {
 
     public void addDataPoint(int timeSpentMinutes, int noOfOpen) {
         insertDataIntoStore(timeSpentMinutes, noOfOpen);
-        computeAndStoreNewAverage(ALL_TIME_SPENT, CURRENT_AVG_TIME_SPENT, LAST_N_DAYS);
-        computeAndStoreNewAverage(ALL_NUM_OF_OPENS, CURRENT_AVG_NUM_OF_OPENS, LAST_N_DAYS);
+        if (canComputeNewAverage()) {
+            computeAndStoreNewAverage(ALL_TIME_SPENT, CURRENT_AVG_TIME_SPENT, LAST_N_DAYS);
+            computeAndStoreNewAverage(ALL_NUM_OF_OPENS, CURRENT_AVG_NUM_OF_OPENS, LAST_N_DAYS);
+        }
+    }
+
+    private boolean canComputeNewAverage() {
+        Date today = DateHelper.strToDate(DateHelper.getTodayDateStr());
+        Date treatStart = DateHelper.strToDate(StudyInfo.getTreatmentStartDateStr(mContext));
+        long diffInDays = today.getTime() - treatStart.getTime();
+        final long ONE_DAY = 24 * 3600 * 1000;
+        diffInDays /= ONE_DAY;
+        return (diffInDays > 0) && (diffInDays % LAST_N_DAYS == 0);
     }
 
     private void computeAndStoreNewAverage(String storeKey, String avgKey, int lastKDays) {
