@@ -21,8 +21,12 @@ public class Store {
 
     final static String FB_MAX_MINUTES = "fbMaximumMinutes";
     final static String FB_MAX_OPENS = "fbMaximumOpens";
-    final static String ADMIN_SET_FB_MAX_MINUTES = "adminSetFBMaxMinutes";
-    final static String ADMIN_SET_FB_MAX_OPENS = "adminSetFBMaxOpens";
+
+    final static String ADMIN_ASSIGNED_FB_MAX_MINUTES = "adminAssignedFBMaxMinutes";
+    final static String ADMIN_ASSIGNED_FB_MAX_OPENS = "adminAssignedFBMaxOpens";
+    static final String ADMIN_STATIC_RATIO_100 = "adminStaticRatio100";
+    static final String ADMIN_ADAPTIVE_RATIO_100 = "adminAdaptiveRatio100";
+    static final int UNAVAILABLE = -1;
 
     final static String DAILY_RESET_HOUR = "dailyResetHour";
     final static String WORKER_ID = "workerID";
@@ -40,9 +44,6 @@ public class Store {
     static final String RESPONSE_TO_SUBMIT = "submitBtnResponse";
     static final String SURVEY_LINK = "surveyLink";
     static final String LAST_SCREEN_EVENT = "lastScreenEvent";
-    static final String ADMIN_STATIC_RATIO_100 = "adminStaticRatio100";
-    static final String ADMIN_ADAPTIVE_RATIO_100 = "adminAdaptiveRatio100";
-    static final int UNAVAILABLE = -1;
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);

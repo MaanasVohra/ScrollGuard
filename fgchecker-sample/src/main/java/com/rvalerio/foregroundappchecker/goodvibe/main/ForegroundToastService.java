@@ -28,14 +28,11 @@ import com.rvalerio.foregroundappchecker.goodvibe.helper.NetworkHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.AdaptivePersonalize;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-
-import static com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize.ALL_TIME_SPENT;
 
 
 public class ForegroundToastService extends Service {
@@ -113,7 +110,7 @@ public class ForegroundToastService extends Service {
         return !StudyInfo.getWorkerID(context).equals("");
     }
 
-    private void applyPersonalizedFacebookLimits() {
+    private void applyAdminOrPersonalizedFBLimits() {
         if (!workerExists(mContext)) return;
 
         String treatmentStartDateStr = StudyInfo.getTreatmentStartDateStr(mContext);
@@ -140,8 +137,16 @@ public class ForegroundToastService extends Service {
 
         int timeMinutes = Math.round(getCurrentFBTimeSpent() / 60);
         personalize.addDataPoint(timeMinutes, getCurrentFBNumOfOpens());
-        int timeLimit = personalize.getAverageTimeSpent();
-        int openLimit = personalize.getAverageTimeOpen();
+
+        int timeLimit, openLimit;
+        if (activeAdminLimit()) {
+            timeLimit = Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_MINUTES);
+            openLimit = Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_OPENS);
+        } else {
+            timeLimit = personalize.getAverageTimeSpent();
+            openLimit = personalize.getAverageTimeOpen();
+        }
+
         StudyInfo.updateFBLimitsOfStudy(mContext, timeLimit, openLimit);
     }
 
@@ -161,12 +166,7 @@ public class ForegroundToastService extends Service {
 
             String data = String.format(locale, "%d, %s, %d, %d;\n", timeMillis, fbDate, timeSpent, timeOpen);
             FileHelper.appendToFile(mContext, Store.FB_LOGS_CSV_FILENAME, data);
-
-            if (activeAdminLimit()) {
-                applyAdminLimit();
-            } else {
-                applyPersonalizedFacebookLimits();
-            }
+            applyAdminOrPersonalizedFBLimits();
 
             Store.setString(mContext, LAST_RECORDED_DATE, Helper.getTodayDateStr());
             Store.setInt(mContext, FB_CURRENT_TIME_SPENT, 0);
@@ -178,13 +178,13 @@ public class ForegroundToastService extends Service {
     }
 
     private boolean activeAdminLimit() {
-        return Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_MINUTES) != Store.UNAVAILABLE ||
-                Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_OPENS) != Store.UNAVAILABLE;
+        return Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_MINUTES) != Store.UNAVAILABLE ||
+                Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_OPENS) != Store.UNAVAILABLE;
     }
 
     private void applyAdminLimit() {
-        int timeLimit = Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_MINUTES);
-        int openLimit = Store.getInt(mContext, Store.ADMIN_SET_FB_MAX_OPENS);
+        int timeLimit = Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_MINUTES);
+        int openLimit = Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_OPENS);
         StudyInfo.updateFBLimitsOfStudy(mContext, timeLimit, openLimit);
     }
 
@@ -209,7 +209,9 @@ public class ForegroundToastService extends Service {
 
                 if (isLockedScreen()) return;
 
-                if (packageName == null) { return; }
+                if (packageName == null) {
+                    return;
+                }
 
                 if (packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
                     doFacebookOperation();

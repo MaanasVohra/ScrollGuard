@@ -219,7 +219,6 @@ public class MainActivity extends AppCompatActivity {
             String response = result.optString("response");
             if (result.optInt("status") == 200) {
                 Store.setBoolean(mContext, Store.ENROLLED, true);
-                StudyInfo.saveTodayAsExperimentJoinDate(mContext);
                 String studyCode = etStudyCode.getText().toString().toLowerCase().trim();
                 StudyInfo.setDefaults(mContext, studyCode); //fallback to defaults if admin values are not set
                 AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);

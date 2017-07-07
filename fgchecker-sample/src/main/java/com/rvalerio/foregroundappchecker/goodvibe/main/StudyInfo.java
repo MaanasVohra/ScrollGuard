@@ -44,12 +44,17 @@ public class StudyInfo {
     final static String FACEBOOK_PACKAGE_NAME = "com.facebook.katana";
 
     static void setDefaults(Context context, String studyCode) {
+        if (isFirstTime(context)) {
+            StudyInfo.saveTodayAsExperimentJoinDate(context);
+        }
         setStudyPeriods(context, studyCode);
 
-        Store.setInt(context, Store.EXPERIMENT_GROUP, CONTROL_GROUP);
+        Store.setInt(context, Store.ADMIN_ASSIGNED_FB_MAX_MINUTES, Store.UNAVAILABLE);
+        Store.setInt(context, Store.ADMIN_ASSIGNED_FB_MAX_OPENS, Store.UNAVAILABLE);
         Store.setInt(context, Store.ADMIN_STATIC_RATIO_100, INIT_STATIC_RATIO_100);
         Store.setInt(context, Store.ADMIN_ADAPTIVE_RATIO_100, INIT_ADAPTIVE_RATIO_100);
 
+        Store.setInt(context, Store.EXPERIMENT_GROUP, CONTROL_GROUP);
         Store.setString(context, Store.TREATMENT_START, getTreatmentStartDateStr(context));
         Store.setString(context, Store.FOLLOWUP_START, getFollowupStartDateStr(context));
         Store.setString(context, Store.LOGGING_STOP, getLoggingStopDateStr(context));
@@ -87,11 +92,14 @@ public class StudyInfo {
         }
     }
 
-    static void saveTodayAsExperimentJoinDate(Context context) {
-        if (Store.getString(context, Store.EXPERIMENT_JOIN_DATE).equals("")) {
-            Store.setString(context, Store.EXPERIMENT_JOIN_DATE, Helper.getTodayDateStr());
-        }
+    private static void saveTodayAsExperimentJoinDate(Context context) {
+        Store.setString(context, Store.EXPERIMENT_JOIN_DATE, Helper.getTodayDateStr());
     }
+
+    private static boolean isFirstTime(Context context) {
+        return Store.getString(context, Store.EXPERIMENT_JOIN_DATE).equals("");
+    }
+
 
     private static String countFromJoinDate(Context context, int noOfDays) {
         String joinDateStr = Store.getString(context, Store.EXPERIMENT_JOIN_DATE);
@@ -137,8 +145,8 @@ public class StudyInfo {
     }
 
     static void updateStoredAdminParams(Context context, JSONObject result) {
-        Store.setInt(context, Store.ADMIN_SET_FB_MAX_MINUTES, result.optInt("admin_fb_max_mins", Store.UNAVAILABLE));
-        Store.setInt(context, Store.ADMIN_SET_FB_MAX_OPENS, result.optInt("admin_fb_max_opens", Store.UNAVAILABLE));
+        Store.setInt(context, Store.ADMIN_ASSIGNED_FB_MAX_MINUTES, result.optInt("admin_fb_max_mins", Store.UNAVAILABLE));
+        Store.setInt(context, Store.ADMIN_ASSIGNED_FB_MAX_OPENS, result.optInt("admin_fb_max_opens", Store.UNAVAILABLE));
         Store.setInt(context, Store.ADMIN_ADAPTIVE_RATIO_100, result.optInt("admin_adaptive_ratio_100", Store.UNAVAILABLE));
         Store.setInt(context, Store.ADMIN_STATIC_RATIO_100, result.optInt("admin_static_ratio_100", Store.UNAVAILABLE));
 
