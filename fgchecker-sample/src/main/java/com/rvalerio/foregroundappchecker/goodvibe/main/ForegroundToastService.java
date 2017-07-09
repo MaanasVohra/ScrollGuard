@@ -110,7 +110,7 @@ public class ForegroundToastService extends Service {
         return !StudyInfo.getWorkerID(context).equals("");
     }
 
-    private void applyAdminOrPersonalizedFBLimits() {
+    private void computeAndUpdatePersonalizedFBLimits() {
         if (!workerExists(mContext)) return;
 
         String treatmentStartDateStr = StudyInfo.getTreatmentStartDateStr(mContext);
@@ -138,15 +138,8 @@ public class ForegroundToastService extends Service {
         int timeMinutes = Math.round(getCurrentFBTimeSpent() / 60);
         personalize.addDataPoint(timeMinutes, getCurrentFBNumOfOpens());
 
-        int timeLimit, openLimit;
-        if (isActiveAdminLimit()) {
-            timeLimit = Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_MINUTES);
-            openLimit = Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_OPENS);
-        } else {
-            timeLimit = personalize.getAverageTimeSpent();
-            openLimit = personalize.getAverageTimeOpen();
-        }
-
+        int timeLimit = personalize.getAverageTimeSpent();
+        int openLimit = personalize.getAverageTimeOpen();
         StudyInfo.updateFBLimitsOfStudy(mContext, timeLimit, openLimit);
     }
 
@@ -166,7 +159,7 @@ public class ForegroundToastService extends Service {
 
             String data = String.format(locale, "%d, %s, %d, %d;\n", timeMillis, fbDate, timeSpent, timeOpen);
             FileHelper.appendToFile(mContext, Store.FB_LOGS_CSV_FILENAME, data);
-            applyAdminOrPersonalizedFBLimits();
+            computeAndUpdatePersonalizedFBLimits();
 
             Store.setString(mContext, LAST_RECORDED_DATE, Helper.getTodayDateStr());
             Store.setInt(mContext, FB_CURRENT_TIME_SPENT, 0);
@@ -175,11 +168,6 @@ public class ForegroundToastService extends Service {
             Store.setInt(mContext, TOTAL_OPENS, 0);
             AppJobService.updateServerThroughFirebaseJob(mContext);
         }
-    }
-
-    private boolean isActiveAdminLimit() {
-        return Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_MINUTES) != Store.UNAVAILABLE ||
-                Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_OPENS) != Store.UNAVAILABLE;
     }
 
     private boolean isNewDay() {

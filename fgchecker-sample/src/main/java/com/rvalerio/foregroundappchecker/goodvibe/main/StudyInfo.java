@@ -127,11 +127,18 @@ public class StudyInfo {
     }
 
     static int getFBMaxDailyMinutes(Context context) {
-        return Store.getInt(context, Store.FB_MAX_MINUTES);
+        String storeKeyMaxMins = isActiveAdminLimit(context) ? Store.ADMIN_ASSIGNED_FB_MAX_MINUTES : Store.FB_MAX_MINUTES;
+        return Store.getInt(context, storeKeyMaxMins);
     }
 
     static int getFBMaxDailyOpens(Context context) {
-        return Store.getInt(context, Store.FB_MAX_OPENS);
+        String storeKeyMaxOpens = isActiveAdminLimit(context) ? Store.ADMIN_ASSIGNED_FB_MAX_OPENS : Store.FB_MAX_OPENS;
+        return Store.getInt(context, storeKeyMaxOpens);
+    }
+
+    private static boolean isActiveAdminLimit(Context context) {
+        return Store.getInt(context, Store.ADMIN_ASSIGNED_FB_MAX_MINUTES) != Store.UNAVAILABLE ||
+                Store.getInt(context, Store.ADMIN_ASSIGNED_FB_MAX_OPENS) != Store.UNAVAILABLE;
     }
 
     /**
@@ -155,8 +162,6 @@ public class StudyInfo {
         Store.setString(context, Store.FOLLOWUP_START, result.optString("admin_followup_start", getFollowupStartDateStr(context)));
         Store.setString(context, Store.LOGGING_STOP, result.optString("admin_logging_stop", getLoggingStopDateStr(context)));
         Store.setInt(context, Store.DAILY_RESET_HOUR, result.optInt("admin_daily_reset_hour", getDailyResetHour(context)));
-        Store.setInt(context, Store.FB_MAX_MINUTES, result.optInt("admin_fb_max_mins", getFBMaxDailyMinutes(context)));
-        Store.setInt(context, Store.FB_MAX_OPENS, result.optInt("admin_fb_max_opens", getFBMaxDailyOpens(context)));
     }
 
     static int getCurrentExperimentGroup(Context context) {
