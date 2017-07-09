@@ -139,7 +139,7 @@ public class ForegroundToastService extends Service {
         personalize.addDataPoint(timeMinutes, getCurrentFBNumOfOpens());
 
         int timeLimit, openLimit;
-        if (activeAdminLimit()) {
+        if (isActiveAdminLimit()) {
             timeLimit = Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_MINUTES);
             openLimit = Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_OPENS);
         } else {
@@ -177,15 +177,9 @@ public class ForegroundToastService extends Service {
         }
     }
 
-    private boolean activeAdminLimit() {
+    private boolean isActiveAdminLimit() {
         return Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_MINUTES) != Store.UNAVAILABLE ||
                 Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_OPENS) != Store.UNAVAILABLE;
-    }
-
-    private void applyAdminLimit() {
-        int timeLimit = Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_MINUTES);
-        int openLimit = Store.getInt(mContext, Store.ADMIN_ASSIGNED_FB_MAX_OPENS);
-        StudyInfo.updateFBLimitsOfStudy(mContext, timeLimit, openLimit);
     }
 
     private boolean isNewDay() {
@@ -371,27 +365,28 @@ public class ForegroundToastService extends Service {
         if (totalSeconds > 0 && totalOpens == 0) {
             totalOpens = 1;
         }
+
         Helper.setJSONValue(params, "total_seconds", totalSeconds);
         Helper.setJSONValue(params, "total_opens", totalOpens);
         Helper.setJSONValue(params, "time_spent", Store.getInt(context, FB_CURRENT_TIME_SPENT));
         Helper.setJSONValue(params, "time_open", Store.getInt(context, FB_CURRENT_NUM_OF_OPENS));
         Helper.setJSONValue(params, "ringer_mode", DeviceInfo.getRingerMode(context));
         Helper.setJSONValue(params, "daily_reset_hour", StudyInfo.getDailyResetHour(context));
-        Helper.setJSONValue(params, "screen_logs", "");
-        Helper.setJSONValue(params, "firebase_token", FirebaseInstanceId.getInstance().getToken());
 
         Helper.setJSONValue(params, "current_static_ratio_100", Store.getInt(context, Store.ADMIN_STATIC_RATIO_100));
         Helper.setJSONValue(params, "current_adaptive_ratio_100", Store.getInt(context, Store.ADMIN_ADAPTIVE_RATIO_100));
         Helper.setJSONValue(params, "current_ratio_of_limit", StudyInfo.getRatioOfLimit(context));
         Helper.setJSONValue(params, "current_experiment_group", StudyInfo.getCurrentExperimentGroup(context));
+        Helper.setJSONValue(params, "current_firebase_token", FirebaseInstanceId.getInstance().getToken());
         Helper.setJSONValue(params, "current_fb_max_mins", StudyInfo.getFBMaxDailyMinutes(context));
         Helper.setJSONValue(params, "current_fb_max_opens", StudyInfo.getFBMaxDailyOpens(context));
         Helper.setJSONValue(params, "current_treatment_start", StudyInfo.getTreatmentStartDateStr(context));
         Helper.setJSONValue(params, "current_followup_start", StudyInfo.getFollowupStartDateStr(context));
         Helper.setJSONValue(params, "current_logging_stop", StudyInfo.getLoggingStopDateStr(context));
 
-        Helper.setJSONValue(params, "all_time_spent_array", Store.getString(context, StaticPersonalize.ALL_TIME_SPENT));
-        Helper.setJSONValue(params, "all_num_opens_array", Store.getString(context, StaticPersonalize.ALL_NUM_OF_OPENS));
+        Helper.setJSONValue(params, "time_spent_list", Store.getString(context, StaticPersonalize.ALL_TIME_SPENT));
+        Helper.setJSONValue(params, "num_opens_list", Store.getString(context, StaticPersonalize.ALL_NUM_OF_OPENS));
+        Helper.setJSONValue(params, "local_time", DateHelper.currentMillisToDateFormat());
 
         return params;
     }

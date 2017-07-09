@@ -29,7 +29,7 @@ public class StaticPersonalize {
         mTreatmentStartDateStr = treatmentStartDateStr;
     }
 
-    public StaticPersonalize(Context context) {
+    StaticPersonalize(Context context) {
         mContext = context;
     }
 
