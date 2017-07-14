@@ -78,7 +78,7 @@ public class FileHelper {
             outputStreamWriter.close();
         } catch (IOException e) {
             Log.e(TAG, "resetFile: error" + e.toString());
-            AlarmHelper.showInstantNotif(context, "resetFile error", e.toString(), "", 5333); // FIXME: 6/2/17 remove
+            AlarmHelper.showInstantNotif(context, "resetFile error", e.toString(), "", 5333);
         }
     }
 }

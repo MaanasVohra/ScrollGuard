@@ -34,7 +34,7 @@ public class AppJobService extends JobService {
                 .setService(AppJobService.class)
                 .setReplaceCurrent(true)
                 .setLifetime(Lifetime.FOREVER)
-                .setTrigger(Trigger.executionWindow(0, 2)) //// FIXME: 7/9/17 change to (0,60)
+                .setTrigger(Trigger.executionWindow(0, 60))
                 .setConstraints(Constraint.ON_ANY_NETWORK)
                 .setRetryStrategy(RetryStrategy.DEFAULT_LINEAR)
                 .setTag(TAG)
