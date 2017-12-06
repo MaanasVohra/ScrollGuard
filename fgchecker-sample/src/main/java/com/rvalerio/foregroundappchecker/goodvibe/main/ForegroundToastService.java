@@ -219,11 +219,13 @@ public class ForegroundToastService extends Service {
         }
 
         timer += 5;
-        if (!packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
-//            String msg = String.format(locale, "%s: %d secs.", packageName, timer);
-//            updateNotification(mContext, msg);
-            updateNotification(mContext, getCurrentStats());
-        }
+        String msg = String.format(locale, "%s: %d secs.", packageName, timer);
+        updateNotification(mContext, msg);
+//        if (!packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
+////            String msg = String.format(locale, "%s: %d secs.", packageName, timer);
+////            updateNotification(mContext, msg);
+//            updateNotification(mContext, getCurrentStats());
+//        }
         Store.setInt(mContext, packageName, timer);
         setLastFgApp(packageName);
         Store.increaseInt(mContext, TOTAL_SECONDS, 5);
@@ -253,14 +255,15 @@ public class ForegroundToastService extends Service {
         }
 
         updateNotification(mContext, getCurrentStats());
-        checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
-        if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60) {
-            if (isTreatmentPeriod() && !isControlGroup()) {
-                vibrateOrPopup();
-            }
-        }
+//        checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
+//        if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60) {
+//            if (isTreatmentPeriod() && !isControlGroup()) {
+//                vibrateOrPopup();
+//            }
+//        }
 
     }
+
 
     private boolean isControlGroup() {
         return StudyInfo.getCurrentExperimentGroup(mContext) == StudyInfo.CONTROL_GROUP;
@@ -278,13 +281,15 @@ public class ForegroundToastService extends Service {
     }
 
     private void checkAndActivateIfShouldSubmitID(int fbTimeSpent, int fbNumOfOpens) {
-        if (!Store.getBoolean(mContext, Store.ENROLLED)) {
-            if (fbTimeSpent >= 0 && fbNumOfOpens >= 1) {
-                updateNotification(mContext, "Successful! Submit ID.");
-                AlarmHelper.showInstantNotif(mContext, "Successful activation!", "Tap to submit your ID.", "io.smalldata.goodvibe", 5005);
-                Store.setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
-            }
-        }
+        AlarmHelper.showInstantNotif(mContext, "Successful activation!", "Tap to submit your ID.", "io.smalldata.goodvibe", 5005);
+        Store.setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
+//        if (!Store.getBoolean(mContext, Store.ENROLLED)) {
+//            if (fbTimeSpent >= 0 && fbNumOfOpens >= 1) {
+//                updateNotification(mContext, "Successful! Submit ID.");
+//                AlarmHelper.showInstantNotif(mContext, "Successful activation!", "Tap to submit your ID.", "io.smalldata.goodvibe", 5005);
+//                Store.setBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN, true);
+//            }
+//        }
     }
 
     private boolean isTreatmentPeriod() {
@@ -488,12 +493,12 @@ public class ForegroundToastService extends Service {
 
     private static void updateNotification(Context context, String message) {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context);
-        String title = "Recent usage stats";
+        String title = "App Running";
         mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setOngoing(true)
-                .setContentTitle(title)
-                .setContentText(message);
+                .setContentTitle(title);
+//                .setContentText(message);
 
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());

@@ -80,7 +80,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        promptIfNoFBInstalled();
+//        promptIfNoFBInstalled();
+        Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
         requestPermissionAndStartService();
         prepareToReceiveWorkerID();
     }
@@ -129,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
         tvServicePrompt.setVisibility(View.VISIBLE);
 
         Button btStartService = (Button) findViewById(R.id.btn_service_start);
-        btStartService.setVisibility(View.VISIBLE);
+//        btStartService.setVisibility(View.VISIBLE);
         btStartService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -140,10 +141,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void prepareToReceiveWorkerID() {
-        if (!Store.getBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN)) return;
+//        if (!Store.getBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN)) return;
 
         showPlain(etWorkerID, Store.getString(mContext, Store.WORKER_ID));
-        showPlain(etStudyCode, Store.getString(mContext, Store.STUDY_CODE));
         showPlain(tvSubmitFeedback, Store.getString(mContext, Store.RESPONSE_TO_SUBMIT));
         showStudyInfo();
 
@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void submitWorkerID() {
         String workerId = etWorkerID.getText().toString().toLowerCase().trim();
-        String studyCode = etStudyCode.getText().toString().toLowerCase().trim();
+        String studyCode = "uncdf";
         if (workerId.equals("") || studyCode.equals("")) {
             showError(tvSubmitFeedback, "Valid input required.");
             return;
@@ -230,6 +230,9 @@ public class MainActivity extends AppCompatActivity {
                 String surveyLink = result.optString("survey_link");
                 Store.setString(mContext, Store.SURVEY_LINK, surveyLink);
                 showStudyInfo();
+
+                ForegroundToastService.startMonitoringFacebookUsage(mContext);
+                Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
 
             } else {
                 tvSurveyLink.setVisibility(View.GONE);

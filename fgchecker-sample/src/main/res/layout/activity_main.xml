@@ -61,7 +61,6 @@
     <EditText
         android:id="@+id/et_mturk_id"
         android:hint="@string/et_mturk_id_prompt"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
@@ -69,8 +68,8 @@
 
     <EditText
         android:id="@+id/et_study_code"
-        android:hint="@string/et_study_code"
         android:visibility="gone"
+        android:hint="@string/et_study_code"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
@@ -78,7 +77,6 @@
 
     <Button
         android:id="@+id/btn_submit_mturk_id"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -95,7 +93,6 @@
 
     <TextView
         android:id="@+id/tv_survey_link"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"

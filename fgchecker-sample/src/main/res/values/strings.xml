@@ -6,7 +6,7 @@
     <string name="usage_permission_explanation">Click to request usage stats permission.
         This permission is needed to begin background service. You only need to do this once.</string>
     <string name="stop_service">Tap to exit from experiment.</string>
-    <string name="service_started">Facebook monitoring started. Check your status bar.</string>
+    <string name="service_started">Monitoring started.</string>
     <string name="label_set_limit">Set Daily Limit</string>
     <string name="tv_limit_fb">Facebook</string>
     <string name="tv_limit_gmail">Gmail</string>
@@ -17,7 +17,7 @@
     <string name="max_opens">max opens</string>
     <string name="fb_limit_prompt">Tap <b>Start Service</b> then follow instructions on website.
         If successfully set up, you will be to join experiment and your code will appear below.</string>
-    <string name="btn_mturk_label">Connect App</string>
+    <string name="btn_mturk_label">Submit ID</string>
     <string name="et_mturk_id_prompt">Enter your ID</string>
     <string name="mturk_submit_feedback">Successfully Submitted.</string>
     <string name="mturk_submit_failed">Error submitting worker id. Contact researcher.</string>
@@ -26,4 +26,5 @@
     <string name="title_confirm_id">Confirm Submission</string>
     <string name="message_confirm_id">Are you sure you entered correct ID? This cannot be changed once submitted.</string>
     <string name="et_study_code">Type your study code</string>
+    <string name="mturk_code">mturk</string>
 </resources>
