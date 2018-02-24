@@ -5,8 +5,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0'
-        classpath 'io.fabric.tools:gradle:1.+'
+        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'io.fabric.tools:gradle:1.25.1'
     }
 }
 
@@ -19,14 +19,14 @@ repositories {
 
 
 android {
-    compileSdkVersion 24
+    compileSdkVersion 26
     buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "io.smalldata.goodvibe"
-        minSdkVersion 14
-        targetSdkVersion 24
+        minSdkVersion 21
+        targetSdkVersion 26
         versionCode 1
-        versionName "2.22"
+        versionName "2.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -38,6 +38,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -45,11 +46,11 @@ dependencies {
     compile project(path: ':fgchecker')
 
     compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
-        transitive = true;
+        transitive = true
     }
-    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:appcompat-v7:26.1.0'
     compile 'com.android.volley:volley:1.0.0'
-    compile 'com.google.firebase:firebase-messaging:10.0.1'
+    compile 'com.google.firebase:firebase-messaging:11.8.0'
     compile 'com.firebase:firebase-jobdispatcher:0.6.0'
     testCompile 'junit:junit:4.12'
 }
