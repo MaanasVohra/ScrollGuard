@@ -39,6 +39,7 @@ public class ConfigActivity extends AppCompatActivity {
         activateAppDropdown();
         activateReminderDropDown();
         activateFreqDropDown();
+        activateEditTexts();
         activateSaveButton();
     }
 
@@ -66,9 +67,8 @@ public class ConfigActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String item = (String) parent.getItemAtPosition(position);
-                Toast.makeText(mContext, "You chose: " + getAppId(item), Toast.LENGTH_SHORT).show();
                 Store.setString(mContext, Constants.CHOSEN_APP_LABEL, item);
-                Store.setString(mContext, Constants.CHOSEN_APP_ID, item);
+                Store.setString(mContext, Constants.CHOSEN_APP_ID, getAppId(item));
             }
 
             @Override
@@ -107,7 +107,6 @@ public class ConfigActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String item = (String) parent.getItemAtPosition(position);
-                Toast.makeText(mContext, "You chose: " + getAppId(item), Toast.LENGTH_SHORT).show();
                 Store.setString(mContext, Constants.CHOSEN_REMINDER_MODE, item);
             }
 
@@ -131,7 +130,6 @@ public class ConfigActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String item = (String) parent.getItemAtPosition(position);
-                Toast.makeText(mContext, "You chose: " + item, Toast.LENGTH_SHORT).show();
                 Store.setString(mContext, Constants.CHOSEN_FREQ_STYLE, item);
             }
 
@@ -141,12 +139,24 @@ public class ConfigActivity extends AppCompatActivity {
         });
     }
 
-    private int getDailyLimit() {
-        EditText editText = findViewById(R.id.et_daily_limit);
+    private int getDailyTimeLimit() {
+        EditText editText = findViewById(R.id.et_time_limit);
         String limitStr = editText.getText().toString();
         int limit;
         if (limitStr.equals("")) {
             limit = 30;
+        } else {
+            limit = Integer.parseInt(limitStr);
+        }
+        return limit;
+    }
+
+    private int getDailyOpenLimit() {
+        EditText editText = findViewById(R.id.et_open_limit);
+        String limitStr = editText.getText().toString();
+        int limit;
+        if (limitStr.equals("")) {
+            limit = 10;
         } else {
             limit = Integer.parseInt(limitStr);
         }
@@ -158,7 +168,7 @@ public class ConfigActivity extends AppCompatActivity {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int limit = getDailyLimit();
+                int limit = getDailyTimeLimit();
                 if (limit >= 1440) {
                     Toast.makeText(mContext, "Really? That's more than one day.", Toast.LENGTH_SHORT).show();
                     return;
@@ -166,11 +176,37 @@ public class ConfigActivity extends AppCompatActivity {
                     Toast.makeText(mContext, "That's at least 12 hours. C'mon now.", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                Toast.makeText(mContext, "Configurations saved.", Toast.LENGTH_SHORT).show();
-                Store.setInt(mContext, Constants.CHOSEN_DAILY_LIMIT, limit);
+                Store.setInt(mContext, Constants.CHOSEN_TIME_LIMIT, limit);
+
+                limit = getDailyOpenLimit();
+                if (limit >= 200) {
+                    Toast.makeText(mContext, "Wow! That high? Rejected!!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Store.setInt(mContext, Constants.CHOSEN_OPEN_LIMIT, limit);
+
                 startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+                Toast.makeText(mContext, "Configurations saved.", Toast.LENGTH_SHORT).show();
+
+
+                ForegroundToastService.startMonitoringFacebookUsage(mContext);
+                Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
             }
         });
     }
+
+    private void activateEditTexts() {
+
+        int storeValue = Store.getInt(mContext, Constants.CHOSEN_TIME_LIMIT);
+        int value = storeValue == 0 ? 30 : storeValue;
+        EditText et = findViewById(R.id.et_time_limit);
+        et.setText(String.valueOf(value));
+
+        storeValue = Store.getInt(mContext, Constants.CHOSEN_OPEN_LIMIT);
+        value = storeValue == 0 ? 10 : storeValue;
+        et = findViewById(R.id.et_open_limit);
+        et.setText(String.valueOf(value));
+    }
+
 
 }

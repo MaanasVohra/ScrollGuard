@@ -94,5 +94,8 @@ public class Store {
         getPrefs(context).edit().putBoolean(key, input).apply();
     }
 
+    public static void wipeAll(Context context) {
+        getPrefs(context).edit().clear().apply();
+    }
 
 }

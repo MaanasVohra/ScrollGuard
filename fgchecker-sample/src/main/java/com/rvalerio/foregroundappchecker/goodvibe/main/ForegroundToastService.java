@@ -12,6 +12,7 @@ import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -39,8 +40,8 @@ public class ForegroundToastService extends Service {
     private static String TAG = "ForegroundToastService";
     private final static String STOP_SERVICE = ForegroundToastService.class.getPackage() + ".stop";
     private final static int NOTIFICATION_ID = 1234;
-    private final static String FB_CURRENT_TIME_SPENT = "fbTimeSpent";
-    private final static String FB_CURRENT_NUM_OF_OPENS = "fbNumOfOpens";
+    private final static String TARGET_APP_CURRENT_TIME_SPENT = "fbTimeSpent";
+    private final static String TARGET_APP_CURRENT_NUM_OPENS = "fbNumOfOpens";
     private final static String TOTAL_SECONDS = "totalSeconds";
     private final static String TOTAL_OPENS = "totalOpens";
     private final static String LAST_RECORDED_DATE = "lastRecordedDate";
@@ -99,11 +100,11 @@ public class ForegroundToastService extends Service {
     }
 
     private int getCurrentFBTimeSpent() {
-        return Store.getInt(mContext, FB_CURRENT_TIME_SPENT);
+        return Store.getInt(mContext, TARGET_APP_CURRENT_TIME_SPENT);
     }
 
     private int getCurrentFBNumOfOpens() {
-        return Store.getInt(mContext, FB_CURRENT_NUM_OF_OPENS);
+        return Store.getInt(mContext, TARGET_APP_CURRENT_NUM_OPENS);
     }
 
     private static boolean workerExists(Context context) {
@@ -162,8 +163,8 @@ public class ForegroundToastService extends Service {
             computeAndUpdatePersonalizedFBLimits();
 
             Store.setString(mContext, LAST_RECORDED_DATE, Helper.getTodayDateStr());
-            Store.setInt(mContext, FB_CURRENT_TIME_SPENT, 0);
-            Store.setInt(mContext, FB_CURRENT_NUM_OF_OPENS, 0);
+            Store.setInt(mContext, TARGET_APP_CURRENT_TIME_SPENT, 0);
+            Store.setInt(mContext, TARGET_APP_CURRENT_NUM_OPENS, 0);
             Store.setInt(mContext, TOTAL_SECONDS, 0);
             Store.setInt(mContext, TOTAL_OPENS, 0);
             AppJobService.updateServerThroughFirebaseJob(mContext);
@@ -182,6 +183,7 @@ public class ForegroundToastService extends Service {
         return hour24 >= StudyInfo.getDailyResetHour(mContext);
     }
 
+
     private void startChecker() {
         appChecker = AppChecker.getInstance();
         appChecker.other(new AppChecker.Listener() {
@@ -195,13 +197,14 @@ public class ForegroundToastService extends Service {
                     return;
                 }
 
-                if (packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
-                    doFacebookOperation();
+                if (packageName.equals(Store.getString(mContext, Constants.CHOSEN_APP_ID))) {
+                    doTargetAppOperation();
                 } else {
-                    Store.setBoolean(mContext, "fbVisitedAnotherApp", true);
+                    Store.setBoolean(mContext, "visitedAnotherApp", true);
                 }
 
                 recordTimeSpent(packageName);
+                updateNotification(mContext, getCurrentStats());
             }
 
         }).timeout(5000).start(this);
@@ -219,8 +222,9 @@ public class ForegroundToastService extends Service {
         }
 
         timer += 5;
-        String msg = String.format(locale, "%s: %d secs.", packageName, timer);
-        updateNotification(mContext, msg);
+//        String msg = String.format(locale, "%s: %d secs.", packageName, timer);
+//        updateNotification(mContext, msg);
+
 //        if (!packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
 ////            String msg = String.format(locale, "%s: %d secs.", packageName, timer);
 ////            updateNotification(mContext, msg);
@@ -239,30 +243,69 @@ public class ForegroundToastService extends Service {
         Store.setString(mContext, "lastFgApp", packageName);
     }
 
-    private void doFacebookOperation() {
-        Store.increaseInt(mContext, FB_CURRENT_TIME_SPENT, 5);
+    private void doTargetAppOperation() {
+        Store.increaseInt(mContext, TARGET_APP_CURRENT_TIME_SPENT, 5);
 
-        if (Store.getBoolean(mContext, "fbVisitedAnotherApp")) {
-            Store.increaseInt(mContext, FB_CURRENT_NUM_OF_OPENS, 1);
-            Store.setBoolean(mContext, "fbVisitedAnotherApp", false);
+        if (Store.getBoolean(mContext, "visitedAnotherApp")) {
+            Store.increaseInt(mContext, TARGET_APP_CURRENT_NUM_OPENS, 1);
+            Store.setBoolean(mContext, "visitedAnotherApp", false);
         }
 
-        int fbTimeSpent = Store.getInt(mContext, FB_CURRENT_TIME_SPENT);
-        int fbNumOfOpens = Store.getInt(mContext, FB_CURRENT_NUM_OF_OPENS);
-        if (fbTimeSpent > 0 && fbNumOfOpens == 0) {
-            fbNumOfOpens += 1;
-            Store.increaseInt(mContext, FB_CURRENT_NUM_OF_OPENS, 1);
+        int targetAppTimeSpent = Store.getInt(mContext, TARGET_APP_CURRENT_TIME_SPENT);
+        int targetAppNumOfOpens = Store.getInt(mContext, TARGET_APP_CURRENT_NUM_OPENS);
+        if (targetAppTimeSpent > 0 && targetAppNumOfOpens == 0) {
+            targetAppNumOfOpens += 1;
+            Store.increaseInt(mContext, TARGET_APP_CURRENT_NUM_OPENS, 1);
         }
 
-        updateNotification(mContext, getCurrentStats());
+        int timeLimit = Store.getInt(mContext, Constants.CHOSEN_TIME_LIMIT) * 60;
+        int opensLimit = Store.getInt(mContext, Constants.CHOSEN_OPEN_LIMIT);
+        if (targetAppTimeSpent > timeLimit || targetAppNumOfOpens > opensLimit) {
+            doChosenIntervention();
+        }
+    }
+
+    private void doChosenIntervention() {
+        int targetAppTimeSpent = Store.getInt(mContext, TARGET_APP_CURRENT_TIME_SPENT);
+        int freq = getChosenFreqStyle();
+        if (targetAppTimeSpent % freq != 0) {
+            return;
+        }
+
+        String appLabel = Store.getString(mContext, Constants.CHOSEN_APP_LABEL);
+        String reminderMode = Store.getString(mContext, Constants.CHOSEN_REMINDER_MODE);
+        String msg;
+
+        if (reminderMode.contains("Popup")) {
+            msg = String.format("%s limit exceeded.", appLabel);
+            AlarmHelper.showCenterToast(mContext, msg);
+        } else {
+            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            long[] pattern = {0, 100, 100, 100, 100};
+            if (v != null) {
+                v.vibrate(pattern, -1);
+            }
+        }
+
+    }
+
+    private int getChosenFreqStyle() {
+        String freqStyle = Store.getString(mContext, Constants.CHOSEN_FREQ_STYLE);
+        int result = 5;
+        if (freqStyle.contains("minute")) {
+            result = 60;
+        } else if (freqStyle.contains("30")) {
+            result = 30;
+        }
+        return result;
+    }
+
 //        checkAndActivateIfShouldSubmitID(fbTimeSpent, fbNumOfOpens);
 //        if (fbTimeSpent > StudyInfo.getFBMaxDailyMinutes(mContext) * 60) {
 //            if (isTreatmentPeriod() && !isControlGroup()) {
 //                vibrateOrPopup();
 //            }
 //        }
-
-    }
 
 
     private boolean isControlGroup() {
@@ -361,8 +404,8 @@ public class ForegroundToastService extends Service {
 
         Helper.setJSONValue(params, "total_seconds", totalSeconds);
         Helper.setJSONValue(params, "total_opens", totalOpens);
-        Helper.setJSONValue(params, "time_spent", Store.getInt(context, FB_CURRENT_TIME_SPENT));
-        Helper.setJSONValue(params, "time_open", Store.getInt(context, FB_CURRENT_NUM_OF_OPENS));
+        Helper.setJSONValue(params, "time_spent", Store.getInt(context, TARGET_APP_CURRENT_TIME_SPENT));
+        Helper.setJSONValue(params, "time_open", Store.getInt(context, TARGET_APP_CURRENT_NUM_OPENS));
         Helper.setJSONValue(params, "ringer_mode", DeviceInfo.getRingerMode(context));
         Helper.setJSONValue(params, "daily_reset_hour", StudyInfo.getDailyResetHour(context));
 
@@ -421,12 +464,10 @@ public class ForegroundToastService extends Service {
     }
 
     private String getCurrentStats() {
-        Integer fbTimeSpent = Store.getInt(mContext, FB_CURRENT_TIME_SPENT);
-        Integer fbNumOfOpens = Store.getInt(mContext, FB_CURRENT_NUM_OF_OPENS);
-
-        return String.format("Facebook: %s secs (%sx)",
-                fbTimeSpent.toString(),
-                fbNumOfOpens.toString());
+        Integer targetTimeSpent = Store.getInt(mContext, TARGET_APP_CURRENT_TIME_SPENT);
+        Integer targetNumOpens = Store.getInt(mContext, TARGET_APP_CURRENT_NUM_OPENS);
+        String appLabel = Store.getString(mContext, Constants.CHOSEN_APP_LABEL);
+        return String.format("%s: %s secs (%sx)", appLabel, targetTimeSpent.toString(),targetNumOpens.toString());
     }
 
     private void registerStopCheckerReceiver() {
@@ -493,12 +534,12 @@ public class ForegroundToastService extends Service {
 
     private static void updateNotification(Context context, String message) {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context);
-        String title = "App Running";
+        String title = "Recent Usage Stats";
         mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setOngoing(true)
-                .setContentTitle(title);
-//                .setContentText(message);
+                .setContentTitle(title)
+                .setContentText(message);
 
         NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());

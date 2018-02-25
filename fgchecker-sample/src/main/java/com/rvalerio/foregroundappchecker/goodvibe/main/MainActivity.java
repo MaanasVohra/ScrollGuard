@@ -55,11 +55,27 @@ public class MainActivity extends AppCompatActivity {
         mContext = this;
         setContentView(R.layout.activity_main);
         setResources();
+    }
 
-        FirebaseMessaging.getInstance().subscribeToTopic("goodvibe");
-        Fabric.with(this, new Crashlytics());
-        mDefaultUEH = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(getUnCaughtExceptionHandler(mContext));
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        startApp();
+    }
+
+    private void startApp() {
+        if (userIsEnrolled()) {
+            startActivity(new Intent(mContext, HomeActivity.class));
+        } else {
+            FirebaseMessaging.getInstance().subscribeToTopic("goodvibe");
+            Fabric.with(this, new Crashlytics());
+            mDefaultUEH = Thread.getDefaultUncaughtExceptionHandler();
+            Thread.setDefaultUncaughtExceptionHandler(getUnCaughtExceptionHandler(mContext));
+        }
+    }
+
+    private boolean userIsEnrolled() {
+        return Store.getBoolean(mContext, Constants.IS_ENROLLED_USER);
     }
 
     private static Thread.UncaughtExceptionHandler getUnCaughtExceptionHandler(final Context context) {
@@ -109,10 +125,10 @@ public class MainActivity extends AppCompatActivity {
     private void requestPermissionAndStartService() {
         if (!Store.getBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN)) return;
 
-        TextView tvPermission = (TextView) findViewById(R.id.tv_permission_text);
+        TextView tvPermission = findViewById(R.id.tv_permission_text);
         tvPermission.setVisibility(View.VISIBLE);
 
-        Button btUsagePermission = (Button) findViewById(R.id.btn_usage_permission);
+        Button btUsagePermission = findViewById(R.id.btn_usage_permission);
         if (!needsUsageStatsPermission()) {
             tvPermission.setText(R.string.usage_permission_granted);
             btUsagePermission.setVisibility(GONE);
@@ -126,18 +142,18 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        TextView tvServicePrompt = (TextView) findViewById(R.id.tv_fb_limit_prompt);
+        TextView tvServicePrompt = findViewById(R.id.tv_fb_limit_prompt);
         tvServicePrompt.setVisibility(View.VISIBLE);
 
-        Button btStartService = (Button) findViewById(R.id.btn_service_start);
+//        Button btStartService = findViewById(R.id.btn_service_start);
 //        btStartService.setVisibility(View.VISIBLE);
-        btStartService.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ForegroundToastService.startMonitoringFacebookUsage(mContext);
-                Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
-            }
-        });
+//        btStartService.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                ForegroundToastService.startMonitoringFacebookUsage(mContext);
+//                Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
+//            }
+//        });
     }
 
     private void prepareToReceiveWorkerID() {
@@ -231,8 +247,8 @@ public class MainActivity extends AppCompatActivity {
                 Store.setString(mContext, Store.SURVEY_LINK, surveyLink);
                 showStudyInfo();
 
-                ForegroundToastService.startMonitoringFacebookUsage(mContext);
-                Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
+                startActivity(new Intent(mContext, HomeActivity.class));
+                Store.setBoolean(mContext, Constants.IS_ENROLLED_USER, true);
 
             } else {
                 tvSurveyLink.setVisibility(View.GONE);

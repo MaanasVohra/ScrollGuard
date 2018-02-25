@@ -7,20 +7,9 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.rvalerio.foregroundappchecker.R;
-
-import org.w3c.dom.Text;
-
-import java.util.Locale;
 
 public class HomeActivity extends AppCompatActivity {
     Context mContext;
@@ -41,17 +30,11 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void prepEnv() {
-        setInputValue( "Target app appears here.", Constants.CHOSEN_APP_LABEL, R.id.tv_app_chosen);
-        setInputValue( "Vibration or Popup.", Constants.CHOSEN_REMINDER_MODE, R.id.tv_reminder_mode);
-        setInputValue( "5 seconds, 30 seconds or 1 minute.", Constants.CHOSEN_FREQ_STYLE, R.id.tv_frequency_style);
-
-        TextView tvDailyLimit = findViewById(R.id.tv_daily_limit);
-        String limitText = "Limit appears here.";
-        int storedValue = Store.getInt(mContext, Constants.CHOSEN_DAILY_LIMIT);
-        if (storedValue != 0) {
-            limitText = String.format(Locale.getDefault(), "%d minutes", storedValue);
-        }
-        tvDailyLimit.setText(limitText);
+        setStrInputValue( "Target app appears here.", Constants.CHOSEN_APP_LABEL, R.id.tv_app_chosen);
+        setStrInputValue( "Vibration or Popup.", Constants.CHOSEN_REMINDER_MODE, R.id.tv_reminder_mode);
+        setStrInputValue( "5 seconds, 30 seconds or 1 minute.", Constants.CHOSEN_FREQ_STYLE, R.id.tv_frequency_style);
+        setIntInputValue("time", "Time limit appears here.", Constants.CHOSEN_TIME_LIMIT, R.id.tv_daily_limit);
+        setIntInputValue( "open","Open limit appears here.", Constants.CHOSEN_OPEN_LIMIT, R.id.tv_daily_open);
     }
 
     @Override
@@ -68,16 +51,18 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(mContext, ConfigActivity.class));
                 break;
             case R.id.action_about:
-                startActivity(new Intent(mContext, About.class));
+                startActivity(new Intent(mContext, AboutActivity.class));
                 break;
             case R.id.action_reset_app:
+                Store.wipeAll(mContext);
+                startActivity(new Intent(mContext, MainActivity.class));
                 break;
         }
 
         return true;
     }
 
-    private void setInputValue(String defaultValue, String storeKey, int rid) {
+    private void setStrInputValue(String defaultValue, String storeKey, int rid) {
         String storedStr = Store.getString(mContext, storeKey);
         if (!storedStr.equals("")) {
             defaultValue = storedStr;
@@ -85,5 +70,17 @@ public class HomeActivity extends AppCompatActivity {
         TextView tv = findViewById(rid);
         tv.setText(defaultValue);
     }
+
+    private void setIntInputValue(String type, String defaultValue, String storeKey, int rid) {
+        int storedValue = Store.getInt(mContext, storeKey);
+        String suffix = type.equals("open") ? "x" : "minute(s)";
+        if (storedValue != 0) {
+            String format = type.equals("open") ? "%s%s" : "%s %s";
+            defaultValue = String.format(format, storedValue, suffix);
+        }
+        TextView tv = findViewById(rid);
+        tv.setText(defaultValue);
+    }
+
 
 }

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.rvalerio.foregroundappchecker.goodvibe.main.About">
+    tools:context="com.rvalerio.foregroundappchecker.goodvibe.main.AboutActivity">
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline9"

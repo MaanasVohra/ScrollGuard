@@ -20,7 +20,14 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".goodvibe.main.MainActivity" />
+        <activity android:name=".goodvibe.main.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
 
         <receiver android:name=".goodvibe.main.StartMyServiceAtBootReceiver">
             <intent-filter>
@@ -68,20 +75,13 @@
 
         <activity
             android:name=".goodvibe.main.ConfigActivity"
-            android:parentActivityName=".goodvibe.main.HomeActivity">
-        </activity>
+            android:parentActivityName=".goodvibe.main.HomeActivity"></activity>
 
-        <activity android:name=".goodvibe.main.HomeActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+        <activity android:name=".goodvibe.main.HomeActivity"></activity>
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <activity android:name=".goodvibe.main.About"
-            android:parentActivityName=".goodvibe.main.HomeActivity">
-        </activity>
+        <activity
+            android:name=".goodvibe.main.AboutActivity"
+            android:parentActivityName=".goodvibe.main.HomeActivity"></activity>
     </application>
 
 </manifest>
