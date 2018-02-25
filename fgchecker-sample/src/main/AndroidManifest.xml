@@ -4,13 +4,14 @@
     package="com.rvalerio.foregroundappchecker"
     android:installLocation="internalOnly">
 
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
@@ -19,69 +20,68 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".goodvibe.main.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".goodvibe.main.MainActivity" />
 
-
-        <receiver
-            android:name=".goodvibe.main.StartMyServiceAtBootReceiver">
+        <receiver android:name=".goodvibe.main.StartMyServiceAtBootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
 
-        <service
-            android:name=".goodvibe.fcm.AppFirebaseMessagingService">
+        <service android:name=".goodvibe.fcm.AppFirebaseMessagingService">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
-        <service
-            android:name=".goodvibe.fcm.AppFirebaseInstanceIDService">
+        <service android:name=".goodvibe.fcm.AppFirebaseInstanceIDService">
             <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-
         <service
-            android:exported="false"
-            android:name=".goodvibe.fcm.AppJobService">
+            android:name=".goodvibe.fcm.AppJobService"
+            android:exported="false">
             <intent-filter>
-                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </service>
-
         <service
             android:name=".goodvibe.main.ForegroundToastService"
             android:enabled="true"
             android:exported="false" />
 
         <receiver
-            android:process=":remote"
-            android:name=".goodvibe.main.AutoUpdateAlarm" />
+            android:name=".goodvibe.main.AutoUpdateAlarm"
+            android:process=":remote" />
 
         <service
             android:name=".goodvibe.main.AutoUpdateAlarmService"
             android:enabled="true"
-            android:process=":goodvibeAlarm" >
-        </service>
+            android:process=":goodvibeAlarm" />
 
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="a89a2256d46d96dd8ec48a4fa61c26eba3db0baa" />
 
+        <activity
+            android:name=".goodvibe.main.ConfigActivity"
+            android:parentActivityName=".goodvibe.main.HomeActivity">
+        </activity>
 
+        <activity android:name=".goodvibe.main.HomeActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".goodvibe.main.About"
+            android:parentActivityName=".goodvibe.main.HomeActivity">
+        </activity>
     </application>
-
-
-
 
 </manifest>

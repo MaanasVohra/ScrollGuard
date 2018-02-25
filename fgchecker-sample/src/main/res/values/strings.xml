@@ -27,4 +27,18 @@
     <string name="message_confirm_id">Are you sure you entered correct ID? This cannot be changed once submitted.</string>
     <string name="et_study_code">Type your study code</string>
     <string name="mturk_code">mturk</string>
+
+    <string name="app_about">Goodvibe app helps you manage your digital consumption using techniques
+        grounded in Behavioral Science.
+    </string>
+    <string name="app_participant_msg">
+        This app saves your phone habits (apps used and screen events)
+        in a secured server. All data will inform the design of effective behavioral techniques in the future.
+        By using this app, you contribute to the advancement of scientific research
+        on curbing technology overuse.
+    </string>
+    <string name="about_sdl_lab">
+        Goodvibe is designed by Small Data Lab at Cornell Tech, New York, USA.
+        More info about the lab at https://smalldata.io
+    </string>
 </resources>
