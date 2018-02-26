@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class AppFirebaseMessagingService extends FirebaseMessagingService {
 
-    private static final String TAG = "GoodVibeFirebase";
+    private static final String TAG = "GoodvibeFirebase";
     private static final String SERVER_SYNC = "serverSync";
     private static final String NOTIFY_USER = "notifyUser";
     private static final String PROMPT_APP_UPDATE = "promptUpdate";

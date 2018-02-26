@@ -11,9 +11,9 @@
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:text="Choose Reminder Mode"
-        android:textAppearance="@android:style/TextAppearance.Material.Large"
+        android:textAppearance="@android:style/TextAppearance.Material.Medium"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintTop_toBottomOf="@+id/spinner_target_app" />
 
@@ -21,9 +21,9 @@
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="30dp"
-        android:layout_marginTop="16dp"
-        android:text="Choose Target App"
-        android:textAppearance="@android:style/TextAppearance.Material.Large"
+        android:layout_marginTop="24dp"
+        android:text="Choose Your Target App"
+        android:textAppearance="@android:style/TextAppearance.Material.Medium"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintTop_toBottomOf="@+id/tv_config_instructions" />
 
@@ -44,9 +44,9 @@
     <TextView
         android:id="@+id/tv_config_instructions"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:text="Choose your app to monitor and the respective settings."
+        android:layout_height="43dp"
+        android:layout_marginEnd="24dp"
+        android:text="Select an app you would like to monitor and apply desired settings."
         android:textAppearance="@android:style/TextAppearance.Material.Medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
@@ -56,7 +56,7 @@
         android:id="@+id/spinner_target_app"
         android:layout_width="210dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:textAppearance="@android:style/TextAppearance.Material.Small"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
@@ -78,7 +78,7 @@
         android:id="@+id/spinner_reminder_mode"
         android:layout_width="210dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:textAppearance="@android:style/TextAppearance.Material.Small"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
@@ -93,9 +93,9 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Frequency Style"
-        android:textAppearance="@android:style/TextAppearance.Material.Large"
+        android:layout_marginTop="24dp"
+        android:text="Choose Frequency Style"
+        android:textAppearance="@android:style/TextAppearance.Material.Medium"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintTop_toBottomOf="@+id/spinner_reminder_mode" />
 
@@ -103,7 +103,7 @@
         android:id="@+id/spinner_freq_style"
         android:layout_width="210dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:textAppearance="@android:style/TextAppearance.Material.Small"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
@@ -111,17 +111,16 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Limit Daily Time (minutes)"
-        android:textAppearance="@android:style/TextAppearance.Material.Large"
+        android:layout_marginTop="24dp"
+        android:text="Limit - Daily Time (minutes)"
+        android:textAppearance="@android:style/TextAppearance.Material.Medium"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintTop_toBottomOf="@+id/spinner_freq_style" />
 
     <EditText
         android:id="@+id/et_time_limit"
         android:layout_width="170dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_height="49dp"
         android:ems="10"
         android:inputType="number"
         android:text="30"
@@ -132,9 +131,9 @@
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Limit - Daily Open "
-        android:textAppearance="@android:style/TextAppearance.Material.Large"
+        android:layout_marginTop="24dp"
+        android:text="Limit - Daily Num of Open "
+        android:textAppearance="@android:style/TextAppearance.Material.Medium"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintTop_toBottomOf="@+id/et_time_limit" />
 
@@ -142,10 +141,9 @@
         android:id="@+id/et_open_limit"
         android:layout_width="170dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:ems="10"
-        android:text="10"
         android:inputType="number"
+        android:text="10"
         app:layout_constraintStart_toStartOf="@+id/guideline5"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
 

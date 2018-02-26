@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText etWorkerID;
     private EditText etStudyCode;
     private TextView tvSubmitFeedback;
-    private TextView tvSurveyLink;
+//    private TextView tvSurveyLink;
     private Button btnSubmitMturkID;
     private static Thread.UncaughtExceptionHandler mDefaultUEH;
 
@@ -103,11 +103,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setResources() {
-        etWorkerID = (EditText) findViewById(R.id.et_mturk_id);
-        etStudyCode = (EditText) findViewById(R.id.et_study_code);
-        tvSubmitFeedback = (TextView) findViewById(R.id.tv_submit_id_feedback);
-        tvSurveyLink = (TextView) findViewById(R.id.tv_survey_link);
-        btnSubmitMturkID = (Button) findViewById(R.id.btn_submit_mturk_id);
+        etWorkerID = findViewById(R.id.et_mturk_id);
+        etStudyCode = findViewById(R.id.et_study_code);
+        tvSubmitFeedback = findViewById(R.id.tv_submit_id_feedback);
+//        tvSurveyLink = findViewById(R.id.tv_survey_link);
+        btnSubmitMturkID = findViewById(R.id.btn_submit_mturk_id);
     }
 
     private void promptIfNoFBInstalled() {
@@ -181,9 +181,9 @@ public class MainActivity extends AppCompatActivity {
         String lastDay = StudyInfo.getLoggingStopDateStr(mContext);
         String surveyLink = Store.getString(mContext, Store.SURVEY_LINK);
         String msg = String.format(Locale.getDefault(), "%s\n(Study Ends: %s)", surveyLink, lastDay);
-        if (!surveyLink.equals("")) {
-            showPlain(tvSurveyLink, msg);
-        }
+//        if (!surveyLink.equals("")) {
+//            showPlain(tvSurveyLink, msg);
+//        }
     }
 
     private void confirmAndSubmitDialog() {
@@ -249,9 +249,10 @@ public class MainActivity extends AppCompatActivity {
 
                 startActivity(new Intent(mContext, HomeActivity.class));
                 Store.setBoolean(mContext, Constants.IS_ENROLLED_USER, true);
+                ConfigActivity.initAllAppList(mContext, true);
 
             } else {
-                tvSurveyLink.setVisibility(View.GONE);
+//                tvSurveyLink.setVisibility(View.GONE);
                 Store.setBoolean(mContext, Store.ENROLLED, false);
                 showError(tvSubmitFeedback, response);
             }
@@ -260,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onConnectFailure(VolleyError error) {
             String msg = "Error submitting your worker id. Please contact researcher. \n\nError details:\n" + error.toString();
-            tvSurveyLink.setVisibility(View.GONE);
+//            tvSurveyLink.setVisibility(View.GONE);
             showError(tvSubmitFeedback, msg);
         }
     };
@@ -300,8 +301,10 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean hasUsageStatsPermission(Context context) {
         AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
-        int mode = appOps.checkOpNoThrow("android:get_usage_stats",
-                android.os.Process.myUid(), context.getPackageName());
+        int mode = 0;
+        if (appOps != null) {
+            mode = appOps.checkOpNoThrow("android:get_usage_stats", android.os.Process.myUid(), context.getPackageName());
+        }
         return mode == AppOpsManager.MODE_ALLOWED;
     }
 

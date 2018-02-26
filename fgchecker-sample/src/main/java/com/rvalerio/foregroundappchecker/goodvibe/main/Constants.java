@@ -5,12 +5,16 @@ package com.rvalerio.foregroundappchecker.goodvibe.main;
  * Stores all app constants
  */
 
-public class Constants {
-    public static final String CHOSEN_APP_LABEL = "chosenAppLabel";
-    public static final String CHOSEN_APP_ID = "chosenAppId";
-    public static final String CHOSEN_REMINDER_MODE = "chosenReminderMode";
-    public static final String CHOSEN_FREQ_STYLE = "chosenFreqMode";
-    public static final String CHOSEN_TIME_LIMIT = "chosenTimeLimit";
-    public static final String CHOSEN_OPEN_LIMIT = "chosenOpenLimit";
-    public static final String IS_ENROLLED_USER = "isEnrolledUser";
+class Constants {
+    static final String CHOSEN_APP_LABEL = "chosenAppLabel";
+    static final String CHOSEN_APP_ID = "chosenAppId";
+    static final String CHOSEN_REMINDER_MODE = "chosenReminderMode";
+    static final String CHOSEN_FREQ_STYLE = "chosenFreqMode";
+    static final String CHOSEN_TIME_LIMIT = "chosenTimeLimit";
+    static final String CHOSEN_OPEN_LIMIT = "chosenOpenLimit";
+    static final String IS_ENROLLED_USER = "isEnrolledUser";
+    static final String STORED_APPS_TIME_SPENT = "storedAppsTimeSpent" ;
+    static final String STORED_APPS_NUM_OPENS = "storedAppsNumOpens";
+    static final String STORED_APPS_LABELS = "storedAppLabels";
+    public static final String LAST_FG_APP = "lastFgApp";
 }

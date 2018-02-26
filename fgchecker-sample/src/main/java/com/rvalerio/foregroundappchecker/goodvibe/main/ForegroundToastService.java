@@ -12,7 +12,6 @@ import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -33,6 +32,7 @@ import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 
 
@@ -168,6 +168,8 @@ public class ForegroundToastService extends Service {
             Store.setInt(mContext, TOTAL_SECONDS, 0);
             Store.setInt(mContext, TOTAL_OPENS, 0);
             AppJobService.updateServerThroughFirebaseJob(mContext);
+
+            ConfigActivity.refreshAppList(mContext);
         }
     }
 
@@ -192,25 +194,40 @@ public class ForegroundToastService extends Service {
                 updateLastDate();
 
                 if (isLockedScreen()) return;
+                if (packageName == null) return;
 
-                if (packageName == null) {
-                    return;
-                }
+//                if (packageName.equals(Store.getString(mContext, Constants.CHOSEN_APP_ID))) {
+//                    doTargetAppOperation(packageName);
+//                } else {
+//                    Store.setBoolean(mContext, "visitedAnotherApp", true);
+//                }
 
-                if (packageName.equals(Store.getString(mContext, Constants.CHOSEN_APP_ID))) {
-                    doTargetAppOperation();
-                } else {
-                    Store.setBoolean(mContext, "visitedAnotherApp", true);
-                }
-
-                recordTimeSpent(packageName);
+                recordAppUsageStats(packageName, !packageName.equals(getLastFgApp()));
+                recordSessionStats(packageName);
+                setLastFgApp(packageName);
                 updateNotification(mContext, getCurrentStats());
+                doTargetAppOperation(packageName);
             }
 
         }).timeout(5000).start(this);
     }
 
-    private void recordTimeSpent(String packageName) {
+    private void recordAppUsageStats(String packageName, Boolean visitedAnotherApp) {
+        JSONObject timeSpentList = Store.getJsonObject(mContext, Constants.STORED_APPS_TIME_SPENT);
+        if (!timeSpentList.optString(packageName).equals("")) {
+            JsonHelper.setJSONValue(timeSpentList, packageName, 5 + timeSpentList.optInt(packageName));
+            Store.setJsonObject(mContext, Constants.STORED_APPS_TIME_SPENT, timeSpentList);
+
+            if (visitedAnotherApp) {
+                JSONObject numOpenList = Store.getJsonObject(mContext, Constants.STORED_APPS_NUM_OPENS);
+                JsonHelper.setJSONValue(numOpenList, packageName, 1 + numOpenList.optInt(packageName));
+                Store.setJsonObject(mContext, Constants.STORED_APPS_NUM_OPENS, numOpenList);
+            }
+        }
+
+    }
+
+    private void recordSessionStats(String packageName) {
         int timer = 0;
         if (packageName.equals(getLastFgApp())) {
             timer = Store.getInt(mContext, packageName);
@@ -222,6 +239,27 @@ public class ForegroundToastService extends Service {
         }
 
         timer += 5;
+        Store.setInt(mContext, packageName, timer);
+        Store.increaseInt(mContext, TOTAL_SECONDS, 5);
+    }
+
+    private void recordTimeSpentOld(String packageName) {
+        int timer = 0;
+        if (packageName.equals(getLastFgApp())) {
+            timer = Store.getInt(mContext, packageName);
+        } else {
+            String lastAppId = getLastFgApp();
+            int lastAppTimeSpent = Store.getInt(mContext, lastAppId);
+            String data = String.format(locale, "%s, %d, %d;\n", lastAppId, lastAppTimeSpent, System.currentTimeMillis());
+            FileHelper.appendToFile(mContext, Store.APP_LOGS_CSV_FILENAME, data);
+        }
+
+        timer += 5;
+        Store.setInt(mContext, packageName, timer);
+        setLastFgApp(packageName);
+        Store.increaseInt(mContext, TOTAL_SECONDS, 5);
+
+
 //        String msg = String.format(locale, "%s: %d secs.", packageName, timer);
 //        updateNotification(mContext, msg);
 
@@ -230,20 +268,49 @@ public class ForegroundToastService extends Service {
 ////            updateNotification(mContext, msg);
 //            updateNotification(mContext, getCurrentStats());
 //        }
-        Store.setInt(mContext, packageName, timer);
-        setLastFgApp(packageName);
-        Store.increaseInt(mContext, TOTAL_SECONDS, 5);
     }
 
     private String getLastFgApp() {
-        return Store.getString(mContext, "lastFgApp");
+        return Store.getString(mContext, Constants.LAST_FG_APP);
     }
 
     private void setLastFgApp(String packageName) {
-        Store.setString(mContext, "lastFgApp", packageName);
+        Store.setString(mContext, Constants.LAST_FG_APP, packageName);
     }
 
-    private void doTargetAppOperation() {
+    private void doTargetAppOperation(String packageName) {
+        String chosenAppId = Store.getString(mContext, Constants.CHOSEN_APP_ID);
+        if (chosenAppId.equals(packageName)) {
+            JSONObject timeSpentList = Store.getJsonObject(mContext, Constants.STORED_APPS_TIME_SPENT);
+            JSONObject numOpenList = Store.getJsonObject(mContext, Constants.STORED_APPS_NUM_OPENS);
+            Integer targetTimeSpent = timeSpentList.optInt(packageName);
+            Integer targetNumOpens = numOpenList.optInt(packageName);
+
+            int timeLimit = Store.getInt(mContext, Constants.CHOSEN_TIME_LIMIT) * 60;
+            int opensLimit = Store.getInt(mContext, Constants.CHOSEN_OPEN_LIMIT);
+            if (targetTimeSpent > timeLimit || targetNumOpens > opensLimit) {
+                doChosenIntervention();
+            }
+        }
+
+
+//        Store.increaseInt(mContext, TARGET_APP_CURRENT_TIME_SPENT, 5);
+//
+//        if (Store.getBoolean(mContext, "visitedAnotherApp")) {
+//            Store.increaseInt(mContext, TARGET_APP_CURRENT_NUM_OPENS, 1);
+//            Store.setBoolean(mContext, "visitedAnotherApp", false);
+//        }
+//
+//        int targetAppTimeSpent = Store.getInt(mContext, TARGET_APP_CURRENT_TIME_SPENT);
+//        int targetAppNumOfOpens = Store.getInt(mContext, TARGET_APP_CURRENT_NUM_OPENS);
+//        if (targetAppTimeSpent > 0 && targetAppNumOfOpens == 0) {
+//            targetAppNumOfOpens += 1;
+//            Store.increaseInt(mContext, TARGET_APP_CURRENT_NUM_OPENS, 1);
+//        }
+//
+    }
+
+    private void doTargetAppOperationOld() {
         Store.increaseInt(mContext, TARGET_APP_CURRENT_TIME_SPENT, 5);
 
         if (Store.getBoolean(mContext, "visitedAnotherApp")) {
@@ -464,10 +531,13 @@ public class ForegroundToastService extends Service {
     }
 
     private String getCurrentStats() {
-        Integer targetTimeSpent = Store.getInt(mContext, TARGET_APP_CURRENT_TIME_SPENT);
-        Integer targetNumOpens = Store.getInt(mContext, TARGET_APP_CURRENT_NUM_OPENS);
+        String packageName = Store.getString(mContext, Constants.CHOSEN_APP_ID);
+        JSONObject timeSpentList = Store.getJsonObject(mContext, Constants.STORED_APPS_TIME_SPENT);
+        JSONObject numOpenList = Store.getJsonObject(mContext, Constants.STORED_APPS_NUM_OPENS);
+        Integer targetTimeSpent = timeSpentList.optInt(packageName);
+        Integer targetNumOpens = numOpenList.optInt(packageName);
         String appLabel = Store.getString(mContext, Constants.CHOSEN_APP_LABEL);
-        return String.format("%s: %s secs (%sx)", appLabel, targetTimeSpent.toString(),targetNumOpens.toString());
+        return String.format("%s: %s secs (%sx)", appLabel, targetTimeSpent.toString(), targetNumOpens.toString());
     }
 
     private void registerStopCheckerReceiver() {
@@ -506,27 +576,30 @@ public class ForegroundToastService extends Service {
 
     private void updateScreenLog(Context context, Intent intent) {
         String screenAction = intent.getAction();
-        String event;
+        String event = "";
 
-        switch (screenAction) {
-            case Intent.ACTION_USER_PRESENT:
-                event = "open";
-                break;
-            case Intent.ACTION_SCREEN_OFF:
-                event = "lock";
-                break;
-            default:
-                event = getLastNChars(screenAction, 15);
-                break;
+        if (screenAction != null) {
+            switch (screenAction) {
+                case Intent.ACTION_USER_PRESENT:
+                    event = "open";
+                    break;
+                case Intent.ACTION_SCREEN_OFF:
+                    event = "lock";
+                    break;
+                default:
+                    event = getLast15Chars(screenAction);
+                    break;
+            }
         }
 
         String data = String.format(locale, "%s, %d;\n", event, System.currentTimeMillis());
         FileHelper.appendToFile(context, Store.SCREEN_LOGS_CSV_FILENAME, data);
     }
 
-    private String getLastNChars(String myString, int n) {
-        if (myString.length() > n) {
-            return myString.substring(myString.length() - n);
+    private String getLast15Chars(String myString) {
+        final int N = 15;
+        if (myString.length() > N) {
+            return myString.substring(myString.length() - N);
         } else {
             return myString;
         }

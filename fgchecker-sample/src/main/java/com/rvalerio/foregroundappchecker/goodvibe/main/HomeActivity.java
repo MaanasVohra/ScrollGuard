@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.rvalerio.foregroundappchecker.R;
 
@@ -26,15 +27,14 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         prepEnv();
-
     }
 
     private void prepEnv() {
-        setStrInputValue( "Target app appears here.", Constants.CHOSEN_APP_LABEL, R.id.tv_app_chosen);
-        setStrInputValue( "Vibration or Popup.", Constants.CHOSEN_REMINDER_MODE, R.id.tv_reminder_mode);
-        setStrInputValue( "5 seconds, 30 seconds or 1 minute.", Constants.CHOSEN_FREQ_STYLE, R.id.tv_frequency_style);
+        setStrInputValue("Target app appears here.", Constants.CHOSEN_APP_LABEL, R.id.tv_app_chosen);
+        setStrInputValue("Vibration or Popup.", Constants.CHOSEN_REMINDER_MODE, R.id.tv_reminder_mode);
+        setStrInputValue("5 seconds, 30 seconds or 1 minute.", Constants.CHOSEN_FREQ_STYLE, R.id.tv_frequency_style);
         setIntInputValue("time", "Time limit appears here.", Constants.CHOSEN_TIME_LIMIT, R.id.tv_daily_limit);
-        setIntInputValue( "open","Open limit appears here.", Constants.CHOSEN_OPEN_LIMIT, R.id.tv_daily_open);
+        setIntInputValue("open","Open limit appears here.", Constants.CHOSEN_OPEN_LIMIT, R.id.tv_daily_open);
     }
 
     @Override
@@ -56,6 +56,10 @@ public class HomeActivity extends AppCompatActivity {
             case R.id.action_reset_app:
                 Store.wipeAll(mContext);
                 startActivity(new Intent(mContext, MainActivity.class));
+                break;
+            case R.id.action_refresh_app_list:
+                ConfigActivity.refreshAppList(mContext);
+                Toast.makeText(mContext, "Refresh done.", Toast.LENGTH_SHORT).show();
                 break;
         }
 

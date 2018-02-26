@@ -2,7 +2,6 @@ package com.rvalerio.foregroundappchecker.goodvibe.main;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.support.v7.app.AppCompatActivity;
@@ -16,13 +15,16 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.rvalerio.foregroundappchecker.R;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.JsonHelper;
 
+import org.json.JSONObject;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 public class ConfigActivity extends AppCompatActivity {
     Context mContext;
-    private HashMap<String, String> installedAppsMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +37,6 @@ public class ConfigActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        prepEnv();
         activateAppDropdown();
         activateReminderDropDown();
         activateFreqDropDown();
@@ -43,21 +44,17 @@ public class ConfigActivity extends AppCompatActivity {
         activateSaveButton();
     }
 
-    private void prepEnv() {
-        installedAppsMap = getInstalledApps();
-    }
-
-    private String[] getAllInstalledAppNames() {
-        return installedAppsMap.keySet().toArray(new String[0]);
-    }
 
     private String getAppId(String item) {
-        return installedAppsMap.get(item);
+        return getInstalledApps(mContext).get(item);
     }
 
     private void activateAppDropdown() {
         Spinner spinner = findViewById(R.id.spinner_target_app);
-        final String[] dropDownItems = getAllInstalledAppNames();
+//        final String[] dropDownItems = getAllInstalledAppNames();
+        String appLabels = Store.getString(mContext, Constants.STORED_APPS_LABELS);
+        final String[] dropDownItems = appLabels.split(";");
+//        Arrays.sort(dropDownItems);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, dropDownItems);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -77,14 +74,14 @@ public class ConfigActivity extends AppCompatActivity {
         });
     }
 
-    private HashMap<String, String> getInstalledApps() {
-        final PackageManager pm = getPackageManager();
+    public static HashMap<String, String> getInstalledApps(Context context) {
+        final PackageManager pm = context.getPackageManager();
         List<PackageInfo> packList = pm.getInstalledPackages(0);
         HashMap<String, String> allApps = new HashMap<>();
 
         String appName, appId;
         for (PackageInfo packageInfo : packList) {
-            if ((packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {  // is not system app
+            if (pm.getLaunchIntentForPackage(packageInfo.packageName) != null) {  // remove lots of system apps
                 appName = packageInfo.applicationInfo.loadLabel(pm).toString();
                 appId = packageInfo.packageName;
                 allApps.put(appName, appId);
@@ -115,7 +112,6 @@ public class ConfigActivity extends AppCompatActivity {
             }
         });
     }
-
 
     private void activateFreqDropDown() {
         int spinnerId = R.id.spinner_freq_style;
@@ -187,16 +183,12 @@ public class ConfigActivity extends AppCompatActivity {
 
                 startActivity(new Intent(getApplicationContext(), HomeActivity.class));
                 Toast.makeText(mContext, "Configurations saved.", Toast.LENGTH_SHORT).show();
-
-
                 ForegroundToastService.startMonitoringFacebookUsage(mContext);
-                Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_LONG).show();
             }
         });
     }
 
     private void activateEditTexts() {
-
         int storeValue = Store.getInt(mContext, Constants.CHOSEN_TIME_LIMIT);
         int value = storeValue == 0 ? 30 : storeValue;
         EditText et = findViewById(R.id.et_time_limit);
@@ -208,5 +200,32 @@ public class ConfigActivity extends AppCompatActivity {
         et.setText(String.valueOf(value));
     }
 
+    public static void refreshAppList(Context context) {
+        initAllAppList(context, false);
+    }
+
+    public static void initAllAppList(Context context, boolean resetAll) {
+        HashMap<String, String> installedApps = ConfigActivity.getInstalledApps(context);
+        JSONObject timeSpentList = new JSONObject();
+        JSONObject numOpenList = new JSONObject();
+
+        String[] appKeys = installedApps.keySet().toArray(new String[0]);
+        Arrays.sort(appKeys);
+
+        String appLabels = "";
+        String appIdValue;
+        for (String key : appKeys) {
+            appLabels = appLabels.concat(key + ";");
+            appIdValue = installedApps.get(key);
+            if (resetAll || timeSpentList.optString(appIdValue).equals("")) {
+                JsonHelper.setJSONValue(timeSpentList, appIdValue, 0);
+                JsonHelper.setJSONValue(numOpenList, appIdValue, 0);
+            }
+        }
+
+        Store.setJsonObject(context, Constants.STORED_APPS_TIME_SPENT, timeSpentList);
+        Store.setJsonObject(context, Constants.STORED_APPS_NUM_OPENS, numOpenList);
+        Store.setString(context, Constants.STORED_APPS_LABELS, appLabels);
+    }
 
 }
