@@ -606,16 +606,17 @@ public class ForegroundToastService extends Service {
     }
 
     private static void updateNotification(Context context, String message) {
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context);
-        String title = "Recent Usage Stats";
-        mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
-                .setPriority(NotificationCompat.PRIORITY_MIN)
-                .setOngoing(true)
-                .setContentTitle(title)
-                .setContentText(message);
-
-        NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+//        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context);
+//        String title = "Recent Usage Stats";
+//        mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
+////                .setPriority(NotificationCompat.PRIORITY_MIN)
+//                .setPriority(NotificationCompat.PRIORITY_LOW)
+//                .setOngoing(true)
+//                .setContentTitle(title)
+//                .setContentText(message);
+//
+//        NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//        mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
     }
 
     private void stopChecker() {

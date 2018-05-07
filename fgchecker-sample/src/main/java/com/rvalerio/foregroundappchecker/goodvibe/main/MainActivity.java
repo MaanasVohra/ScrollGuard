@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -26,13 +27,13 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
-import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 
 import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Set;
 
 import io.fabric.sdk.android.Fabric;
 
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText etWorkerID;
     private EditText etStudyCode;
     private TextView tvSubmitFeedback;
-//    private TextView tvSurveyLink;
+    //    private TextView tvSurveyLink;
     private Button btnSubmitMturkID;
     private static Thread.UncaughtExceptionHandler mDefaultUEH;
 
@@ -57,10 +58,58 @@ public class MainActivity extends AppCompatActivity {
         setResources();
     }
 
+
     @Override
-    protected void onResumeFragments() {
-        super.onResumeFragments();
-        startApp();
+    protected void onResume() {
+        super.onResume();
+//        promptIfNoFBInstalled();
+        Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
+        requestPermissionAndStartService();
+        prepareToReceiveWorkerID();
+        doDebug(); // FIXME: 4/30/18 remove this code
+        requestNotifAccess();
+//        startApp();
+    }
+
+    private void doDebug() {
+        AlarmHelper.showInstantNotif(mContext, "Debug Title", "Debug Content", "ii", 9422);
+    }
+
+    private void requestNotifAccess() {
+        if (!isNotificationServiceEnabled()) {
+            buildNotificationServiceAlertDialog().show();
+        }
+    }
+
+    private AlertDialog buildNotificationServiceAlertDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle("Goodvibe Permission");
+        builder.setMessage("This permission is necessary for research studies that monitor how frequently apps on your phone send you notifications.");
+        builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+            }
+        });
+        builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Toast.makeText(mContext, "Your permission is needed for app to work :(", Toast.LENGTH_SHORT).show();
+            }
+        });
+        return builder.create();
+    }
+
+    private boolean isNotificationServiceEnabled() {
+        boolean enabled = false;
+        Set<String> alreadyEnabled = NotificationManagerCompat.getEnabledListenerPackages(mContext);
+        for (String appName: alreadyEnabled) {
+            if (appName.contains(getPackageName())) {
+                enabled = true;
+                break;
+            }
+        }
+        return enabled;
     }
 
     private void startApp() {
@@ -93,14 +142,6 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-//        promptIfNoFBInstalled();
-        Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
-        requestPermissionAndStartService();
-        prepareToReceiveWorkerID();
-    }
 
     private void setResources() {
         etWorkerID = findViewById(R.id.et_mturk_id);
