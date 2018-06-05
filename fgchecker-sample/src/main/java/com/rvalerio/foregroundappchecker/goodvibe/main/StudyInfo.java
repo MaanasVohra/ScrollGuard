@@ -62,7 +62,6 @@ public class StudyInfo {
         Store.setInt(context, Store.DAILY_RESET_HOUR, INIT_DAILY_RESET_HOUR);
         Store.setInt(context, Store.FB_MAX_MINUTES, INIT_FB_MAX_DAILY_MINUTES);
         Store.setInt(context, Store.FB_MAX_OPENS, INIT_FB_MAX_DAILY_OPENS);
-        FileHelper.prepareAllStorageFiles(context);
     }
 
     private static void resetStudyPeriods(Context context) {
@@ -169,8 +168,24 @@ public class StudyInfo {
         return group == 0 ? CONTROL_GROUP : group;
     }
 
-    static String getWorkerID(Context context) {
+    static String getFilledUsername(Context context) {
         return Store.getString(context, Store.WORKER_ID);
+    }
+
+    static String getUsername(Context context) {
+        String username = Store.getString(context, Store.BUNDLE_USERNAME);
+        if (username.equals("")) {
+            username = StudyInfo.getFilledUsername(context);
+        }
+        return username;
+    }
+
+    static String getCode(Context context) {
+        String code = Store.getString(context, Store.BUNDLE_CODE);
+        if (code.equals("")) {
+            code = StudyInfo.getFilledUsername(context);
+        }
+        return code;
     }
 
     static void updateFBLimitsOfStudy(Context context, int fbTimeSpentMinutes, int fbNumOfOpens) {
@@ -185,6 +200,14 @@ public class StudyInfo {
         int storedRatio = Store.getInt(context, key);
         storedRatio = (storedRatio == Store.UNAVAILABLE) ? defaultRatio100 : storedRatio;
         return (double) storedRatio / 100;
+    }
+
+    public static void setCode(Context context, String studyCode) {
+        Store.setString(context, Store.STUDY_CODE, studyCode);
+    }
+
+    public static String getFilledCode(Context context) {
+        return Store.getString(context, Store.STUDY_CODE);
     }
 
 }

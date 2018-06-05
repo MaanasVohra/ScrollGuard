@@ -38,12 +38,15 @@ public class Store {
     static final String CAN_SHOW_SUBMIT_BTN = "canShowServiceBtn";
     final static String ENROLLED = "userIsEnrolled";
 
-    public static final String FB_LOGS_CSV_FILENAME = "fbLogs.csv";
-    public static final String APP_LOGS_CSV_FILENAME = "appLogs.csv";
-    public static final String SCREEN_LOGS_CSV_FILENAME = "screenLogs.csv";
+    public static final String FB_LOGS_CSV = "fbLogs.csv";
+    public static final String APP_LOGS_CSV = "appLogs.csv";
+    public static final String SCREEN_LOGS_CSV = "screenLogs.csv";
     static final String RESPONSE_TO_SUBMIT = "submitBtnResponse";
     static final String SURVEY_LINK = "surveyLink";
     static final String LAST_SCREEN_EVENT = "lastScreenEvent";
+    public static final String PHONE_NOTIF_LOGS_CSV = "phoneNotifLogs.csv";
+    public static final String BUNDLE_USERNAME = "bundleUsername";
+    public static final String BUNDLE_CODE = "bundleCode";
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);

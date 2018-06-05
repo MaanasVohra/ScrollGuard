@@ -28,6 +28,8 @@ import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.JsonHelper;
 
 import org.json.JSONObject;
 
@@ -43,7 +45,7 @@ import static android.view.View.GONE;
 public class MainActivity extends AppCompatActivity {
 
     private Context mContext;
-    private EditText etWorkerID;
+    private EditText etUsername;
     private EditText etStudyCode;
     private TextView tvSubmitFeedback;
     //    private TextView tvSurveyLink;
@@ -62,23 +64,63 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-//        promptIfNoFBInstalled();
-        Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
-        requestPermissionAndStartService();
-        prepareToReceiveWorkerID();
-        doDebug(); // FIXME: 4/30/18 remove this code
-        requestNotifAccess();
-//        startApp();
+        requestAppMonitoringPermissionAndStartService();
+//        requestNotificationMonitoringPermission();
+        handleSentBundle();
     }
 
-    private void doDebug() {
-        AlarmHelper.showInstantNotif(mContext, "Debug Title", "Debug Content", "ii", 9422);
-    }
-
-    private void requestNotifAccess() {
-        if (!isNotificationServiceEnabled()) {
-            buildNotificationServiceAlertDialog().show();
+    private void handleSentBundle() {
+        Bundle bundle = this.getIntent().getExtras();
+        if (bundle != null) {
+            String username = bundle.getString("username");
+            String code = bundle.getString("code");
+            Store.setString(mContext, Store.BUNDLE_USERNAME, username);
+            Store.setString(mContext, Store.BUNDLE_CODE, code);
         }
+
+        if (hasReceivedUserDetails(bundle)) {
+            Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
+            requestAppMonitoringPermissionAndStartService();
+            sendDetailsToServer();
+        } else {
+            prepareToReceiveUsername();
+        }
+    }
+
+    private void sendDetailsToServer() {
+        JSONObject params = new JSONObject();
+        JsonHelper.setJSONValue(params, "worker_id", StudyInfo.getUsername(mContext));
+        JsonHelper.setJSONValue(params, "username", StudyInfo.getUsername(mContext));
+        JsonHelper.setJSONValue(params, "study_code", StudyInfo.getCode(mContext));
+        JsonHelper.setJSONValue(params, "code", StudyInfo.getCode(mContext));
+        Helper.setJSONValue(params, "firebase_token", FirebaseInstanceId.getInstance().getToken());
+        JSONObject deviceInfo = DeviceInfo.getPhoneDetails(mContext);
+        Helper.copy(deviceInfo, params);
+        CallAPI.submitTurkPrimeID(mContext, params, submitIDResponseHandler);
+    }
+
+    private boolean hasReceivedUserDetails(Bundle bundle) {
+        String username, code;
+        if (bundle != null) {
+            username = bundle.getString("username");
+            code = bundle.getString("code");
+        } else {
+            username = Store.getString(mContext, Store.BUNDLE_USERNAME);
+            code = Store.getString(mContext, Store.BUNDLE_CODE);
+        }
+        return username != null && code != null && !username.equals("") && !code.equals("");
+    }
+
+    private boolean isNotificationServiceEnabled() {
+        boolean enabled = false;
+        Set<String> alreadyEnabled = NotificationManagerCompat.getEnabledListenerPackages(mContext);
+        for (String appName : alreadyEnabled) {
+            if (appName.contains(getPackageName())) {
+                enabled = true;
+                break;
+            }
+        }
+        return enabled;
     }
 
     private AlertDialog buildNotificationServiceAlertDialog() {
@@ -89,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+                Toast.makeText(mContext, "You clicked yes!", Toast.LENGTH_SHORT).show();
+                ForegroundToastService.startMonitoringFacebookUsage(mContext);
             }
         });
         builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
@@ -98,18 +142,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         return builder.create();
-    }
-
-    private boolean isNotificationServiceEnabled() {
-        boolean enabled = false;
-        Set<String> alreadyEnabled = NotificationManagerCompat.getEnabledListenerPackages(mContext);
-        for (String appName: alreadyEnabled) {
-            if (appName.contains(getPackageName())) {
-                enabled = true;
-                break;
-            }
-        }
-        return enabled;
     }
 
     private void startApp() {
@@ -144,11 +176,14 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void setResources() {
-        etWorkerID = findViewById(R.id.et_mturk_id);
+        FileHelper.prepareAllStorageFiles(mContext);
+        etUsername = findViewById(R.id.et_username);
         etStudyCode = findViewById(R.id.et_study_code);
         tvSubmitFeedback = findViewById(R.id.tv_submit_id_feedback);
 //        tvSurveyLink = findViewById(R.id.tv_survey_link);
+        etUsername.setVisibility(View.INVISIBLE);
         btnSubmitMturkID = findViewById(R.id.btn_submit_mturk_id);
+        btnSubmitMturkID.setVisibility(View.INVISIBLE);
     }
 
     private void promptIfNoFBInstalled() {
@@ -163,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void requestPermissionAndStartService() {
+    private void requestAppMonitoringPermissionAndStartService() {
         if (!Store.getBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN)) return;
 
         TextView tvPermission = findViewById(R.id.tv_permission_text);
@@ -183,8 +218,9 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        TextView tvServicePrompt = findViewById(R.id.tv_fb_limit_prompt);
-        tvServicePrompt.setVisibility(View.VISIBLE);
+
+//        TextView tvServicePrompt = findViewById(R.id.tv_fb_limit_prompt);
+//        tvServicePrompt.setVisibility(View.VISIBLE);
 
 //        Button btStartService = findViewById(R.id.btn_service_start);
 //        btStartService.setVisibility(View.VISIBLE);
@@ -197,10 +233,17 @@ public class MainActivity extends AppCompatActivity {
 //        });
     }
 
-    private void prepareToReceiveWorkerID() {
+    private void requestNotificationMonitoringPermission() {
+        if (!isNotificationServiceEnabled()) {
+            buildNotificationServiceAlertDialog().show();
+        }
+    }
+
+
+    private void prepareToReceiveUsername() {
 //        if (!Store.getBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN)) return;
 
-        showPlain(etWorkerID, Store.getString(mContext, Store.WORKER_ID));
+        showPlain(etUsername, Store.getString(mContext, Store.WORKER_ID));
         showPlain(tvSubmitFeedback, Store.getString(mContext, Store.RESPONSE_TO_SUBMIT));
         showStudyInfo();
 
@@ -234,28 +277,28 @@ public class MainActivity extends AppCompatActivity {
                 .setIcon(R.drawable.ic_chart_pink)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        submitWorkerID();
+                        submitUsername();
                     }
                 })
                 .setNegativeButton(android.R.string.no, null).show();
     }
 
-    private void submitWorkerID() {
-        String workerId = etWorkerID.getText().toString().toLowerCase().trim();
+    private void submitUsername() {
+        String username = etUsername.getText().toString().toLowerCase().trim();
         String studyCode = "uncdf";
-        if (workerId.equals("") || studyCode.equals("")) {
+        if (username.equals("") || studyCode.equals("")) {
             showError(tvSubmitFeedback, "Valid input required.");
             return;
         }
 
-        etWorkerID.setText(workerId);
+        etUsername.setText(username);
         etStudyCode.setText(studyCode);
-        Store.setString(mContext, Store.WORKER_ID, workerId);
-        Store.setString(mContext, Store.STUDY_CODE, studyCode);
-        logCrashAnalyticsUser(workerId);
+        Store.setString(mContext, Store.WORKER_ID, username);
+        StudyInfo.setCode(mContext, studyCode);
+        logCrashAnalyticsUser(username);
 
         JSONObject params = new JSONObject();
-        Helper.setJSONValue(params, "worker_id", workerId);
+        Helper.setJSONValue(params, "worker_id", username);
         Helper.setJSONValue(params, "study_code", studyCode);
         Helper.setJSONValue(params, "firebase_token", FirebaseInstanceId.getInstance().getToken());
 
@@ -274,6 +317,8 @@ public class MainActivity extends AppCompatActivity {
         public void onConnectSuccess(JSONObject result) {
             Log.i("submitIDSuccess: ", result.toString());
             String response = result.optString("response");
+            if (!Store.getString(mContext, Store.BUNDLE_USERNAME).equals("")) return;
+
             if (result.optInt("status") == 200) {
                 Store.setBoolean(mContext, Store.ENROLLED, true);
                 String studyCode = etStudyCode.getText().toString().toLowerCase().trim();
@@ -288,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
                 Store.setString(mContext, Store.SURVEY_LINK, surveyLink);
                 showStudyInfo();
 
-                startActivity(new Intent(mContext, HomeActivity.class));
+//                startActivity(new Intent(mContext, HomeActivity.class));
                 Store.setBoolean(mContext, Constants.IS_ENROLLED_USER, true);
                 ConfigActivity.initAllAppList(mContext, true);
 

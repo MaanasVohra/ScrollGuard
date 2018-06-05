@@ -16,14 +16,17 @@ import org.json.JSONObject;
 
 public class CallAPI {
 
-    final static private String BASE_URL = "http://slm.smalldata.io";
+    final static private String BASE_URL = "https://slm.smalldata.io";
 //        final static private String BASE_URL = "http://10.0.0.142:5000";
+//        final static private String BASE_URL = "http://10.0.2.2:5000";
+//    final static private String BASE_URL = "10.132.129.14:5000";
 //    final static private String BASE_URL = "http://172.20.1.91:5000";
     final static private String TURKPRIME_REGISTER_URL = BASE_URL + "/mobile/turkprime/enroll";
     final static private String TURKPRIME_ADD_FB_STATS = BASE_URL + "/mobile/turkprime/fb-stats";
     private static final String TURKPRIME_FACEBOOK_LOGS = BASE_URL + "/mobile/turkprime/facebook-logs";
     private static final String TURKPRIME_APP_LOGS = BASE_URL + "/mobile/turkprime/app-logs";
     private static final String TURKPRIME_SCREEN_EVENT_LOGS = BASE_URL + "/mobile/turkprime/screen-event-logs";
+    private static final String PHONE_NOTIF_LOGS_URL = BASE_URL + "/mobile/phone-notif-logs";
 
     private static JsonObjectRequest createRequest(final String url, final JSONObject params, final VolleyJsonCallback callback) {
 
@@ -72,6 +75,11 @@ public class CallAPI {
 
     public static void submitScreenEventLogs(Context context, JSONObject params, VolleyJsonCallback callback) {
         JsonObjectRequest request = createRequest(TURKPRIME_SCREEN_EVENT_LOGS, params, callback);
+        SingletonRequest.getInstance(context).addToRequestQueue(request);
+    }
+
+    public static void submitPhoneNotifLogs(Context context, JSONObject params, VolleyJsonCallback callback) {
+        JsonObjectRequest request = createRequest(PHONE_NOTIF_LOGS_URL, params, callback);
         SingletonRequest.getInstance(context).addToRequestQueue(request);
     }
 }

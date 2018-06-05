@@ -10,13 +10,11 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.android.volley.VolleyError;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.rvalerio.fgchecker.AppChecker;
-import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
 import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
@@ -32,7 +30,6 @@ import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
 
 
@@ -108,7 +105,7 @@ public class ForegroundToastService extends Service {
     }
 
     private static boolean workerExists(Context context) {
-        return !StudyInfo.getWorkerID(context).equals("");
+        return !StudyInfo.getFilledUsername(context).equals("");
     }
 
     private void computeAndUpdatePersonalizedFBLimits() {
@@ -159,7 +156,7 @@ public class ForegroundToastService extends Service {
             int timeOpen = getCurrentFBNumOfOpens();
 
             String data = String.format(locale, "%d, %s, %d, %d;\n", timeMillis, fbDate, timeSpent, timeOpen);
-            FileHelper.appendToFile(mContext, Store.FB_LOGS_CSV_FILENAME, data);
+            FileHelper.appendToFile(mContext, Store.FB_LOGS_CSV, data);
             computeAndUpdatePersonalizedFBLimits();
 
             Store.setString(mContext, LAST_RECORDED_DATE, Helper.getTodayDateStr());
@@ -235,7 +232,7 @@ public class ForegroundToastService extends Service {
             String lastAppId = getLastFgApp();
             int lastAppTimeSpent = Store.getInt(mContext, lastAppId);
             String data = String.format(locale, "%s, %d, %d;\n", lastAppId, lastAppTimeSpent, System.currentTimeMillis());
-            FileHelper.appendToFile(mContext, Store.APP_LOGS_CSV_FILENAME, data);
+            FileHelper.appendToFile(mContext, Store.APP_LOGS_CSV, data);
         }
 
         timer += 5;
@@ -251,7 +248,7 @@ public class ForegroundToastService extends Service {
             String lastAppId = getLastFgApp();
             int lastAppTimeSpent = Store.getInt(mContext, lastAppId);
             String data = String.format(locale, "%s, %d, %d;\n", lastAppId, lastAppTimeSpent, System.currentTimeMillis());
-            FileHelper.appendToFile(mContext, Store.APP_LOGS_CSV_FILENAME, data);
+            FileHelper.appendToFile(mContext, Store.APP_LOGS_CSV, data);
         }
 
         timer += 5;
@@ -431,6 +428,7 @@ public class ForegroundToastService extends Service {
         sendFacebookLogsThenUpdateAdminState(context);
         sendFgAppLogs(context);
         sendScreenEventLogs(context);
+        sendPhoneNotifLogs(context);
     }
 
     private static void sendCurrentUserStatsThenUpdateAdminState(Context context) {
@@ -439,23 +437,30 @@ public class ForegroundToastService extends Service {
     }
 
     private static void sendFacebookLogsThenUpdateAdminState(Context context) {
-        JSONObject params = getLogParams(context, Store.FB_LOGS_CSV_FILENAME);
-        CallAPI.submitFacebookLogs(context, params, getLogResponseHandler(context, Store.FB_LOGS_CSV_FILENAME, true));
+        JSONObject params = getLogParams(context, Store.FB_LOGS_CSV);
+        CallAPI.submitFacebookLogs(context, params, getLogResponseHandler(context, Store.FB_LOGS_CSV, true));
     }
 
     private static void sendFgAppLogs(Context context) {
-        JSONObject params = getLogParams(context, Store.APP_LOGS_CSV_FILENAME);
-        CallAPI.submitAppLogs(context, params, getLogResponseHandler(context, Store.APP_LOGS_CSV_FILENAME, false));
+        JSONObject params = getLogParams(context, Store.APP_LOGS_CSV);
+        CallAPI.submitAppLogs(context, params, getLogResponseHandler(context, Store.APP_LOGS_CSV, false));
     }
 
     private static void sendScreenEventLogs(Context context) {
-        JSONObject params = getLogParams(context, Store.SCREEN_LOGS_CSV_FILENAME);
-        CallAPI.submitScreenEventLogs(context, params, getLogResponseHandler(context, Store.SCREEN_LOGS_CSV_FILENAME, false));
+        JSONObject params = getLogParams(context, Store.SCREEN_LOGS_CSV);
+        CallAPI.submitScreenEventLogs(context, params, getLogResponseHandler(context, Store.SCREEN_LOGS_CSV, false));
+    }
+
+    public static void sendPhoneNotifLogs(Context context) {
+        JSONObject params = getLogParams(context, Store.PHONE_NOTIF_LOGS_CSV);
+        CallAPI.submitPhoneNotifLogs(context, params, getLogResponseHandler(context, Store.PHONE_NOTIF_LOGS_CSV, false));
     }
 
     private static JSONObject getLogParams(Context context, String filename) {
         JSONObject params = new JSONObject();
-        JsonHelper.setJSONValue(params, "worker_id", StudyInfo.getWorkerID(context));
+        JsonHelper.setJSONValue(params, "worker_id", StudyInfo.getUsername(context));
+        JsonHelper.setJSONValue(params, "username", StudyInfo.getUsername(context));
+        JsonHelper.setJSONValue(params, "code", StudyInfo.getCode(context));
         JsonHelper.setJSONValue(params, "logs", FileHelper.readFromFile(context, filename));
         return params;
     }
@@ -593,7 +598,7 @@ public class ForegroundToastService extends Service {
         }
 
         String data = String.format(locale, "%s, %d;\n", event, System.currentTimeMillis());
-        FileHelper.appendToFile(context, Store.SCREEN_LOGS_CSV_FILENAME, data);
+        FileHelper.appendToFile(context, Store.SCREEN_LOGS_CSV, data);
     }
 
     private String getLast15Chars(String myString) {
