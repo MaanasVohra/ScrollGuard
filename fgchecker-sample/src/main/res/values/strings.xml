@@ -4,7 +4,7 @@
     <string name="btn_service_start">Start Service</string>
     <string name="usage_permission_granted">Application has been successfully granted usage stats permission.</string>
     <string name="usage_permission_explanation">Click to request usage stats permission.
-        This permission is needed to begin background service. You only need to do this once.</string>
+        This permission is required for app to work. You only need to do this once.</string>
     <string name="stop_service">Tap to exit from experiment.</string>
     <string name="service_started">Monitoring started.</string>
     <string name="label_set_limit">Set Daily Limit</string>

@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -70,6 +71,7 @@ public class ForegroundToastService extends Service {
 
     public static void startMonitoringFacebookUsage(Context context) {
         ForegroundToastService.start(context);
+        Toast.makeText(context, "Successfully set up!", Toast.LENGTH_LONG).show();
     }
 
     public static void start(Context context) {

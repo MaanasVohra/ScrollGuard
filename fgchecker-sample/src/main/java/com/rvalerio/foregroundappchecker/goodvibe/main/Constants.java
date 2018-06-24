@@ -16,5 +16,6 @@ class Constants {
     static final String STORED_APPS_TIME_SPENT = "storedAppsTimeSpent" ;
     static final String STORED_APPS_NUM_OPENS = "storedAppsNumOpens";
     static final String STORED_APPS_LABELS = "storedAppLabels";
-    public static final String LAST_FG_APP = "lastFgApp";
+    static final String LAST_FG_APP = "lastFgApp";
+    static final String USER_FULL_CONFIG_ENABLED = "userFullConfigEnabled";
 }

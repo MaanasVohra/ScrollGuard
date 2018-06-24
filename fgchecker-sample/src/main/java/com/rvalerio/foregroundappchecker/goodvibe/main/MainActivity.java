@@ -5,7 +5,6 @@ import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -48,46 +47,45 @@ public class MainActivity extends AppCompatActivity {
     private EditText etUsername;
     private EditText etStudyCode;
     private TextView tvSubmitFeedback;
-    //    private TextView tvSurveyLink;
-    private Button btnSubmitMturkID;
     private static Thread.UncaughtExceptionHandler mDefaultUEH;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mContext = this;
-        setContentView(R.layout.activity_main);
         setResources();
+        promptForAppMonitoringPermission();
+        handleIncomingBundle();
+
+        Store.setString(mContext, Store.BUNDLE_USERNAME, "fnokeke@gmail.com"); // FIXME: 6/23/18 remove debug
+        Store.setString(mContext, Store.BUNDLE_CODE, "461985"); // FIXME: 6/23/18 remove debug
+        Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true); // FIXME: 6/23/18 remove debug
     }
 
 
     @Override
     protected void onResume() {
         super.onResume();
-        requestAppMonitoringPermissionAndStartService();
-//        requestNotificationMonitoringPermission();
-        handleSentBundle();
+        populateStoredInfo();
+        if (!userIsEnrolled()) {
+            enrollUser();
+        }
+//        if (!userIsEnrolled()) {
+//            AlarmHelper.showInstantNotif(mContext, "Detected not yet enrolled.", "Tap to enroll now.", "io.smalldata.goodvibe", 5119);
+//            return;
+//        }
+
     }
 
-    private void handleSentBundle() {
-        Bundle bundle = this.getIntent().getExtras();
-        if (bundle != null) {
-            String username = bundle.getString("username");
-            String code = bundle.getString("code");
-            Store.setString(mContext, Store.BUNDLE_USERNAME, username);
-            Store.setString(mContext, Store.BUNDLE_CODE, code);
-        }
-
-        if (hasReceivedUserDetails(bundle)) {
-            Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
-            requestAppMonitoringPermissionAndStartService();
-            sendDetailsToServer();
+    private void enrollUser() {
+        if (isActiveCustomEntryMode()) {
+            activateUserCustomEntryMode();
         } else {
-            prepareToReceiveUsername();
+            activateReceivedEntryMode();
         }
     }
 
-    private void sendDetailsToServer() {
+    private void activateReceivedEntryMode() {
+        etUsername.setEnabled(false);
         JSONObject params = new JSONObject();
         JsonHelper.setJSONValue(params, "worker_id", StudyInfo.getUsername(mContext));
         JsonHelper.setJSONValue(params, "username", StudyInfo.getUsername(mContext));
@@ -99,16 +97,16 @@ public class MainActivity extends AppCompatActivity {
         CallAPI.submitTurkPrimeID(mContext, params, submitIDResponseHandler);
     }
 
-    private boolean hasReceivedUserDetails(Bundle bundle) {
-        String username, code;
+
+    private void handleIncomingBundle() {
+        Bundle bundle = this.getIntent().getExtras();
         if (bundle != null) {
-            username = bundle.getString("username");
-            code = bundle.getString("code");
-        } else {
-            username = Store.getString(mContext, Store.BUNDLE_USERNAME);
-            code = Store.getString(mContext, Store.BUNDLE_CODE);
+            String username = bundle.getString("username");
+            String code = bundle.getString("code");
+            Store.setString(mContext, Store.BUNDLE_USERNAME, username);
+            Store.setString(mContext, Store.BUNDLE_CODE, code);
+            Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
         }
-        return username != null && code != null && !username.equals("") && !code.equals("");
     }
 
     private boolean isNotificationServiceEnabled() {
@@ -131,8 +129,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
-                Toast.makeText(mContext, "You clicked yes!", Toast.LENGTH_SHORT).show();
-                ForegroundToastService.startMonitoringFacebookUsage(mContext);
+//                Toast.makeText(mContext, "You clicked yes!", Toast.LENGTH_SHORT).show();
+//                ForegroundToastService.startMonitoringFacebookUsage(mContext);
             }
         });
         builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
@@ -144,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         return builder.create();
     }
 
-    private void startApp() {
+    private void startUserHomeConfigMode() {
         if (userIsEnrolled()) {
             startActivity(new Intent(mContext, HomeActivity.class));
         } else {
@@ -157,6 +155,10 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean userIsEnrolled() {
         return Store.getBoolean(mContext, Constants.IS_ENROLLED_USER);
+    }
+
+    private void setUserEnrolled() {
+        Store.setBoolean(mContext, Constants.IS_ENROLLED_USER, true);
     }
 
     private static Thread.UncaughtExceptionHandler getUnCaughtExceptionHandler(final Context context) {
@@ -176,44 +178,60 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void setResources() {
+        mContext = this;
+        setContentView(R.layout.activity_main);
         FileHelper.prepareAllStorageFiles(mContext);
+    }
+
+    private void activateUserCustomEntryMode() {
         etUsername = findViewById(R.id.et_username);
-        etStudyCode = findViewById(R.id.et_study_code);
-        tvSubmitFeedback = findViewById(R.id.tv_submit_id_feedback);
-//        tvSurveyLink = findViewById(R.id.tv_survey_link);
         etUsername.setVisibility(View.INVISIBLE);
-        btnSubmitMturkID = findViewById(R.id.btn_submit_mturk_id);
-        btnSubmitMturkID.setVisibility(View.INVISIBLE);
+//        tvSurveyLink = findViewById(R.id.tv_survey_link);
+
+        Button btnSubmitMturkID = findViewById(R.id.btn_submit_mturk_id);
+        btnSubmitMturkID.setVisibility(View.VISIBLE);
+        btnSubmitMturkID.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!Helper.isNetworkAvailable(mContext)) {
+                    String msg = "You do not have any network connection.";
+                    showError(tvSubmitFeedback, msg);
+                    return;
+                }
+                confirmAndSubmitDialog();
+            }
+        });
+
     }
 
-    private void promptIfNoFBInstalled() {
-        PackageManager pm = mContext.getPackageManager();
-        boolean isInstalled = Helper.isPackageInstalled(StudyInfo.FACEBOOK_PACKAGE_NAME, pm);
-        if (!isInstalled) {
-            String msg = "Error: cannot continue because your phone is not compatible with experiment.";
-            showError(tvSubmitFeedback, msg);
-            Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, false);
-        } else {
-            Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
-        }
-    }
+//    private void promptIfNoFBInstalled() {
+//        PackageManager pm = mContext.getPackageManager();
+//        boolean isInstalled = Helper.isPackageInstalled(StudyInfo.FACEBOOK_PACKAGE_NAME, pm);
+//        if (!isInstalled) {
+//            String msg = "Error: cannot continue because your phone is not compatible with experiment.";
+//            showError(tvSubmitFeedback, msg);
+//            Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, false);
+//        } else {
+//            Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
+//        }
+//    }
 
-    private void requestAppMonitoringPermissionAndStartService() {
+    private void promptForAppMonitoringPermission() {
         if (!Store.getBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN)) return;
-
-        TextView tvPermission = findViewById(R.id.tv_permission_text);
-        tvPermission.setVisibility(View.VISIBLE);
 
         Button btUsagePermission = findViewById(R.id.btn_usage_permission);
         if (!needsUsageStatsPermission()) {
-            tvPermission.setText(R.string.usage_permission_granted);
             btUsagePermission.setVisibility(GONE);
+            TextView tvPermission = findViewById(R.id.tv_permission_desc);
+            tvPermission.setText(R.string.usage_permission_granted);
         } else {
             btUsagePermission.setVisibility(View.VISIBLE);
             btUsagePermission.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    requestUsageStatsPermission();
+                    if (!hasUsageStatsPermission(mContext)) {
+                        startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+                    }
                 }
             });
         }
@@ -239,26 +257,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private boolean isActiveCustomEntryMode() {
+        String username = Store.getString(mContext, Store.BUNDLE_USERNAME);
+        String code = Store.getString(mContext, Store.BUNDLE_CODE);
+        return username.equals("") || code.equals("");
+    }
 
-    private void prepareToReceiveUsername() {
-//        if (!Store.getBoolean(mContext, Store.CAN_SHOW_SUBMIT_BTN)) return;
+    private void populateStoredInfo() {
+        etUsername = findViewById(R.id.et_username);
+        etStudyCode = findViewById(R.id.et_study_code);
+        tvSubmitFeedback = findViewById(R.id.tv_submit_id_feedback);
 
-        showPlain(etUsername, Store.getString(mContext, Store.WORKER_ID));
+        String username = Store.getString(mContext, Store.BUNDLE_USERNAME);
+        if (username.equals("")) {
+            username = Store.getString(mContext, Store.WORKER_ID);
+        }
+
+        if (!isActiveCustomEntryMode()) {
+            username = String.format("%s (%s)", username, Store.getString(mContext, Store.BUNDLE_CODE));
+        }
+        showPlain(etUsername, username);
         showPlain(tvSubmitFeedback, Store.getString(mContext, Store.RESPONSE_TO_SUBMIT));
-        showStudyInfo();
-
-        btnSubmitMturkID.setVisibility(View.VISIBLE);
-        btnSubmitMturkID.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!Helper.isNetworkAvailable(mContext)) {
-                    String msg = "You do not have any network connection.";
-                    showError(tvSubmitFeedback, msg);
-                    return;
-                }
-                confirmAndSubmitDialog();
-            }
-        });
     }
 
     private void showStudyInfo() {
@@ -277,13 +296,13 @@ public class MainActivity extends AppCompatActivity {
                 .setIcon(R.drawable.ic_chart_pink)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        submitUsername();
+                        submitCustomUsername();
                     }
                 })
                 .setNegativeButton(android.R.string.no, null).show();
     }
 
-    private void submitUsername() {
+    private void submitCustomUsername() {
         String username = etUsername.getText().toString().toLowerCase().trim();
         String studyCode = "uncdf";
         if (username.equals("") || studyCode.equals("")) {
@@ -334,8 +353,12 @@ public class MainActivity extends AppCompatActivity {
                 showStudyInfo();
 
 //                startActivity(new Intent(mContext, HomeActivity.class));
-                Store.setBoolean(mContext, Constants.IS_ENROLLED_USER, true);
-                ConfigActivity.initAllAppList(mContext, true);
+                setUserEnrolled();
+                if (Store.getBoolean(mContext, Constants.USER_FULL_CONFIG_ENABLED)) {
+                    ConfigActivity.initAllAppList(mContext, true);
+                }
+
+                ForegroundToastService.startMonitoringFacebookUsage(mContext);
 
             } else {
 //                tvSurveyLink.setVisibility(View.GONE);
@@ -372,10 +395,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void requestUsageStatsPermission() {
+    private void startRequestOrMonitoringService() {
         if (!hasUsageStatsPermission(this)) {
             startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
         }
+//        } else {
+//            ForegroundToastService.startMonitoringFacebookUsage(mContext);
+//            Toast.makeText(mContext, getString(R.string.service_started), Toast.LENGTH_SHORT).show();
+//        }
     }
 
     private boolean postLollipop() {
