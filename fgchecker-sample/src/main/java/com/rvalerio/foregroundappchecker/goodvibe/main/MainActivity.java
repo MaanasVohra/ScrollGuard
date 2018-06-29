@@ -359,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onConnectFailure(VolleyError error) {
-            String msg = "Error submitting your worker id. Please contact researcher. \n\nError details:\n" + error.toString();
+            String msg = "Error submitting your id. Please contact researcher. \n\nError details:\n" + error.toString();
 //            tvSurveyLink.setVisibility(View.GONE);
             showError(tvSubmitFeedback, msg);
         }

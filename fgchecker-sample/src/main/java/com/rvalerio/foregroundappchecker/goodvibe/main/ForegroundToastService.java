@@ -1,6 +1,7 @@
 package com.rvalerio.foregroundappchecker.goodvibe.main;
 
 import android.app.KeyguardManager;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -92,7 +93,7 @@ public class ForegroundToastService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ForegroundToastService.start(mContext);
+//        ForegroundToastService.start(mContext);
     }
 
     public Boolean isLockedScreen() {
@@ -429,7 +430,7 @@ public class ForegroundToastService extends Service {
             return;
         }
         sendCurrentUserStatsThenUpdateAdminState(context);
-        sendFacebookLogsThenUpdateAdminState(context);
+//        sendFacebookLogsThenUpdateAdminState(context);
         sendFgAppLogs(context);
         sendScreenEventLogs(context);
         sendPhoneNotifLogs(context);
@@ -629,37 +630,29 @@ public class ForegroundToastService extends Service {
         NotificationCompat.Builder mBuilder;
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(context);
-        mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
-                .setPriority(NotificationCompat.PRIORITY_MIN)
-                .setOngoing(true)
-                .setContentTitle(title)
-                .setContentText(message);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            String channelId = "goodvibeId";
+            String channelName = "Goodvibe Logger";
+            int importance = NotificationManager.IMPORTANCE_MIN;
+            NotificationChannel mChannel = new NotificationChannel( channelId, channelName, importance);
+            notificationManager.createNotificationChannel(mChannel);
 
-        notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-//        Skipping this code - as at June 28, 2018, Android 0 covers only about 6% of users
-//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-//            String channelId = "channel-01";
-//            String channelName = "Channel Name";
-//            int importance = NotificationManager.IMPORTANCE_MIN;
-//            NotificationChannel mChannel = new NotificationChannel( channelId, channelName, importance);
-//            notificationManager.createNotificationChannel(mChannel);
-//
-//            mBuilder = new NotificationCompat.Builder(context, channelId)
-//                    .setSmallIcon(R.drawable.ic_chart_pink)
-//                    .setOngoing(true)
-//                    .setContentTitle(title)
-//                    .setContentText(message);
-////            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-//        } else {
-//            mBuilder = new NotificationCompat.Builder(context);
-//            mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
-//                    .setPriority(NotificationCompat.PRIORITY_LOW)
-//                    .setOngoing(true)
-//                    .setContentTitle(title)
-//                    .setContentText(message);
-//
-//            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-//        }
+            mBuilder = new NotificationCompat.Builder(context, channelId)
+                    .setSmallIcon(R.drawable.ic_chart_pink)
+                    .setOngoing(true)
+                    .setContentTitle(title)
+                    .setContentText(message);
+            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+        } else {
+            mBuilder = new NotificationCompat.Builder(context);
+            mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .setOngoing(true)
+                    .setContentTitle(title)
+                    .setContentText(message);
+
+            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+        }
 
     }
 

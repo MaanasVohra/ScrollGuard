@@ -6,8 +6,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.PowerManager;
+import android.widget.Toast;
 
 import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 
 import java.util.Calendar;
@@ -26,7 +28,9 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AutoUpdateAlarm.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), getVariableHourInterval(6, 8), pi);
+//        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), getVariableHourInterval(6, 8), pi);
+        AlarmHelper.showInstantNotif(context, "Alarm Update", "FG Server Updated", "io.smalldata.goodvibe", 1003);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 60000, pi);
     }
 
     private int getVariableHourInterval(int lowerHour, int upperHour) {
