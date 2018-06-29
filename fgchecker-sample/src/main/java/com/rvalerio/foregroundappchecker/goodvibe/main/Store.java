@@ -36,7 +36,7 @@ public class Store {
     private static final String PREF_NAME = "prefs";
     static final String CAN_SHOW_PERMISSION_BTN = "canShowPermissionBtn";
     static final String CAN_SHOW_SUBMIT_BTN = "canShowServiceBtn";
-    final static String ENROLLED = "userIsEnrolled";
+    final static String IS_ENROLLED = "userIsEnrolled";
 
     public static final String FB_LOGS_CSV = "fbLogs.csv";
     public static final String APP_LOGS_CSV = "appLogs.csv";

@@ -12,10 +12,10 @@ class Constants {
     static final String CHOSEN_FREQ_STYLE = "chosenFreqMode";
     static final String CHOSEN_TIME_LIMIT = "chosenTimeLimit";
     static final String CHOSEN_OPEN_LIMIT = "chosenOpenLimit";
-    static final String IS_ENROLLED_USER = "isEnrolledUser";
     static final String STORED_APPS_TIME_SPENT = "storedAppsTimeSpent" ;
     static final String STORED_APPS_NUM_OPENS = "storedAppsNumOpens";
     static final String STORED_APPS_LABELS = "storedAppLabels";
     static final String LAST_FG_APP = "lastFgApp";
     static final String USER_FULL_CONFIG_ENABLED = "userFullConfigEnabled";
+    public static final String IS_ACTIVE_CUSTOM_MODE = "isActiveCustomMode";
 }

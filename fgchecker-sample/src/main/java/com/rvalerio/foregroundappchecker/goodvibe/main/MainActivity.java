@@ -53,27 +53,25 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setResources();
-        promptForAppMonitoringPermission();
-        handleIncomingBundle();
-
-        Store.setString(mContext, Store.BUNDLE_USERNAME, "fnokeke@gmail.com"); // FIXME: 6/23/18 remove debug
-        Store.setString(mContext, Store.BUNDLE_CODE, "461985"); // FIXME: 6/23/18 remove debug
-        Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true); // FIXME: 6/23/18 remove debug
     }
 
 
     @Override
     protected void onResume() {
         super.onResume();
-        populateStoredInfo();
+
+        etUsername = findViewById(R.id.et_username);
+        etStudyCode = findViewById(R.id.et_study_code);
+        tvSubmitFeedback = findViewById(R.id.tv_submit_id_feedback);
+
+        promptForAppMonitoringPermission();
+        handleIncomingBundle();
+
         if (!userIsEnrolled()) {
             enrollUser();
         }
-//        if (!userIsEnrolled()) {
-//            AlarmHelper.showInstantNotif(mContext, "Detected not yet enrolled.", "Tap to enroll now.", "io.smalldata.goodvibe", 5119);
-//            return;
-//        }
-
+        populateStoredInfo();
+        ForegroundToastService.startMonitoringFacebookUsage(mContext);
     }
 
     private void enrollUser() {
@@ -85,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void activateReceivedEntryMode() {
-        etUsername.setEnabled(false);
         JSONObject params = new JSONObject();
         JsonHelper.setJSONValue(params, "worker_id", StudyInfo.getUsername(mContext));
         JsonHelper.setJSONValue(params, "username", StudyInfo.getUsername(mContext));
@@ -94,7 +91,9 @@ public class MainActivity extends AppCompatActivity {
         Helper.setJSONValue(params, "firebase_token", FirebaseInstanceId.getInstance().getToken());
         JSONObject deviceInfo = DeviceInfo.getPhoneDetails(mContext);
         Helper.copy(deviceInfo, params);
-        CallAPI.submitTurkPrimeID(mContext, params, submitIDResponseHandler);
+        if (!StudyInfo.getUsername(mContext).equals("") && !StudyInfo.getCode(mContext).equals("")) {
+            CallAPI.submitTurkPrimeID(mContext, params, submitIDResponseHandler);
+        }
     }
 
 
@@ -103,9 +102,10 @@ public class MainActivity extends AppCompatActivity {
         if (bundle != null) {
             String username = bundle.getString("username");
             String code = bundle.getString("code");
-            Store.setString(mContext, Store.BUNDLE_USERNAME, username);
-            Store.setString(mContext, Store.BUNDLE_CODE, code);
-            Store.setBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN, true);
+            if (username != null && code != null) {
+                Store.setString(mContext, Store.BUNDLE_USERNAME, username);
+                Store.setString(mContext, Store.BUNDLE_CODE, code);
+            }
         }
     }
 
@@ -154,11 +154,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean userIsEnrolled() {
-        return Store.getBoolean(mContext, Constants.IS_ENROLLED_USER);
-    }
-
-    private void setUserEnrolled() {
-        Store.setBoolean(mContext, Constants.IS_ENROLLED_USER, true);
+        return Store.getBoolean(mContext, Store.IS_ENROLLED);
     }
 
     private static Thread.UncaughtExceptionHandler getUnCaughtExceptionHandler(final Context context) {
@@ -179,13 +175,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void setResources() {
         mContext = this;
+
         setContentView(R.layout.activity_main);
         FileHelper.prepareAllStorageFiles(mContext);
     }
 
     private void activateUserCustomEntryMode() {
-        etUsername = findViewById(R.id.et_username);
-        etUsername.setVisibility(View.INVISIBLE);
+//        etUsername = findViewById(R.id.et_username);
+//        etUsername.setVisibility(View.INVISIBLE);
 //        tvSurveyLink = findViewById(R.id.tv_survey_link);
 
         Button btnSubmitMturkID = findViewById(R.id.btn_submit_mturk_id);
@@ -217,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
     private void promptForAppMonitoringPermission() {
-        if (!Store.getBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN)) return;
+//        if (!Store.getBoolean(mContext, Store.CAN_SHOW_PERMISSION_BTN)) return;
 
         Button btUsagePermission = findViewById(R.id.btn_usage_permission);
         if (!needsUsageStatsPermission()) {
@@ -258,23 +255,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isActiveCustomEntryMode() {
-        String username = Store.getString(mContext, Store.BUNDLE_USERNAME);
-        String code = Store.getString(mContext, Store.BUNDLE_CODE);
-        return username.equals("") || code.equals("");
+//        String username = Store.getString(mContext, Store.BUNDLE_USERNAME);
+//        String code = Store.getString(mContext, Store.BUNDLE_CODE);
+//        return username.equals("") || code.equals("");
+        return Store.getBoolean(mContext, Constants.IS_ACTIVE_CUSTOM_MODE);
     }
 
     private void populateStoredInfo() {
-        etUsername = findViewById(R.id.et_username);
-        etStudyCode = findViewById(R.id.et_study_code);
-        tvSubmitFeedback = findViewById(R.id.tv_submit_id_feedback);
-
-        String username = Store.getString(mContext, Store.BUNDLE_USERNAME);
-        if (username.equals("")) {
-            username = Store.getString(mContext, Store.WORKER_ID);
-        }
-
+        String username = Store.getString(mContext, Store.WORKER_ID);
         if (!isActiveCustomEntryMode()) {
-            username = String.format("%s (%s)", username, Store.getString(mContext, Store.BUNDLE_CODE));
+            username = Store.getString(mContext, Store.BUNDLE_USERNAME);
+            username = username.equals("") ? "" : String.format("%s (%s)", username, Store.getString(mContext, Store.BUNDLE_CODE));
+            etUsername.setEnabled(false);
         }
         showPlain(etUsername, username);
         showPlain(tvSubmitFeedback, Store.getString(mContext, Store.RESPONSE_TO_SUBMIT));
@@ -304,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void submitCustomUsername() {
         String username = etUsername.getText().toString().toLowerCase().trim();
-        String studyCode = "uncdf";
+        String studyCode = "mobile";
         if (username.equals("") || studyCode.equals("")) {
             showError(tvSubmitFeedback, "Valid input required.");
             return;
@@ -314,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
         etStudyCode.setText(studyCode);
         Store.setString(mContext, Store.WORKER_ID, username);
         StudyInfo.setCode(mContext, studyCode);
-        logCrashAnalyticsUser(username);
+//        logCrashAnalyticsUser(username); fixme uncomment
 
         JSONObject params = new JSONObject();
         Helper.setJSONValue(params, "worker_id", username);
@@ -326,8 +318,8 @@ public class MainActivity extends AppCompatActivity {
         CallAPI.submitTurkPrimeID(mContext, params, submitIDResponseHandler);
     }
 
-    private void logCrashAnalyticsUser(String workerId) {
-        Crashlytics.setUserIdentifier(workerId);
+    private void logCrashAnalyticsUser(String username) {
+        Crashlytics.setUserIdentifier(username);
     }
 
 
@@ -336,10 +328,7 @@ public class MainActivity extends AppCompatActivity {
         public void onConnectSuccess(JSONObject result) {
             Log.i("submitIDSuccess: ", result.toString());
             String response = result.optString("response");
-            if (!Store.getString(mContext, Store.BUNDLE_USERNAME).equals("")) return;
-
             if (result.optInt("status") == 200) {
-                Store.setBoolean(mContext, Store.ENROLLED, true);
                 String studyCode = etStudyCode.getText().toString().toLowerCase().trim();
                 StudyInfo.setDefaults(mContext, studyCode); //fallback to defaults if admin values are not set
                 AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
@@ -353,16 +342,17 @@ public class MainActivity extends AppCompatActivity {
                 showStudyInfo();
 
 //                startActivity(new Intent(mContext, HomeActivity.class));
-                setUserEnrolled();
+                Store.setBoolean(mContext, Store.IS_ENROLLED, true);
+
                 if (Store.getBoolean(mContext, Constants.USER_FULL_CONFIG_ENABLED)) {
                     ConfigActivity.initAllAppList(mContext, true);
                 }
 
-                ForegroundToastService.startMonitoringFacebookUsage(mContext);
+//                ForegroundToastService.startMonitoringFacebookUsage(mContext);
 
             } else {
 //                tvSurveyLink.setVisibility(View.GONE);
-                Store.setBoolean(mContext, Store.ENROLLED, false);
+                Store.setBoolean(mContext, Store.IS_ENROLLED, false);
                 showError(tvSubmitFeedback, response);
             }
         }

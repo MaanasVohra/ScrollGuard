@@ -10,12 +10,14 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.rvalerio.fgchecker.AppChecker;
+import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
 import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
@@ -204,7 +206,7 @@ public class ForegroundToastService extends Service {
                 recordAppUsageStats(packageName, !packageName.equals(getLastFgApp()));
                 recordSessionStats(packageName);
                 setLastFgApp(packageName);
-                updateNotification(mContext, getCurrentStats());
+                updateNotification(mContext, getCurrentStatsForChosenApp(packageName, packageName));
                 doTargetAppOperation(packageName);
             }
 
@@ -265,7 +267,7 @@ public class ForegroundToastService extends Service {
 //        if (!packageName.equals(StudyInfo.FACEBOOK_PACKAGE_NAME)) {
 ////            String msg = String.format(locale, "%s: %d secs.", packageName, timer);
 ////            updateNotification(mContext, msg);
-//            updateNotification(mContext, getCurrentStats());
+//            updateNotification(mContext, getCurrentStatsForChosenApp());
 //        }
     }
 
@@ -537,7 +539,18 @@ public class ForegroundToastService extends Service {
 
     }
 
-    private String getCurrentStats() {
+    private String getCurrentStatsForChosenApp(String packageName, String appLabel) {
+//        String packageName = Store.getString(mContext, Constants.CHOSEN_APP_ID);
+//        String appLabel = Store.getString(mContext, Constants.CHOSEN_APP_LABEL);
+        JSONObject timeSpentList = Store.getJsonObject(mContext, Constants.STORED_APPS_TIME_SPENT);
+        JSONObject numOpenList = Store.getJsonObject(mContext, Constants.STORED_APPS_NUM_OPENS);
+        Integer targetTimeSpent = timeSpentList.optInt(packageName);
+        Integer targetNumOpens = numOpenList.optInt(packageName);
+        return String.format("%s: %s secs (%sx)", appLabel, targetTimeSpent.toString(), targetNumOpens.toString());
+
+    }
+
+    private String getCurrentStatsForChosenApp() {
         String packageName = Store.getString(mContext, Constants.CHOSEN_APP_ID);
         JSONObject timeSpentList = Store.getJsonObject(mContext, Constants.STORED_APPS_TIME_SPENT);
         JSONObject numOpenList = Store.getJsonObject(mContext, Constants.STORED_APPS_NUM_OPENS);
@@ -612,18 +625,47 @@ public class ForegroundToastService extends Service {
         }
     }
 
-    private static void updateNotification(Context context, String message) {
-//        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context);
-//        String title = "Recent Usage Stats";
-//        mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
-////                .setPriority(NotificationCompat.PRIORITY_MIN)
-//                .setPriority(NotificationCompat.PRIORITY_LOW)
-//                .setOngoing(true)
-//                .setContentTitle(title)
-//                .setContentText(message);
+    private static void updateNotification(Context context, String title, String message) {
+        NotificationCompat.Builder mBuilder;
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        mBuilder = new NotificationCompat.Builder(context);
+        mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setOngoing(true)
+                .setContentTitle(title)
+                .setContentText(message);
+
+        notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+//        Skipping this code - as at June 28, 2018, Android 0 covers only about 6% of users
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+//            String channelId = "channel-01";
+//            String channelName = "Channel Name";
+//            int importance = NotificationManager.IMPORTANCE_MIN;
+//            NotificationChannel mChannel = new NotificationChannel( channelId, channelName, importance);
+//            notificationManager.createNotificationChannel(mChannel);
 //
-//        NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-//        mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+//            mBuilder = new NotificationCompat.Builder(context, channelId)
+//                    .setSmallIcon(R.drawable.ic_chart_pink)
+//                    .setOngoing(true)
+//                    .setContentTitle(title)
+//                    .setContentText(message);
+////            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+//        } else {
+//            mBuilder = new NotificationCompat.Builder(context);
+//            mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
+//                    .setPriority(NotificationCompat.PRIORITY_LOW)
+//                    .setOngoing(true)
+//                    .setContentTitle(title)
+//                    .setContentText(message);
+//
+//            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+//        }
+
+    }
+
+    private static void updateNotification(Context context, String message) {
+        String title = "Recent Usage Stats";
+        updateNotification(context, title, message);
     }
 
     private void stopChecker() {
