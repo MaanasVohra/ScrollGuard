@@ -28,9 +28,7 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AutoUpdateAlarm.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
-//        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), getVariableHourInterval(6, 8), pi);
-        AlarmHelper.showInstantNotif(context, "Alarm Update", "FG Server Updated", "io.smalldata.goodvibe", 1003);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 60000, pi);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), getVariableHourInterval(12, 24), pi);
     }
 
     private int getVariableHourInterval(int lowerHour, int upperHour) {
@@ -42,9 +40,9 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "");
-        wl.acquire();
+//        wl.acquire();
         performUpdateAndSyncToServer(context);
-        wl.release();
+//        wl.release();
     }
 
     public static void performUpdateAndSyncToServer(Context context) {

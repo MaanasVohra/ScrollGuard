@@ -74,7 +74,6 @@ public class ForegroundToastService extends Service {
 
     public static void startMonitoringFacebookUsage(Context context) {
         ForegroundToastService.start(context);
-        Toast.makeText(context, "Successfully set up!", Toast.LENGTH_LONG).show();
     }
 
     public static void start(Context context) {
@@ -422,18 +421,18 @@ public class ForegroundToastService extends Service {
     }
 
     public static void updateServerRecords(Context context) {
-        if (!NetworkHelper.isDeviceOnline(context)) return;
-        if (!workerExists(context)) return;
-        if (!stopDateExists(context)) return;
-        if (shouldStopServerLogging(context)) {
-            updateNotification(context, "Experiment has ended. Please Uninstall app.");
-            return;
-        }
-        sendCurrentUserStatsThenUpdateAdminState(context);
+//        if (!NetworkHelper.isDeviceOnline(context)) return;
+//        if (!workerExists(context)) return;
+//        if (!stopDateExists(context)) return;
+//        if (shouldStopServerLogging(context)) {
+//            updateNotification(context, "Experiment has ended. Please Uninstall app.");
+//            return;
+//        }
 //        sendFacebookLogsThenUpdateAdminState(context);
+//        sendCurrentUserStatsThenUpdateAdminState(context);
         sendFgAppLogs(context);
         sendScreenEventLogs(context);
-        sendPhoneNotifLogs(context);
+//        sendPhoneNotifLogs(context);
     }
 
     private static void sendCurrentUserStatsThenUpdateAdminState(Context context) {
@@ -463,9 +462,8 @@ public class ForegroundToastService extends Service {
 
     private static JSONObject getLogParams(Context context, String filename) {
         JSONObject params = new JSONObject();
-        JsonHelper.setJSONValue(params, "worker_id", StudyInfo.getUsername(context));
-        JsonHelper.setJSONValue(params, "username", StudyInfo.getUsername(context));
-        JsonHelper.setJSONValue(params, "code", StudyInfo.getCode(context));
+        JsonHelper.setJSONValue(params, "worker_id", Store.getString(context, Store.BUNDLE_USERNAME));
+        JsonHelper.setJSONValue(params, "code", Store.getString(context, Store.BUNDLE_CODE));
         JsonHelper.setJSONValue(params, "logs", FileHelper.readFromFile(context, filename));
         return params;
     }
