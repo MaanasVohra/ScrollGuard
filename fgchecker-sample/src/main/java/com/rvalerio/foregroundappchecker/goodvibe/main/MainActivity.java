@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
             enrollUser();
         }
         populateStoredInfo();
-        ForegroundToastService.startMonitoringFacebookUsage(mContext);
+        ForegroundToastService.startMonitoring(mContext);
     }
 
     private void enrollUser() {
@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
                 String content = "Uh oh. Weird Error! Take a screenshot and send to researcher:\n\n" + Arrays.toString(ex.getStackTrace());
                 AlarmHelper.showInstantNotif(context, title, content, "", 3490);
                 mDefaultUEH.uncaughtException(thread, ex);
-                ForegroundToastService.startMonitoringFacebookUsage(context);
+                ForegroundToastService.startMonitoring(context);
             }
         };
     }

@@ -60,7 +60,7 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
                     break;
                 case NOTIFY_USER:
                     if (title != null || content != null) {
-                        AlarmHelper.showInstantNotif(mContext, title, content, "io.smalldata.goodvibe", 5003);
+                        AlarmHelper.showInstantNotif(mContext, title, content, "io.smalldata.beehivebg", 5003);
                     }
                     break;
                 case PROMPT_APP_UPDATE:

@@ -15,6 +15,7 @@ public class StartMyServiceAtBootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
             AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(context);
+            ForegroundToastService.startMonitoring(context);
         }
     }
 

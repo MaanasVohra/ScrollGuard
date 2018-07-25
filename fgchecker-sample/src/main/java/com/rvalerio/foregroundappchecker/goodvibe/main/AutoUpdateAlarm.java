@@ -6,10 +6,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.PowerManager;
-import android.widget.Toast;
 
 import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
-import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 
 import java.util.Calendar;
@@ -46,7 +44,7 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
     }
 
     public static void performUpdateAndSyncToServer(Context context) {
-        ForegroundToastService.startMonitoringFacebookUsage(context);
+        ForegroundToastService.startMonitoring(context);
         AppJobService.updateServerThroughFirebaseJob(context);
     }
 

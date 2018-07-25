@@ -183,7 +183,7 @@ public class ConfigActivity extends AppCompatActivity {
 
                 startActivity(new Intent(getApplicationContext(), HomeActivity.class));
                 Toast.makeText(mContext, "Configurations saved.", Toast.LENGTH_SHORT).show();
-                ForegroundToastService.startMonitoringFacebookUsage(mContext);
+                ForegroundToastService.startMonitoring(mContext);
             }
         });
     }

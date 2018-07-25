@@ -1,6 +1,7 @@
 package com.rvalerio.foregroundappchecker.goodvibe.main;
 
 import android.app.KeyguardManager;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
@@ -8,12 +9,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -26,7 +27,6 @@ import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.JsonHelper;
-import com.rvalerio.foregroundappchecker.goodvibe.helper.NetworkHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.AdaptivePersonalize;
 import com.rvalerio.foregroundappchecker.goodvibe.personalize.StaticPersonalize;
 
@@ -46,6 +46,7 @@ public class ForegroundToastService extends Service {
     private final static String TOTAL_SECONDS = "totalSeconds";
     private final static String TOTAL_OPENS = "totalOpens";
     private final static String LAST_RECORDED_DATE = "lastRecordedDate";
+    private final static String STAT_TITLE = "Recent Usage Stats";
 
     private final Locale locale = Locale.getDefault();
     private Context mContext;
@@ -65,19 +66,25 @@ public class ForegroundToastService extends Service {
         super.onCreate();
         mContext = this;
 
-        registerStopCheckerReceiver();
+//        registerStopCheckerReceiver();
         registerScreenUnlockReceiver();
+        startFgChecker();
 
-        startChecker();
-        updateNotification(mContext, "Your stats updates during usage.");
+        if (Build.VERSION.SDK_INT >= 26) {
+            Notification notification = createNotifForAndroidO_And_Above(mContext);
+            startForeground(NOTIFICATION_ID, notification);
+        } else {
+            updateNotification(mContext, "Your stats update during usage.");
+        }
     }
 
-    public static void startMonitoringFacebookUsage(Context context) {
-        ForegroundToastService.start(context);
-    }
-
-    public static void start(Context context) {
-        context.startService(new Intent(context, ForegroundToastService.class));
+    public static void startMonitoring(Context context) {
+        Intent intent = new Intent(context, ForegroundToastService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent);
+        } else {
+            context.startService(intent);
+        }
     }
 
     public static void stop(Context context) {
@@ -86,13 +93,18 @@ public class ForegroundToastService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (Build.VERSION.SDK_INT >= 26) {
+            Notification notification = createNotifForAndroidO_And_Above(mContext);
+            startForeground(NOTIFICATION_ID, notification);
+        }
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-//        ForegroundToastService.start(mContext);
+        ForegroundToastService.startMonitoring(mContext);
+        AlarmHelper.showInstantNotif(mContext, "onDestroy( )", DateHelper.currentMillisToDateFormat(), "io.smalldata.goodvibe", 2018);
     }
 
     public Boolean isLockedScreen() {
@@ -187,7 +199,7 @@ public class ForegroundToastService extends Service {
     }
 
 
-    private void startChecker() {
+    private void startFgChecker() {
         appChecker = AppChecker.getInstance();
         appChecker.other(new AppChecker.Listener() {
             @Override
@@ -624,39 +636,55 @@ public class ForegroundToastService extends Service {
         }
     }
 
-    private static void updateNotification(Context context, String title, String message) {
-        NotificationCompat.Builder mBuilder;
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mBuilder = new NotificationCompat.Builder(context);
+    private static Notification createNotifForAndroidO_And_Above(Context context) {
+        String message = "Your stats update during usage";
+        return createNotifForAndroidO_And_Above(context, STAT_TITLE, message);
+    }
+
+    private static Notification createNotifForAndroidO_And_Above(Context context, String title, String message) {
+        Notification notification = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             String channelId = "goodvibeId";
             String channelName = "Goodvibe Logger";
             int importance = NotificationManager.IMPORTANCE_MIN;
-            NotificationChannel mChannel = new NotificationChannel( channelId, channelName, importance);
-            notificationManager.createNotificationChannel(mChannel);
+            NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
+            notificationManager.createNotificationChannel(channel);
 
-            mBuilder = new NotificationCompat.Builder(context, channelId)
+            notification = new NotificationCompat.Builder(context, channelId)
                     .setSmallIcon(R.drawable.ic_chart_pink)
                     .setOngoing(true)
                     .setContentTitle(title)
-                    .setContentText(message);
-            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+                    .setContentText(message)
+                    .build();
+
+            notificationManager.notify(NOTIFICATION_ID, notification);
+        }
+        return notification;
+    }
+
+
+    private static void updateNotification(Context context, String title, String message) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            createNotifForAndroidO_And_Above(context, title, message);
         } else {
+            NotificationCompat.Builder mBuilder;
             mBuilder = new NotificationCompat.Builder(context);
-            mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
+            Notification notification = mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
                     .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setOngoing(true)
                     .setContentTitle(title)
-                    .setContentText(message);
-
-            notificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+                    .setContentText(message)
+                    .build();
+            notificationManager.notify(NOTIFICATION_ID, notification);
         }
 
     }
 
     private static void updateNotification(Context context, String message) {
-        String title = "Recent Usage Stats";
-        updateNotification(context, title, message);
+        updateNotification(context, STAT_TITLE, message);
     }
 
     private void stopChecker() {
