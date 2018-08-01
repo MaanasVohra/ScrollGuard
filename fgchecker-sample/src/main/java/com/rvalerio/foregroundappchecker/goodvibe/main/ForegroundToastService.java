@@ -46,7 +46,8 @@ public class ForegroundToastService extends Service {
     private final static String TOTAL_SECONDS = "totalSeconds";
     private final static String TOTAL_OPENS = "totalOpens";
     private final static String LAST_RECORDED_DATE = "lastRecordedDate";
-    private final static String STAT_TITLE = "Recent Usage Stats";
+    private final static String STAT_TITLE = "Testing Details Mode";
+//    private final static String STAT_TITLE = "Recent Usage Stats";
 
     private final Locale locale = Locale.getDefault();
     private Context mContext;

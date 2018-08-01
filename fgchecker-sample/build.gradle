@@ -22,7 +22,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion '26.0.2'
     defaultConfig {
-        applicationId "io.smalldata.beehivebg"
+        applicationId "io.smalldata.applogger"
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 1

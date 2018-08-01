@@ -28,6 +28,7 @@ import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.IntentLauncher;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.JsonHelper;
 
 import org.json.JSONObject;
@@ -178,6 +179,15 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         FileHelper.prepareAllStorageFiles(mContext);
+
+        Button btnGoBack = findViewById(R.id.btn_go_back);
+        btnGoBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                IntentLauncher.launchApp(mContext, "io.smalldata.beehiveapp");
+            }
+        });
+
     }
 
     private void activateUserCustomEntryMode() {
