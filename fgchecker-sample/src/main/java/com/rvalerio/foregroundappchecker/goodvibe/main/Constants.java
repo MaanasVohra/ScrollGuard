@@ -17,5 +17,4 @@ class Constants {
     static final String STORED_APPS_LABELS = "storedAppLabels";
     static final String LAST_FG_APP = "lastFgApp";
     static final String USER_FULL_CONFIG_ENABLED = "userFullConfigEnabled";
-    public static final String IS_ACTIVE_CUSTOM_MODE = "isActiveCustomMode";
 }

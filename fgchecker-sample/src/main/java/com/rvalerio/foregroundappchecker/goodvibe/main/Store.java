@@ -45,8 +45,10 @@ public class Store {
     static final String SURVEY_LINK = "surveyLink";
     static final String LAST_SCREEN_EVENT = "lastScreenEvent";
     public static final String PHONE_NOTIF_LOGS_CSV = "phoneNotifLogs.csv";
+
     public static final String BUNDLE_USERNAME = "bundleUsername";
     public static final String BUNDLE_CODE = "bundleCode";
+    public static final String IS_ACTIVE_CUSTOM_MODE = "isActiveCustomMode";
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
