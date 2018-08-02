@@ -70,15 +70,11 @@ public class MainActivity extends AppCompatActivity {
         etUsername = findViewById(R.id.et_username);
         etStudyCode = findViewById(R.id.et_study_code);
         tvSubmitFeedback = findViewById(R.id.tv_submit_id_feedback);
+        activateUsagePermission();
+        FileHelper.prepareAllStorageFiles(mContext);
+    }
 
-        Button btnGoBack = findViewById(R.id.btn_go_back);
-        btnGoBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                IntentLauncher.launchApp(mContext, "io.smalldata.beehiveapp");
-            }
-        });
-
+    private void activateUsagePermission() {
         Button btUsagePermission = findViewById(R.id.btn_usage_permission);
         if (!needsUsageStatsPermission()) {
             btUsagePermission.setVisibility(GONE);
@@ -95,25 +91,43 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-
-        FileHelper.prepareAllStorageFiles(mContext);
     }
-
-    private void setResources() {
-
-    }
-
 
     private void handleIncomingBundle() {
-        Bundle bundle = this.getIntent().getExtras();
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
         if (bundle != null) {
             String username = bundle.getString("username");
             String code = bundle.getString("code");
             if (username != null && code != null) {
                 Store.setString(mContext, Store.BUNDLE_USERNAME, username);
                 Store.setString(mContext, Store.BUNDLE_CODE, code);
+                Toast.makeText(mContext, "AppLogger successfully linked.", Toast.LENGTH_SHORT).show();
+                Store.setBoolean(mContext, Store.IS_ACTIVE_BACK_TO_MAIN_APP, true);
+
+                activateBackToMainApp();
+
+                intent.removeExtra("username");
+                intent.removeExtra("code");
             }
         }
+    }
+
+    private void activateBackToMainApp() {
+        Button btnGoBack = findViewById(R.id.btn_go_back);
+        btnGoBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                IntentLauncher.launchApp(mContext, "io.smalldata.beehiveapp");
+            }
+        });
+
+        if (Store.getBoolean(mContext, Store.IS_ACTIVE_BACK_TO_MAIN_APP)) {
+            btnGoBack.setVisibility(View.VISIBLE);
+        } else {
+            btnGoBack.setVisibility(View.INVISIBLE);
+        }
+
     }
 
     private void enrollUser() {

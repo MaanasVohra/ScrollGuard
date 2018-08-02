@@ -49,6 +49,7 @@ public class Store {
     public static final String BUNDLE_USERNAME = "bundleUsername";
     public static final String BUNDLE_CODE = "bundleCode";
     public static final String IS_ACTIVE_CUSTOM_MODE = "isActiveCustomMode";
+    public static final String IS_ACTIVE_BACK_TO_MAIN_APP = "isActiveBackToMainApp";
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
