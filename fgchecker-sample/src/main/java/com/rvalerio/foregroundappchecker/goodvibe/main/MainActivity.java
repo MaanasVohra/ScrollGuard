@@ -27,6 +27,7 @@ import com.rvalerio.foregroundappchecker.R;
 import com.rvalerio.foregroundappchecker.goodvibe.api.CallAPI;
 import com.rvalerio.foregroundappchecker.goodvibe.api.VolleyJsonCallback;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.FileHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.IntentLauncher;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.JsonHelper;
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         handleIncomingBundle();
         if (!userIsEnrolled()) enrollUser();
         populateStoredInfo();
+        ForegroundToastService.startMonitoring(mContext);
     }
 
     private void initResources() {

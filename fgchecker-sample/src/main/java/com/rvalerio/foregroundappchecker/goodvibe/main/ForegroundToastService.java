@@ -4,6 +4,7 @@ import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -642,6 +643,8 @@ public class ForegroundToastService extends Service {
         return createNotifForAndroidO_And_Above(context, STAT_TITLE, message);
     }
 
+
+
     private static Notification createNotifForAndroidO_And_Above(Context context, String title, String message) {
         Notification notification = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -657,11 +660,18 @@ public class ForegroundToastService extends Service {
                     .setOngoing(true)
                     .setContentTitle(title)
                     .setContentText(message)
+                    .setContentIntent(getPendingIntent(context))
                     .build();
 
             notificationManager.notify(NOTIFICATION_ID, notification);
         }
         return notification;
+    }
+
+    private static PendingIntent getPendingIntent(Context context) {
+        Intent notifyIntent = new Intent(context, MainActivity.class);
+        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        return PendingIntent.getActivity(context, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
 
@@ -678,6 +688,7 @@ public class ForegroundToastService extends Service {
                     .setOngoing(true)
                     .setContentTitle(title)
                     .setContentText(message)
+                    .setContentIntent(getPendingIntent(context))
                     .build();
             notificationManager.notify(NOTIFICATION_ID, notification);
         }
