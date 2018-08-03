@@ -36,11 +36,11 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "");
+//        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+//        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "");
 //        wl.acquire();
-        performUpdateAndSyncToServer(context);
 //        wl.release();
+        performUpdateAndSyncToServer(context);
     }
 
     public static void performUpdateAndSyncToServer(Context context) {
