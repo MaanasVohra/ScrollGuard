@@ -1,6 +1,8 @@
 # Goodvibe Android
 Goodvibe app for curbing digital overload.
 
+![App screenshot](appshot.png)
+
 # Credit
 - https://github.com/ricvalerio/foregroundappchecker
 
