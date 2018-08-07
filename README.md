@@ -1,5 +1,5 @@
 # Goodvibe Android
-Goodvibe official app for curbing digital overload.
+Goodvibe app for curbing digital overload.
 
 # Credit
 - https://github.com/ricvalerio/foregroundappchecker
