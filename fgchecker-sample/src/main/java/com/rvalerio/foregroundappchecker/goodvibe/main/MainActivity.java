@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         handleIncomingBundle();
         if (!userIsEnrolled()) enrollUser();
         populateStoredInfo();
+        AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
         ForegroundToastService.startMonitoring(mContext);
     }
 
@@ -313,7 +314,6 @@ public class MainActivity extends AppCompatActivity {
             if (result.optInt("status") == 200) {
                 String studyCode = etStudyCode.getText().toString().toLowerCase().trim();
                 StudyInfo.setDefaults(mContext, studyCode); //fallback to defaults if admin values are not set
-                AutoUpdateAlarm.getInstance().setAlarmForPeriodicUpdate(mContext);
 
                 showSuccess(tvSubmitFeedback, response);
                 Store.setString(mContext, Store.RESPONSE_TO_SUBMIT, response);

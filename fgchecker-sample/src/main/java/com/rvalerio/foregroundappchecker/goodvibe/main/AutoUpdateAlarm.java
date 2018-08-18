@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.PowerManager;
 
 import com.rvalerio.foregroundappchecker.goodvibe.fcm.AppJobService;
+import com.rvalerio.foregroundappchecker.goodvibe.helper.AlarmHelper;
 import com.rvalerio.foregroundappchecker.goodvibe.helper.DateHelper;
 
 import java.util.Calendar;
@@ -22,6 +23,16 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
         return mInstance;
     }
 
+    @Override
+    public void onReceive(Context context, Intent intent) {
+//        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+//        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "");
+//        wl.acquire();
+//        wl.release();
+        performUpdateAndSyncToServer(context);
+    }
+
+
     public void setAlarmForPeriodicUpdate(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AutoUpdateAlarm.class);
@@ -32,15 +43,6 @@ public class AutoUpdateAlarm extends BroadcastReceiver {
     private int getVariableHourInterval(int lowerHour, int upperHour) {
         int hourInMillis = 60 * 60 * 1000;
         return DateHelper.getRandomInt(lowerHour * hourInMillis, upperHour * hourInMillis);
-    }
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
-//        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-//        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "");
-//        wl.acquire();
-//        wl.release();
-        performUpdateAndSyncToServer(context);
     }
 
     public static void performUpdateAndSyncToServer(Context context) {

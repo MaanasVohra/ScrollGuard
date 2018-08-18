@@ -106,7 +106,6 @@ public class ForegroundToastService extends Service {
     public void onDestroy() {
         super.onDestroy();
         ForegroundToastService.startMonitoring(mContext);
-        AlarmHelper.showInstantNotif(mContext, "onDestroy( )", DateHelper.currentMillisToDateFormat(), "io.smalldata.goodvibe", 2018);
     }
 
     public Boolean isLockedScreen() {
@@ -658,7 +657,7 @@ public class ForegroundToastService extends Service {
             notification = new NotificationCompat.Builder(context, channelId)
                     .setSmallIcon(R.drawable.ic_chart_pink)
                     .setOngoing(true)
-                    .setContentTitle(title)
+//                    .setContentTitle(title)
                     .setContentText(message)
                     .setContentIntent(getPendingIntent(context))
                     .build();
@@ -686,7 +685,7 @@ public class ForegroundToastService extends Service {
             Notification notification = mBuilder.setSmallIcon(R.drawable.ic_chart_pink)
                     .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setOngoing(true)
-                    .setContentTitle(title)
+//                    .setContentTitle(title)
                     .setContentText(message)
                     .setContentIntent(getPendingIntent(context))
                     .build();
