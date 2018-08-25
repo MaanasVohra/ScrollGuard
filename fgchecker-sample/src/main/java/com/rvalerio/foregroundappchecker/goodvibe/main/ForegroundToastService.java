@@ -658,7 +658,8 @@ public class ForegroundToastService extends Service {
                     .setSmallIcon(R.drawable.ic_chart_pink)
                     .setOngoing(true)
 //                    .setContentTitle(title)
-                    .setContentText(message)
+//                    .setContentText(message)
+                    .setContentText("Logged into active mode.")
                     .setContentIntent(getPendingIntent(context))
                     .build();
 
@@ -686,7 +687,8 @@ public class ForegroundToastService extends Service {
                     .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setOngoing(true)
 //                    .setContentTitle(title)
-                    .setContentText(message)
+//                    .setContentText(message)
+                    .setContentText("Logged into active mode.")
                     .setContentIntent(getPendingIntent(context))
                     .build();
             notificationManager.notify(NOTIFICATION_ID, notification);
